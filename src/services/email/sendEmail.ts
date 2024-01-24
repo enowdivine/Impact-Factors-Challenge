@@ -16,11 +16,11 @@ export default function mailer(option: Option): void {
     service: process.env.EMAIL_SERVICE,
     auth: {
       user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD,
+      pass: process.env.EMAIL_USER_PASSWORD,
     },
   });
   const mailOptions: any = {
-    from: "hello@deonicode.com",
+    from: "summittech237@gmail.com",
     to: option.to,
     subject: option.subject,
     html: html,

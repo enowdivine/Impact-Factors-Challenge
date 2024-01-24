@@ -1,6 +1,6 @@
 export default function email(subject: string, message: string) {
   return `
-<html lang="en">
+  <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -25,7 +25,7 @@ export default function email(subject: string, message: string) {
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css"
     />
-    <title>Deonicode</title>
+    <title>Gilgal Towers Luxury Hotel</title>
     <style>
       .wrapper {
         width: 60%;
@@ -36,7 +36,7 @@ export default function email(subject: string, message: string) {
       }
 
       header {
-        background-color: #f16126;
+        background-color: #dfa974;
         padding: 20px;
         color: white;
       }
@@ -50,6 +50,15 @@ export default function email(subject: string, message: string) {
         margin-top: 20px;
         padding: 0 20px;
         min-height: 300px;
+        margin-bottom: 40px;
+      }
+      .items {
+        display: flex;
+        /* justify-content: space-between; */
+      }
+      .items .keys {
+        font-weight: bold;
+        margin-right: 10px;
       }
       footer {
         background-color: grey;
@@ -73,7 +82,7 @@ export default function email(subject: string, message: string) {
   <body>
     <div class="wrapper">
       <header>
-        <h2>Deonicode</h2>
+        <h2>Gilgal Towers Luxury Hotel</h2>
         ${subject}
       </header>
       <div class="logo">
@@ -88,40 +97,57 @@ export default function email(subject: string, message: string) {
         </a>
       </div>
       <div class="body-text">
-        <p>${message}</p>
-      </div>
-      <!-- <div>
-        <h5>Socials</h5>
-        <div class="p-2">
-          <a href="#"
-            ><i
-              class="bi bi-facebook text-danger m-1 rounded-circle"
-              style="font-size: 1.5rem"
-            ></i
-          ></a>
-          <a href="#">
-            <i
-              class="bi bi-instagram text-danger m-1 rounded-circle"
-              style="font-size: 1.5rem"
-            ></i
-          ></a>
-          <a href="#"
-            ><i
-              class="bi bi-linkedin text-danger m-1 rounded-circle"
-              style="font-size: 1.5rem"
-            ></i
-          ></a>
+        <h4>Hello,</h4>
+        <div>
+          <p>
+            Your have a new booking from the Gilgal Towers Luxury Hotel website.
+          </p>
+          <p>More details of the bookings found below:</p>
         </div>
-      </div> -->
+        <div class="details">
+          <div class="items">
+            <p class="keys">Name:</p>
+            <p class="keys-values">Mike Danason</p>
+          </div>
+          <div class="items">
+            <p class="keys">Phone number:</p>
+            <p class="keys-values">+237 672 491 296</p>
+          </div>
+          <div class="items">
+            <p class="keys">Room:</p>
+            <p class="keys-values">Luxury One bedroom details</p>
+          </div>
+          <div class="items">
+            <p class="keys">Check In:</p>
+            <p class="keys-values">Friday 10th September 2023</p>
+          </div>
+          <div class="items">
+            <p class="keys">Check Out:</p>
+            <p class="keys-values">Friday 10th September 2023</p>
+          </div>
+          <div class="items">
+            <p class="keys"># of Guest:</p>
+            <p class="keys-values">4 Guests</p>
+          </div>
+          <div class="items">
+            <p class="keys">Booking Fee:</p>
+            <p class="keys-values">1000 FCFA</p>
+          </div>
+        </div>
+        <div>
+          <p>
+            This email is sent from the Gilgal Towers Luxury Hotel website. This
+            information can verified from the admin panel by the administrator
+            of gilgal towers.
+          </p>
+        </div>
+      </div>
+
       <footer>
-        <!-- <p>
-          <a href="#">Privacy Policy</a> |
-          <a href="#">Contact Support</a>
-        </p> -->
-        <p>&copy; 2023 Deonicode Learning Platform</p>
+        <p>&copy; 2024 Gilgal Towers Luxury Hotel</p>
       </footer>
     </div>
   </body>
 </html>
-`;
+  `;
 }

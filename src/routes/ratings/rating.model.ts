@@ -2,13 +2,13 @@ import mongoose from "mongoose";
 
 const rating = new mongoose.Schema(
   {
-    resourceId: {
+    roomId: {
       type: String,
-      required: [true, "resourceId is required"],
+      required: [true, "roomId is required"],
     },
-    userId: {
+    username: {
       type: String,
-      required: [true, "userId is required"],
+      required: [true, "username is required"],
     },
     rating: {
       type: Number,

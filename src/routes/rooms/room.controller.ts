@@ -7,7 +7,7 @@ class RoomController {
   async create(req: Request, res: Response) {
     try {
       const files: any = req.files;
-      await uploadImages(files, "uploads/rooms", res);
+      await uploadImages(files, "uploads/gallery", res);
 
       const allFiles: any[] = Object.entries(files);
       const images: any[] = [];
@@ -85,7 +85,7 @@ class RoomController {
   async update(req: Request, res: Response) {
     try {
       const files: any = req.files;
-      await uploadImages(files, "uploads/rooms", res);
+      await uploadImages(files, "uploads/gallery", res);
 
       const allFiles: any[] = Object.entries(files);
       const images: any[] = [];
@@ -161,7 +161,7 @@ class RoomController {
       if (room) {
         if (room.images.length > 0) {
           room.images.map(async (item) => {
-            await deleteImage("uploads/rooms", item);
+            await deleteImage("uploads/gallery", item);
           });
         }
       }
