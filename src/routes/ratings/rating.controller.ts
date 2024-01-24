@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import Rating from "./rating.model";
-import resourceModel from "../resources/resources.model";
+import resourceModel from "../rooms/room.model";
 
 class RatingController {
   async create(req: Request, res: Response) {

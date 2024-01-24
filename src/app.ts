@@ -5,21 +5,17 @@ import dotenv from "dotenv";
 import http from "http";
 import cors from "cors";
 // api imports
-import userRoutes from "./routes/user/user.routes";
-import adminRoutes from "./routes/admin/admin.routes";
-import vendorRoutes from "./routes/vendor/vendor.routes";
 import ratingRoutes from "./routes/ratings/rating.routes";
-import resourceRoutes from "./routes/resources/resources.routes";
+import resourceRoutes from "./routes/rooms/room.routes";
 import withdrawalRoutes from "./routes/withdrawals/withdraw.routes";
-import transactionRoutes from "./routes/transactions/transaction.routes";
-//
-import resourceTypeRoutes from "./routes/resourceTypes/rt.routes";
-import facultyRoutes from "./routes/faculty/faculty.routes";
-import departmentRoutes from "./routes/department/department.routes";
+import transactionRoutes from "./routes/bookings/transaction.routes";
+
+const path = require("path");
 // Fapshi imports
 const fapshi = require("./routes/fapshi/fapshi");
 // swagger imports
 import setupSwagger from "./swagger";
+export const appRoot = path.resolve(__dirname);
 
 const corsOptions = {
   origin: "*",
@@ -45,17 +41,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.use(`/api/${process.env.API_VERSION}/user`, userRoutes);
-app.use(`/api/${process.env.API_VERSION}/admin`, adminRoutes);
-app.use(`/api/${process.env.API_VERSION}/resource`, resourceRoutes);
+app.use(`/api/${process.env.API_VERSION}/rooms`, resourceRoutes);
 app.use(`/api/${process.env.API_VERSION}/rating`, ratingRoutes);
-app.use(`/api/${process.env.API_VERSION}/vendor`, vendorRoutes);
 app.use(`/api/${process.env.API_VERSION}/withdrawal`, withdrawalRoutes);
 app.use(`/api/${process.env.API_VERSION}/transaction`, transactionRoutes);
-//
-app.use(`/api/${process.env.API_VERSION}/faculty`, facultyRoutes);
-app.use(`/api/${process.env.API_VERSION}/department`, departmentRoutes);
-app.use(`/api/${process.env.API_VERSION}/resource-type`, resourceTypeRoutes);
 
 // Fapshi webhook
 let socketID: any;

@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import Transaction from "./transaction.model";
 import userModel from "../user/user.model";
 import vendorModel from "../vendor/vendor.model";
-import resourceModel from "../resources/resources.model";
+import resourceModel from "../rooms/room.model";
 import _ from "lodash";
 
 class TransactionController {
