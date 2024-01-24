@@ -11,8 +11,6 @@ import bookingRoutes from "./routes/bookings/booking.routes";
 import galleryRoutes from "./routes/gallery/gallery.routes";
 
 const path = require("path");
-// swagger imports
-import setupSwagger from "./swagger";
 export const appRoot = path.resolve(__dirname);
 
 const corsOptions = {
@@ -39,6 +37,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+app.use(express.static(path.join(__dirname, "uploads/gallery")));
 app.use(`/api/${process.env.API_VERSION}/rooms`, resourceRoutes);
 app.use(`/api/${process.env.API_VERSION}/rating`, ratingRoutes);
 app.use(`/api/${process.env.API_VERSION}/gallery`, galleryRoutes);
@@ -59,7 +58,6 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Gilgal Towers Server 🚀");
 });
 
-setupSwagger(app);
 const PORT: any = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`server listening on port ${PORT}, 🚀`);
