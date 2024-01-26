@@ -28,7 +28,6 @@ const room = new mongoose.Schema(
     },
     bed: {
       type: String,
-      default: "",
     },
     services: {
       type: Array,

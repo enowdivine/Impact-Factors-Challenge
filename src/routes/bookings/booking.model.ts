@@ -2,28 +2,47 @@ import mongoose from "mongoose";
 
 const booking = new mongoose.Schema(
   {
+    bookingType: {
+      type: String,
+    },
     username: {
       type: String,
-      required: [true, "username is required"],
     },
     phoneNumber: {
-      type: String,
-      default: "",
+      type: Number,
     },
     roomId: {
       type: String,
-      default: "",
     },
-    checkIn: {
+    checkInDate: {
       type: Date,
     },
-    checkOut: {
+    checkInTime: {
+      type: String,
+    },
+    checkOutDate: {
       type: Date,
     },
-    guest: {
+    checkOutTime: {
+      type: String,
+    },
+    guestAdults: {
       type: Number,
-      default: 0,
     },
+    guestKids: {
+      type: Number,
+    },
+    //
+    groupName: {
+      type: String,
+    },
+    numberofDelegates: {
+      type: Number,
+    },
+    mealOption: {
+      type: String,
+    },
+    //
     amount: {
       type: Number,
       default: 0,
