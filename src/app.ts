@@ -9,6 +9,7 @@ import ratingRoutes from "./routes/ratings/rating.routes";
 import resourceRoutes from "./routes/rooms/room.routes";
 import bookingRoutes from "./routes/bookings/booking.routes";
 import galleryRoutes from "./routes/gallery/gallery.routes";
+import eventRoutes from "./routes/events/event.routes";
 
 const path = require("path");
 export const appRoot = path.resolve(__dirname);
@@ -42,6 +43,7 @@ app.use(`/api/${process.env.API_VERSION}/rooms`, resourceRoutes);
 app.use(`/api/${process.env.API_VERSION}/rating`, ratingRoutes);
 app.use(`/api/${process.env.API_VERSION}/gallery`, galleryRoutes);
 app.use(`/api/${process.env.API_VERSION}/booking`, bookingRoutes);
+app.use(`/api/${process.env.API_VERSION}/event`, eventRoutes);
 
 // Payment webhook
 let socketID: any;
@@ -58,7 +60,7 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Gilgal Towers Server 🚀");
 });
 
-const PORT: any = process.env.PORT || 5000;
+const PORT: any = process.env.PORT || 4000;
 server.listen(PORT, () => {
   console.log(`server listening on port ${PORT}, 🚀`);
 });
