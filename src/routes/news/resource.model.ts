@@ -1,7 +1,11 @@
 import mongoose from "mongoose";
 
-const event = new mongoose.Schema(
+const news = new mongoose.Schema(
   {
+    image: {
+      type: Array,
+      default: null,
+    },
     title: {
       type: String,
       default: "",
@@ -10,21 +14,9 @@ const event = new mongoose.Schema(
       type: String,
       default: "",
     },
-    category: {
+    desc: {
       type: String,
       default: "",
-    },
-    location: {
-      type: String,
-      default: "",
-    },
-    details: {
-      type: String,
-      default: "",
-    },
-    date: {
-      type: Date,
-      default: null,
     },
     link: {
       type: String,
@@ -36,4 +28,4 @@ const event = new mongoose.Schema(
   }
 );
 
-export default mongoose.model("Event", event);
+export default mongoose.model("News", news);

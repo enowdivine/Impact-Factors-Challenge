@@ -5,11 +5,10 @@ import dotenv from "dotenv";
 import http from "http";
 import cors from "cors";
 // api imports
-import ratingRoutes from "./routes/ratings/rating.routes";
-import resourceRoutes from "./routes/rooms/room.routes";
-import bookingRoutes from "./routes/bookings/booking.routes";
-import galleryRoutes from "./routes/gallery/gallery.routes";
 import eventRoutes from "./routes/events/event.routes";
+import newsRoutes from "./routes/news/resource.routes";
+import partnerRouttes from "./routes/partners/resource.routes";
+import testimonialRoutes from "./routes/testimonials/resource.routes";
 
 const path = require("path");
 export const appRoot = path.resolve(__dirname);
@@ -39,11 +38,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.use(express.static(path.join(__dirname, "uploads/gallery")));
-app.use(`/api/${process.env.API_VERSION}/rooms`, resourceRoutes);
-app.use(`/api/${process.env.API_VERSION}/rating`, ratingRoutes);
-app.use(`/api/${process.env.API_VERSION}/gallery`, galleryRoutes);
-app.use(`/api/${process.env.API_VERSION}/booking`, bookingRoutes);
-app.use(`/api/${process.env.API_VERSION}/event`, eventRoutes);
+app.use(`/api/${process.env.API_VERSION}/events`, eventRoutes);
+app.use(`/api/${process.env.API_VERSION}/news`, newsRoutes);
+app.use(`/api/${process.env.API_VERSION}/partners`, partnerRouttes);
+app.use(`/api/${process.env.API_VERSION}/testimonils`, testimonialRoutes);
 
 // Payment webhook
 let socketID: any;

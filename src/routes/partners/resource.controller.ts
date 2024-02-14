@@ -1,21 +1,28 @@
 import { Request, Response } from "express";
-import Event from "./event.model";
+import Resource from "./resource.model";
 import slugify from "../../helpers/slugify";
+import { uploadImages, deleteImage } from "../../helpers/UploadFile";
 
-class EventController {
+class ResourceController {
   async create(req: Request, res: Response) {
     try {
+      const files: any = req.files;
+      await uploadImages(files, "uploads/gallery", res);
+
+      const allFiles: any[] = Object.entries(files);
+      const images: any[] = [];
+      allFiles.map((item) => images.push(item[1].name));
+
       const slug = slugify(req.body.title);
-      const event = new Event({
+      const resource = new Resource({
         title: req.body.title,
         slug: slug,
-        category: req.body.category,
-        location: req.body.location,
-        details: req.body.details,
-        date: req.body.date,
+        image: images[0],
+        logo: images[1],
+        desc: req.body.desc,
         link: req.body.link,
       });
-      await event
+      await resource
         .save()
         .then(() => {
           res.status(201).json({
@@ -38,9 +45,9 @@ class EventController {
 
   async readOne(req: Request, res: Response) {
     try {
-      const event = await Event.findOne({ _id: req.params.id });
-      if (event) {
-        return res.status(200).json(event);
+      const resource = await Resource.findOne({ _id: req.params.id });
+      if (resource) {
+        return res.status(200).json(resource);
       } else {
         return res.status(404).json({
           message: "data not found",
@@ -56,9 +63,9 @@ class EventController {
 
   async read(req: Request, res: Response) {
     try {
-      const events = await Event.find().sort({ createdAt: -1 });
-      if (events) {
-        return res.status(200).json(events);
+      const resources = await Resource.find().sort({ createdAt: -1 });
+      if (resources) {
+        return res.status(200).json(resources);
       } else {
         return res.status(404).json({
           message: "no data found",
@@ -74,8 +81,15 @@ class EventController {
 
   async update(req: Request, res: Response) {
     try {
+      const files: any = req.files;
+      await uploadImages(files, "uploads/gallery", res);
+
+      const allFiles: any[] = Object.entries(files);
+      const images: any[] = [];
+      allFiles.map((item) => images.push(item[1].name));
+
       const slug = slugify(req.body.title);
-      const updatedResource = await Event.updateOne(
+      const updatedResource = await Resource.updateOne(
         {
           _id: req.params.id,
         },
@@ -83,12 +97,16 @@ class EventController {
           $set: {
             title: req.body.title,
             slug: slug,
-            category: req.body.category,
-            location: req.body.location,
-            details: req.body.details,
-            date: req.body.date,
+            image: images[0],
+            logo: images[1],
+            desc: req.body.desc,
             link: req.body.link,
           },
+          // $push: {
+          //   images: {
+          //     $each: images,
+          //   },
+          // },
         }
       );
       if (updatedResource.acknowledged) {
@@ -110,7 +128,14 @@ class EventController {
 
   async deleteItem(req: Request, res: Response) {
     try {
-      const response = await Event.deleteOne({ _id: req.params.id });
+      const resource = await Resource.findOne({ _id: req.params.id });
+      if (resource) {
+        if (resource.image) {
+          await deleteImage("uploads/gallery", resource.image);
+          await deleteImage("uploads/gallery", resource.logo);
+        }
+      }
+      const response = await Resource.deleteOne({ _id: req.params.id });
       if (response.deletedCount > 0) {
         res.status(200).json({
           message: "resource deleted",
@@ -129,4 +154,4 @@ class EventController {
   }
 }
 
-export default EventController;
+export default ResourceController;
