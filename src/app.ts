@@ -22,13 +22,6 @@ const corsOptions = {
 dotenv.config();
 const app = express();
 const server: any = http.createServer(app);
-const io = require("socket.io")(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
-    credentials: true,
-  },
-});
 
 dbConnect();
 
@@ -43,19 +36,8 @@ app.use(`/api/${process.env.API_VERSION}/news`, newsRoutes);
 app.use(`/api/${process.env.API_VERSION}/partners`, partnerRouttes);
 app.use(`/api/${process.env.API_VERSION}/testimonils`, testimonialRoutes);
 
-// Payment webhook
-let socketID: any;
-io.on("connection", async (socket: any) => {
-  console.log("New participant connected");
-  socket.on("join", (room: any) => {
-    socket.join(room);
-    socketID = socket.id;
-    console.log(`${socket.id} joined ${room}`);
-  });
-});
-
 app.get("/", (req: Request, res: Response) => {
-  res.send("Gilgal Towers Server 🚀");
+  res.send("Aecoedu Server 🚀");
 });
 
 const PORT: any = process.env.PORT || 4000;
