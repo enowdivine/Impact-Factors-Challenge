@@ -37,7 +37,7 @@ app.use(`/api/${process.env.API_VERSION}/partners`, partnerRouttes);
 app.use(`/api/${process.env.API_VERSION}/testimonils`, testimonialRoutes);
 
 app.get("/", (req: Request, res: Response) => {
-  res.send("Aecoedu Server 🚀");
+  res.send("St Louis Server 🚀");
 });
 
 const PORT: any = process.env.PORT || 4000;
