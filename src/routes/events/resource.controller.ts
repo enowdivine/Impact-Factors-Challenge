@@ -1,12 +1,21 @@
 import { Request, Response } from "express";
-import Event from "./event.model";
+import Event from "./resource.model";
 import slugify from "../../helpers/slugify";
+import { uploadImages, deleteImage } from "../../helpers/UploadFile";
 
 class EventController {
   async create(req: Request, res: Response) {
     try {
+      const files: any = req.files;
+      await uploadImages(files, "uploads/gallery", res);
+
+      const allFiles: any[] = Object.entries(files);
+      const images: any[] = [];
+      allFiles.map((item) => images.push(item[1].name));
+
       const slug = slugify(req.body.title);
       const event = new Event({
+        image: images[0],
         title: req.body.title,
         slug: slug,
         category: req.body.category,
@@ -74,31 +83,68 @@ class EventController {
 
   async update(req: Request, res: Response) {
     try {
-      const slug = slugify(req.body.title);
-      const updatedResource = await Event.updateOne(
-        {
-          _id: req.params.id,
-        },
-        {
-          $set: {
-            title: req.body.title,
-            slug: slug,
-            category: req.body.category,
-            location: req.body.location,
-            details: req.body.details,
-            date: req.body.date,
-            link: req.body.link,
+      const files: any = req.files;
+      if (files) {
+        await uploadImages(files, "uploads/gallery", res);
+
+        const allFiles: any[] = Object.entries(files);
+        const images: any[] = [];
+        allFiles.map((item) => images.push(item[1].name));
+
+        const slug = slugify(req.body.title);
+        const updatedResource = await Event.updateOne(
+          {
+            _id: req.params.id,
           },
+          {
+            $set: {
+              image: images[0],
+              title: req.body.title,
+              slug: slug,
+              category: req.body.category,
+              location: req.body.location,
+              details: req.body.details,
+              date: req.body.date,
+              link: req.body.link,
+            },
+          }
+        );
+        if (updatedResource.acknowledged) {
+          res.status(200).json({
+            message: "success",
+          });
+        } else {
+          res.status(404).json({
+            message: "an error occured",
+          });
         }
-      );
-      if (updatedResource.acknowledged) {
-        res.status(200).json({
-          message: "success",
-        });
       } else {
-        res.status(404).json({
-          message: "an error occured",
-        });
+        const slug = slugify(req.body.title);
+        const updatedResource = await Event.updateOne(
+          {
+            _id: req.params.id,
+          },
+          {
+            $set: {
+              title: req.body.title,
+              slug: slug,
+              category: req.body.category,
+              location: req.body.location,
+              details: req.body.details,
+              date: req.body.date,
+              link: req.body.link,
+            },
+          }
+        );
+        if (updatedResource.acknowledged) {
+          res.status(200).json({
+            message: "success",
+          });
+        } else {
+          res.status(404).json({
+            message: "an error occured",
+          });
+        }
       }
     } catch (error) {
       console.error("error updating data", error);
@@ -110,14 +156,18 @@ class EventController {
 
   async deleteItem(req: Request, res: Response) {
     try {
+      const event = await Event.findOne({ _id: req.params.id });
+      if (event) {
+        await deleteImage("uploads/gallery", event.image);
+      }
       const response = await Event.deleteOne({ _id: req.params.id });
       if (response.deletedCount > 0) {
         res.status(200).json({
-          message: "resource deleted",
+          message: "Event deleted",
         });
       } else {
         res.status(404).json({
-          message: "resource not found",
+          message: "Event not found",
         });
       }
     } catch (error) {

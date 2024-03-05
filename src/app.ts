@@ -5,10 +5,9 @@ import dotenv from "dotenv";
 import http from "http";
 import cors from "cors";
 // api imports
-import eventRoutes from "./routes/events/event.routes";
-import newsRoutes from "./routes/news/resource.routes";
-import partnerRouttes from "./routes/partners/resource.routes";
-import testimonialRoutes from "./routes/testimonials/resource.routes";
+import adminRoutes from "./routes/admin/admin.routes";
+import eventRoutes from "./routes/events/resource.routes";
+import teamRoutes from "./routes/team/resource.routes";
 
 const path = require("path");
 export const appRoot = path.resolve(__dirname);
@@ -30,11 +29,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.use(express.static(path.join(__dirname, "uploads/gallery")));
+app.use("/uploads/gallery/", express.static(__dirname + "/uploads/gallery/"));
+app.use(`/api/${process.env.API_VERSION}/admin`, adminRoutes);
 app.use(`/api/${process.env.API_VERSION}/events`, eventRoutes);
-app.use(`/api/${process.env.API_VERSION}/news`, newsRoutes);
-app.use(`/api/${process.env.API_VERSION}/partners`, partnerRouttes);
-app.use(`/api/${process.env.API_VERSION}/testimonils`, testimonialRoutes);
+app.use(`/api/${process.env.API_VERSION}/team`, teamRoutes);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("St Louis Server 🚀");

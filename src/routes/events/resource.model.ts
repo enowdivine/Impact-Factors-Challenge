@@ -1,14 +1,9 @@
 import mongoose from "mongoose";
 
-const partner = new mongoose.Schema(
+const event = new mongoose.Schema(
   {
-    logo: {
-      type: Array,
-      default: null,
-    },
     image: {
-      type: Array,
-      default: null,
+      type: String,
     },
     title: {
       type: String,
@@ -18,9 +13,21 @@ const partner = new mongoose.Schema(
       type: String,
       default: "",
     },
-    desc: {
+    category: {
       type: String,
       default: "",
+    },
+    location: {
+      type: String,
+      default: "",
+    },
+    details: {
+      type: String,
+      default: "",
+    },
+    date: {
+      type: Date,
+      default: null,
     },
     link: {
       type: String,
@@ -32,4 +39,4 @@ const partner = new mongoose.Schema(
   }
 );
 
-export default mongoose.model("Partners", partner);
+export default mongoose.model("Event", event);

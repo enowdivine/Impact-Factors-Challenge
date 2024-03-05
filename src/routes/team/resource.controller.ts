@@ -3,7 +3,7 @@ import Resource from "./resource.model";
 import slugify from "../../helpers/slugify";
 import { uploadImages, deleteImage } from "../../helpers/UploadFile";
 
-class ResourceController {
+class EventController {
   async create(req: Request, res: Response) {
     try {
       const files: any = req.files;
@@ -13,15 +13,15 @@ class ResourceController {
       const images: any[] = [];
       allFiles.map((item) => images.push(item[1].name));
 
-      const slug = slugify(req.body.title);
-      const resource = new Resource({
-        title: req.body.title,
-        slug: slug,
+      const slug = slugify(req.body.name);
+      const member = new Resource({
         image: images[0],
-        desc: req.body.desc,
-        link: req.body.link,
+        name: req.body.name,
+        slug: slug,
+        profession: req.body.profession,
+        details: req.body.details,
       });
-      await resource
+      await member
         .save()
         .then(() => {
           res.status(201).json({
@@ -44,9 +44,9 @@ class ResourceController {
 
   async readOne(req: Request, res: Response) {
     try {
-      const resource = await Resource.findOne({ _id: req.params.id });
-      if (resource) {
-        return res.status(200).json(resource);
+      const member = await Resource.findOne({ _id: req.params.id });
+      if (member) {
+        return res.status(200).json(member);
       } else {
         return res.status(404).json({
           message: "data not found",
@@ -62,9 +62,9 @@ class ResourceController {
 
   async read(req: Request, res: Response) {
     try {
-      const resources = await Resource.find().sort({ createdAt: -1 });
-      if (resources) {
-        return res.status(200).json(resources);
+      const team = await Resource.find().sort({ createdAt: -1 });
+      if (team) {
+        return res.status(200).json(team);
       } else {
         return res.status(404).json({
           message: "no data found",
@@ -81,35 +81,61 @@ class ResourceController {
   async update(req: Request, res: Response) {
     try {
       const files: any = req.files;
-      await uploadImages(files, "uploads/gallery", res);
+      if (files) {
+        await uploadImages(files, "uploads/gallery", res);
 
-      const allFiles: any[] = Object.entries(files);
-      const images: any[] = [];
-      allFiles.map((item) => images.push(item[1].name));
+        const allFiles: any[] = Object.entries(files);
+        const images: any[] = [];
+        allFiles.map((item) => images.push(item[1].name));
 
-      const slug = slugify(req.body.title);
-      const updatedResource = await Resource.updateOne(
-        {
-          _id: req.params.id,
-        },
-        {
-          $set: {
-            title: req.body.title,
-            slug: slug,
-            image: images[0],
-            desc: req.body.desc,
-            link: req.body.link,
+        const slug = slugify(req.body.title);
+        const updatedResource = await Resource.updateOne(
+          {
+            _id: req.params.id,
           },
+          {
+            $set: {
+              image: images[0],
+              name: req.body.name,
+              slug: slug,
+              profession: req.body.profession,
+              details: req.body.details,
+            },
+          }
+        );
+        if (updatedResource.acknowledged) {
+          res.status(200).json({
+            message: "success",
+          });
+        } else {
+          res.status(404).json({
+            message: "an error occured",
+          });
         }
-      );
-      if (updatedResource.acknowledged) {
-        res.status(200).json({
-          message: "success",
-        });
       } else {
-        res.status(404).json({
-          message: "an error occured",
-        });
+        const slug = slugify(req.body.title);
+        const updatedResource = await Resource.updateOne(
+          {
+            _id: req.params.id,
+          },
+          {
+            $set: {
+              name: req.body.name,
+              slug: slug,
+              profession: req.body.profession,
+              details: req.body.details,
+            },
+          }
+        );
+        if (updatedResource.acknowledged) {
+          res.status(200).json({
+            message: "success",
+          });
+        } else {
+          res.status(404).json({
+            message: "an error occured",
+          });
+        }
       }
     } catch (error) {
       console.error("error updating data", error);
@@ -121,20 +147,18 @@ class ResourceController {
 
   async deleteItem(req: Request, res: Response) {
     try {
-      const resource = await Resource.findOne({ _id: req.params.id });
-      if (resource) {
-        if (resource.image) {
-          await deleteImage("uploads/gallery", resource.image);
-        }
+      const member = await Resource.findOne({ _id: req.params.id });
+      if (member) {
+        await deleteImage("uploads/gallery", member.image);
       }
       const response = await Resource.deleteOne({ _id: req.params.id });
       if (response.deletedCount > 0) {
         res.status(200).json({
-          message: "resource deleted",
+          message: "member deleted",
         });
       } else {
         res.status(404).json({
-          message: "resource not found",
+          message: "member not found",
         });
       }
     } catch (error) {
@@ -146,4 +170,4 @@ class ResourceController {
   }
 }
 
-export default ResourceController;
+export default EventController;

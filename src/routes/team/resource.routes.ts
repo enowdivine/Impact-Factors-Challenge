@@ -1,13 +1,12 @@
 import express, { Router } from "express";
-import Resource from "./resource.controller";
-//
 import fileUpload from "express-fileupload";
 import fileExtLimiter from "../../middleware/fileUpload/fileExtLimiter";
 import fileSizeLimiter from "../../middleware/fileUpload/fileSizeLimiter";
 import filesPayloadExists from "../../middleware/fileUpload/filePayloadExists";
+import Event from "./resource.controller";
 
 const router: Router = express.Router();
-const resource = new Resource();
+const event = new Event();
 
 router.post(
   "/create",
@@ -15,18 +14,11 @@ router.post(
   filesPayloadExists,
   fileExtLimiter([".png", ".jpg", ".jpeg"]),
   fileSizeLimiter,
-  resource.create
+  event.create
 );
-router.get("/:id", resource.readOne);
-router.get("/", resource.read);
-router.put(
-  "/update/:id",
-  fileUpload({ createParentPath: true }),
-  filesPayloadExists,
-  fileExtLimiter([".png", ".jpg", ".jpeg"]),
-  fileSizeLimiter,
-  resource.update
-);
-router.delete("/delete/:id", resource.deleteItem);
+router.get("/:id", event.readOne);
+router.get("/", event.read);
+router.put("/update/:id", fileUpload({ createParentPath: true }), event.update);
+router.delete("/delete/:id", event.deleteItem);
 
 export default router;
