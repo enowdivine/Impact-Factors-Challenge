@@ -18,7 +18,7 @@ class ProgramController {
         image: images[0],
         title: req.body.title,
         slug: slug,
-        campusID: req.body.campusID,
+        // campusID: req.body.campusID,
         summary: req.body.summary,
         otherDetails: req.body.otherDetails,
       });
@@ -99,7 +99,7 @@ class ProgramController {
               image: images[0],
               title: req.body.title,
               slug: slug,
-              campusID: req.body.campusID,
+              // campusID: req.body.campusID,
               summary: req.body.summary,
               otherDetails: req.body.otherDetails,
             },
@@ -124,7 +124,7 @@ class ProgramController {
             $set: {
               title: req.body.title,
               slug: slug,
-              campusID: req.body.campusID,
+              // campusID: req.body.campusID,
               summary: req.body.summary,
               otherDetails: req.body.otherDetails,
             },

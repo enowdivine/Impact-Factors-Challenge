@@ -11,13 +11,13 @@ const category = new mongoose.Schema(
       default: "",
     },
     programmeID: {
-      type: String,
-      default: "",
+      type: Array,
+      default: [],
     },
-    campusID: {
-      type: String,
-      default: "",
-    },
+    // campusID: {
+    //   type: String,
+    //   default: "",
+    // },
   },
   {
     timestamps: true,

@@ -10,7 +10,7 @@ class ProgramController {
         title: req.body.title,
         slug: slug,
         programmeID: req.body.programmeID,
-        campusID: req.body.campusID,
+        // campusID: req.body.campusID,
       });
       await resource
         .save()
@@ -81,7 +81,7 @@ class ProgramController {
             title: req.body.title,
             slug: slug,
             programmeID: req.body.programmeID,
-            campusID: req.body.campusID,
+            // campusID: req.body.campusID,
           },
         }
       );

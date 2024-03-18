@@ -13,10 +13,10 @@ const program = new mongoose.Schema(
       type: String,
       default: "",
     },
-    campusID: {
-      type: String,
-      default: "",
-    },
+    // campusID: {
+    //   type: Array,
+    //   default: [],
+    // },
     summary: {
       type: String,
       default: "",
