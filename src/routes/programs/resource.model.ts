@@ -14,8 +14,12 @@ const program = new mongoose.Schema(
       default: "",
     },
     campusID: {
-      type: Array,
-      default: [],
+      type: String,
+      default: "",
+    },
+    faculties: {
+      type: String,
+      default: "",
     },
     summary: {
       type: String,

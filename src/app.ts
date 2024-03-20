@@ -13,6 +13,7 @@ import programRoutes from "./routes/programs/resource.routes";
 import categoryRoutes from "./routes/categories/resource.routes";
 import courseRoutes from "./routes/courses/resource.routes";
 import campusRoutes from "./routes/campus/resource.routes";
+import facultyRoutes from "./routes/faculties/resource.routes";
 
 const path = require("path");
 export const appRoot = path.resolve(__dirname);
@@ -43,6 +44,7 @@ app.use(`/api/${process.env.API_VERSION}/programmes`, programRoutes);
 app.use(`/api/${process.env.API_VERSION}/categories`, categoryRoutes);
 app.use(`/api/${process.env.API_VERSION}/courses`, courseRoutes);
 app.use(`/api/${process.env.API_VERSION}/campuses`, campusRoutes);
+app.use(`/api/${process.env.API_VERSION}/faculties`, facultyRoutes);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("St Louis Server 🚀");
