@@ -47,7 +47,7 @@ app.use(`/api/${process.env.API_VERSION}/campuses`, campusRoutes);
 app.use(`/api/${process.env.API_VERSION}/faculties`, facultyRoutes);
 
 app.get("/", (req: Request, res: Response) => {
-  res.send("St Louis Server 🚀");
+  res.send(`St Louis Server 🚀 ${process.env.API_VERSION}`);
 });
 
 const PORT: any = process.env.PORT || 4000;
