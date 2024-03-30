@@ -19,7 +19,8 @@ const path = require("path");
 export const appRoot = path.resolve(__dirname);
 
 const corsOptions = {
-  origin: ["*", "https://admin.slui.org"],
+  origin: "*",
+  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
   credentials: true,
   optionSuccessStatus: 200,
 };
