@@ -19,7 +19,7 @@ const path = require("path");
 export const appRoot = path.resolve(__dirname);
 
 const corsOptions = {
-  origin: "*",
+  origin: ["*", "https://admin.slui.org"],
   credentials: true,
   optionSuccessStatus: 200,
 };
@@ -30,7 +30,7 @@ const server: any = http.createServer(app);
 
 dbConnect();
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
