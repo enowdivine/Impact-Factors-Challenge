@@ -65,6 +65,17 @@ class AdminController {
                 },
                 process.env.JWT_SECRET as string
               );
+
+              res.header("Access-Control-Allow-Origin", "*");
+              res.header(
+                "Access-Control-Allow-Methods",
+                "POST, GET, PUT, DELETE"
+              );
+              res.header(
+                "Access-Control-Allow-Headers",
+                "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+              );
+
               return res.status(200).json({
                 message: "Login Successful",
                 token: token,
@@ -166,3 +177,5 @@ class AdminController {
 }
 
 export default AdminController;
+
+// 65f46044dd896763ac592e3d
