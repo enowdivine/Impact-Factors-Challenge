@@ -47,7 +47,7 @@ app.use(`/api/v1/campuses`, campusRoutes);
 app.use(`/api/v1/faculties`, facultyRoutes);
 
 app.get("/", (req: Request, res: Response) => {
-  res.send(`St Louis Server 🚀 ${process.env.API_VERSION}`);
+  res.send(`St Louis Server 🚀 `);
 });
 
 const PORT: any = process.env.PORT || 4000;
