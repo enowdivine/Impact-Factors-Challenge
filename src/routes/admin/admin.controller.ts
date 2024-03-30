@@ -26,7 +26,7 @@ class AdminController {
               id: response._id,
               email: response.email,
             },
-            process.env.JWT_SECRET as string
+            "stLouisJWTSecret"
           );
           res.status(201).json({
             message: "admin created",
@@ -63,7 +63,7 @@ class AdminController {
                   id: admin._id,
                   email: admin.email,
                 },
-                process.env.JWT_SECRET as string
+                "stLouisJWTSecret"
               );
 
               return res.status(200).json({
@@ -78,7 +78,7 @@ class AdminController {
         );
       } else {
         return res.status(401).json({
-          message: "Authentication Faileds",
+          message: "Authentication Failed",
         });
       }
     } catch (error) {
@@ -104,7 +104,7 @@ class AdminController {
           id: newadmin?._id,
           email: newadmin?.email,
         },
-        process.env.JWT_SECRET as string
+        "stLouisJWTSecret"
       );
       res.status(200).json({
         message: "update successful",
@@ -167,5 +167,3 @@ class AdminController {
 }
 
 export default AdminController;
-
-// 65f46044dd896763ac592e3d

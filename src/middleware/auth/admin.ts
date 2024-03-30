@@ -10,23 +10,19 @@ export default function (req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers["authorization"];
   const bearerToken = authHeader.split(" ");
   const token = bearerToken[1];
-  jwt.verify(
-    token,
-    process.env.JWT_SECRET as string,
-    (err: any, payload: any) => {
-      if (err)
-        return res.json({
-          success: false,
-          message: "Invalid Token",
-        });
-      if (payload.role === "admin") {
-        next();
-      } else {
-        return res.json({
-          success: false,
-          message: "Unauthorized Request !!",
-        });
-      }
+  jwt.verify(token, "stLouisJWTSecret", (err: any, payload: any) => {
+    if (err)
+      return res.json({
+        success: false,
+        message: "Invalid Token",
+      });
+    if (payload.role === "admin") {
+      next();
+    } else {
+      return res.json({
+        success: false,
+        message: "Unauthorized Request !!",
+      });
     }
-  );
+  });
 }
