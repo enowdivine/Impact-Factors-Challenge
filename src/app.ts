@@ -36,15 +36,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.use("/uploads/gallery/", express.static(__dirname + "/uploads/gallery/"));
-app.use(`/api/${process.env.API_VERSION}/admin`, adminRoutes);
-app.use(`/api/${process.env.API_VERSION}/events`, eventRoutes);
-app.use(`/api/${process.env.API_VERSION}/team`, teamRoutes);
+app.use(`/api/v1/admin`, adminRoutes);
+app.use(`/api/v1/events`, eventRoutes);
+app.use(`/api/v1/team`, teamRoutes);
 
-app.use(`/api/${process.env.API_VERSION}/programmes`, programRoutes);
-app.use(`/api/${process.env.API_VERSION}/categories`, categoryRoutes);
-app.use(`/api/${process.env.API_VERSION}/courses`, courseRoutes);
-app.use(`/api/${process.env.API_VERSION}/campuses`, campusRoutes);
-app.use(`/api/${process.env.API_VERSION}/faculties`, facultyRoutes);
+app.use(`/api/v1/programmes`, programRoutes);
+app.use(`/api/v1/categories`, categoryRoutes);
+app.use(`/api/v1/courses`, courseRoutes);
+app.use(`/api/v1/campuses`, campusRoutes);
+app.use(`/api/v1/faculties`, facultyRoutes);
 
 app.get("/", (req: Request, res: Response) => {
   res.send(`St Louis Server 🚀 ${process.env.API_VERSION}`);
