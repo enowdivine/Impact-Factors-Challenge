@@ -1,12 +1,20 @@
 import { Request, Response } from "express";
 import Resource from "./resource.model";
 import slugify from "../../helpers/slugify";
+import { uploadImages, deleteImage } from "../../helpers/UploadFile";
 
 class ProgramController {
   async create(req: Request, res: Response) {
     try {
+      const files: any = req.files;
+      await uploadImages(files, "uploads/gallery", res);
+
+      const allFiles: any[] = Object.entries(files);
+      const images: any[] = [];
+      allFiles.map((item) => images.push(item[1].name));
       const slug = slugify(req.body.title);
       const resource = new Resource({
+        image: images[0],
         title: req.body.title,
         slug: slug,
         details: req.body.details,
@@ -70,27 +78,60 @@ class ProgramController {
 
   async update(req: Request, res: Response) {
     try {
-      const slug = slugify(req.body.title);
-      const updatedResource = await Resource.updateOne(
-        {
-          _id: req.params.id,
-        },
-        {
-          $set: {
-            title: req.body.title,
-            slug: slug,
-            details: req.body.details,
+      const files: any = req.files;
+      if (files) {
+        await uploadImages(files, "uploads/gallery", res);
+
+        const allFiles: any[] = Object.entries(files);
+        const images: any[] = [];
+        allFiles.map((item) => images.push(item[1].name));
+
+        const slug = slugify(req.body.title);
+        const updatedResource = await Resource.updateOne(
+          {
+            _id: req.params.id,
           },
+          {
+            $set: {
+              image: images[0],
+              title: req.body.title,
+              slug: slug,
+              details: req.body.details,
+            },
+          }
+        );
+        if (updatedResource.acknowledged) {
+          res.status(200).json({
+            message: "success",
+          });
+        } else {
+          res.status(404).json({
+            message: "an error occured",
+          });
         }
-      );
-      if (updatedResource.acknowledged) {
-        res.status(200).json({
-          message: "success",
-        });
       } else {
-        res.status(404).json({
-          message: "an error occured",
-        });
+        const slug = slugify(req.body.title);
+        const updatedResource = await Resource.updateOne(
+          {
+            _id: req.params.id,
+          },
+          {
+            $set: {
+              title: req.body.title,
+              slug: slug,
+              details: req.body.details,
+            },
+          }
+        );
+        if (updatedResource.acknowledged) {
+          res.status(200).json({
+            message: "success",
+          });
+        } else {
+          res.status(404).json({
+            message: "an error occured",
+          });
+        }
       }
     } catch (error) {
       console.error("error updating data", error);
@@ -102,6 +143,10 @@ class ProgramController {
 
   async deleteItem(req: Request, res: Response) {
     try {
+      const resource = await Resource.findOne({ _id: req.params.id });
+      if (resource) {
+        await deleteImage("uploads/gallery", resource.image);
+      }
       const response = await Resource.deleteOne({ _id: req.params.id });
       if (response.deletedCount > 0) {
         res.status(200).json({
