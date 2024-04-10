@@ -18,6 +18,7 @@ class ProgramController {
         title: req.body.title,
         slug: slug,
         details: req.body.details,
+        isFrench: req.body.isFrench,
       });
       await resource
         .save()
@@ -97,6 +98,7 @@ class ProgramController {
               title: req.body.title,
               slug: slug,
               details: req.body.details,
+              isFrench: req.body.isFrench,
             },
           }
         );
@@ -120,6 +122,7 @@ class ProgramController {
               title: req.body.title,
               slug: slug,
               details: req.body.details,
+              isFrench: req.body.isFrench,
             },
           }
         );

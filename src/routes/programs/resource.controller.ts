@@ -22,6 +22,7 @@ class ProgramController {
         faculties: req.body.faculties,
         summary: req.body.summary,
         otherDetails: req.body.otherDetails,
+        isFrench: req.body.isFrench,
       });
       await resource
         .save()
@@ -104,6 +105,7 @@ class ProgramController {
               faculties: req.body.faculties,
               summary: req.body.summary,
               otherDetails: req.body.otherDetails,
+              isFrench: req.body.isFrench,
             },
           }
         );
@@ -130,6 +132,7 @@ class ProgramController {
               faculties: req.body.faculties,
               summary: req.body.summary,
               otherDetails: req.body.otherDetails,
+              isFrench: req.body.isFrench,
             },
           }
         );

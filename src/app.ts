@@ -8,6 +8,7 @@ import cors from "cors";
 import adminRoutes from "./routes/admin/admin.routes";
 import eventRoutes from "./routes/events/resource.routes";
 import teamRoutes from "./routes/team/resource.routes";
+import currentEventRoutes from "./routes/currentEvents/resource.routes";
 
 import programRoutes from "./routes/programs/resource.routes";
 import categoryRoutes from "./routes/categories/resource.routes";
@@ -40,6 +41,7 @@ app.use("/uploads/gallery/", express.static(__dirname + "/uploads/gallery/"));
 app.use(`/api/v1/admin`, adminRoutes);
 app.use(`/api/v1/events`, eventRoutes);
 app.use(`/api/v1/team`, teamRoutes);
+app.use(`/api/v1/current-events`, currentEventRoutes);
 
 app.use(`/api/v1/programmes`, programRoutes);
 app.use(`/api/v1/categories`, categoryRoutes);

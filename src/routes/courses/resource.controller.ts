@@ -25,6 +25,7 @@ class ProgramController {
         feeDetails: req.body.feeDetails,
         scholarship: req.body.scholarship,
         applicationProcess: req.body.applicationProcess,
+        isFrench: req.body.isFrench,
       });
       await resource
         .save()
@@ -110,6 +111,7 @@ class ProgramController {
             feeDetails: req.body.feeDetails,
             scholarship: req.body.scholarship,
             applicationProcess: req.body.applicationProcess,
+            isFrench: req.body.isFrench,
           },
         }
       );

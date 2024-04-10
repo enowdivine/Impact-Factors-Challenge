@@ -1,20 +1,12 @@
 import mongoose from "mongoose";
 
-const category = new mongoose.Schema(
+const currentEvents = new mongoose.Schema(
   {
     title: {
       type: String,
       default: "",
     },
     slug: {
-      type: String,
-      default: "",
-    },
-    programmeID: {
-      type: Array,
-      default: [],
-    },
-    facultyID: {
       type: String,
       default: "",
     },
@@ -28,4 +20,4 @@ const category = new mongoose.Schema(
   }
 );
 
-export default mongoose.model("Category", category);
+export default mongoose.model("CurrentEvents", currentEvents);

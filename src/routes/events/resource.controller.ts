@@ -23,6 +23,7 @@ class EventController {
         details: req.body.details,
         date: req.body.date,
         link: req.body.link,
+        isFrench: req.body.isFrench,
       });
       await event
         .save()
@@ -106,6 +107,7 @@ class EventController {
               details: req.body.details,
               date: req.body.date,
               link: req.body.link,
+              isFrench: req.body.isFrench,
             },
           }
         );
@@ -133,6 +135,7 @@ class EventController {
               details: req.body.details,
               date: req.body.date,
               link: req.body.link,
+              isFrench: req.body.isFrench,
             },
           }
         );

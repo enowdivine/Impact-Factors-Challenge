@@ -9,8 +9,6 @@ class ProgramController {
       const resource = new Resource({
         title: req.body.title,
         slug: slug,
-        programmeID: req.body.programmeID,
-        facultyID: req.body.facultyID,
         isFrench: req.body.isFrench,
       });
       await resource
@@ -81,8 +79,6 @@ class ProgramController {
           $set: {
             title: req.body.title,
             slug: slug,
-            programmeID: req.body.programmeID,
-            facultyID: req.body.facultyID,
             isFrench: req.body.isFrench,
           },
         }

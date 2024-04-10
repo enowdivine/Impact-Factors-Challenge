@@ -20,6 +20,8 @@ class EventController {
         slug: slug,
         profession: req.body.profession,
         details: req.body.details,
+        isManagement: req.body.isManagement,
+        isFrench: req.body.isFrench,
       });
       await member
         .save()
@@ -100,6 +102,8 @@ class EventController {
               slug: slug,
               profession: req.body.profession,
               details: req.body.details,
+              isManagement: req.body.isManagement,
+              isFrench: req.body.isFrench,
             },
           }
         );
@@ -124,6 +128,8 @@ class EventController {
               slug: slug,
               profession: req.body.profession,
               details: req.body.details,
+              isManagement: req.body.isManagement,
+              isFrench: req.body.isFrench,
             },
           }
         );

@@ -29,6 +29,10 @@ const program = new mongoose.Schema(
       type: String,
       default: "",
     },
+    isFrench: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
