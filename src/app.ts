@@ -12,7 +12,7 @@ import currentEventRoutes from "./routes/currentEvents/resource.routes";
 import researchRoutes from "./routes/research/resource.routes";
 
 import programRoutes from "./routes/programs/resource.routes";
-import categoryRoutes from "./routes/categories/resource.routes";
+import buddyRoutes from "./routes/buddies/resource.routes";
 import courseRoutes from "./routes/courses/resource.routes";
 import campusRoutes from "./routes/campus/resource.routes";
 import facultyRoutes from "./routes/faculties/resource.routes";
@@ -46,7 +46,7 @@ app.use(`/api/v1/team`, teamRoutes);
 app.use(`/api/v1/slider-news`, currentEventRoutes);
 
 app.use(`/api/v1/programmes`, programRoutes);
-app.use(`/api/v1/categories`, categoryRoutes);
+app.use(`/api/v1/buddies`, buddyRoutes);
 app.use(`/api/v1/courses`, courseRoutes);
 app.use(`/api/v1/campuses`, campusRoutes);
 app.use(`/api/v1/faculties`, facultyRoutes);

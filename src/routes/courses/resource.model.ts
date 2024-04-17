@@ -18,6 +18,10 @@ const course = new mongoose.Schema(
       type: String,
       default: "",
     },
+    faculty: {
+      type: String,
+      default: "",
+    },
     duration: {
       type: String,
       default: "",
