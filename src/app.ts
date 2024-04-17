@@ -43,7 +43,7 @@ app.use(`/api/v1/admin`, adminRoutes);
 app.use(`/api/v1/events`, eventRoutes);
 app.use(`/api/v1/research`, researchRoutes);
 app.use(`/api/v1/team`, teamRoutes);
-app.use(`/api/v1/current-events`, currentEventRoutes);
+app.use(`/api/v1/slider-news`, currentEventRoutes);
 
 app.use(`/api/v1/programmes`, programRoutes);
 app.use(`/api/v1/categories`, categoryRoutes);
