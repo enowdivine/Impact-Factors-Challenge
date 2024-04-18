@@ -18,6 +18,7 @@ class EventController {
         image: images[0],
         name: req.body.name,
         slug: slug,
+        link: req.body.link,
         profession: req.body.profession,
         details: req.body.details,
         isManagement: req.body.isManagement,
@@ -100,6 +101,7 @@ class EventController {
               image: images[0],
               name: req.body.name,
               slug: slug,
+              link: req.body.link,
               profession: req.body.profession,
               details: req.body.details,
               isManagement: req.body.isManagement,
@@ -126,6 +128,7 @@ class EventController {
             $set: {
               name: req.body.name,
               slug: slug,
+              link: req.body.link,
               profession: req.body.profession,
               details: req.body.details,
               isManagement: req.body.isManagement,

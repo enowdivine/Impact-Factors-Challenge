@@ -21,6 +21,10 @@ const team = new mongoose.Schema(
       type: String,
       default: "",
     },
+    link: {
+      type: String,
+      default: "",
+    },
     isManagement: {
       type: Boolean,
       default: false,
