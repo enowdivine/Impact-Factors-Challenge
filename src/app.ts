@@ -5,17 +5,8 @@ import dotenv from "dotenv";
 import http from "http";
 import cors from "cors";
 // api imports
-import adminRoutes from "./routes/admin/admin.routes";
-import eventRoutes from "./routes/events/resource.routes";
-import teamRoutes from "./routes/team/resource.routes";
-import currentEventRoutes from "./routes/currentEvents/resource.routes";
-import researchRoutes from "./routes/research/resource.routes";
-
-import programRoutes from "./routes/programs/resource.routes";
-import buddyRoutes from "./routes/buddies/resource.routes";
-import courseRoutes from "./routes/courses/resource.routes";
-import campusRoutes from "./routes/campus/resource.routes";
-import facultyRoutes from "./routes/faculties/resource.routes";
+import userRoutes from "./routes/user/user.routes";
+import universityRoutes from "./routes/universities/resource.routes";
 
 const path = require("path");
 export const appRoot = path.resolve(__dirname);
@@ -38,21 +29,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.use("/uploads/gallery/", express.static(__dirname + "/uploads/gallery/"));
-app.use(`/api/v1/admin`, adminRoutes);
-app.use(`/api/v1/events`, eventRoutes);
-app.use(`/api/v1/research`, researchRoutes);
-app.use(`/api/v1/team`, teamRoutes);
-app.use(`/api/v1/slider-news`, currentEventRoutes);
-
-app.use(`/api/v1/programmes`, programRoutes);
-app.use(`/api/v1/buddies`, buddyRoutes);
-app.use(`/api/v1/courses`, courseRoutes);
-app.use(`/api/v1/campuses`, campusRoutes);
-app.use(`/api/v1/faculties`, facultyRoutes);
+app.use(`/api/${process.env.API_VERSION}/user`, userRoutes);
+// app.use(`/api/${process.env.API_VERSION}/universities`, universityRoutes);
 
 app.get("/", (req: Request, res: Response) => {
-  res.send(`St Louis Server 🚀 `);
+  res.send(`Campus Camer 🚀 `);
 });
 
 const PORT: any = process.env.PORT || 4000;

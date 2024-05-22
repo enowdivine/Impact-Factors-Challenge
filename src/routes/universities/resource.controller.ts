@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import Resource from "./resource.model";
 import slugify from "../../helpers/slugify";
-import { uploadImages, deleteImage } from "../../helpers/UploadFile";
 
 class ProgramController {
   async create(req: Request, res: Response) {
@@ -13,12 +12,13 @@ class ProgramController {
       const images: any[] = [];
       allFiles.map((item) => images.push(item[1].name));
 
-      const slug = slugify(req.body.title);
       const resource = new Resource({
+        role: req.body.role,
         image: images[0],
-        title: req.body.title,
-        slug: slug,
-        summary: req.body.summary,
+        name: req.body.name,
+        position: req.body.position,
+        phone: req.body.phone,
+        campus: req.body.campus,
         isFrench: req.body.isFrench,
       });
       await resource
@@ -88,17 +88,18 @@ class ProgramController {
         const images: any[] = [];
         allFiles.map((item) => images.push(item[1].name));
 
-        const slug = slugify(req.body.title);
         const updatedResource = await Resource.updateOne(
           {
             _id: req.params.id,
           },
           {
             $set: {
+              role: req.body.role,
               image: images[0],
-              title: req.body.title,
-              slug: slug,
-              summary: req.body.summary,
+              name: req.body.name,
+              position: req.body.position,
+              phone: req.body.phone,
+              campus: req.body.campus,
               isFrench: req.body.isFrench,
             },
           }
@@ -120,9 +121,11 @@ class ProgramController {
           },
           {
             $set: {
-              title: req.body.title,
-              slug: slug,
-              summary: req.body.summary,
+              role: req.body.role,
+              name: req.body.name,
+              position: req.body.position,
+              phone: req.body.phone,
+              campus: req.body.campus,
               isFrench: req.body.isFrench,
             },
           }
@@ -151,6 +154,7 @@ class ProgramController {
       if (resource) {
         await deleteImage("uploads/gallery", resource.image);
       }
+
       const response = await Resource.deleteOne({ _id: req.params.id });
       if (response.deletedCount > 0) {
         res.status(200).json({
