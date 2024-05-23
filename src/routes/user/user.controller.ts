@@ -7,58 +7,44 @@ import _ from "lodash";
 class UserController {
   async register(req: Request, res: Response) {
     try {
-      const user = await User.findOne({ email: req.body.email });
+      const user = await User.findOne({ emailAddress: req.body.emailAddress });
       if (user) {
         return res.status(409).json({
           message: "user already exist",
         });
       }
+
       const hash = await bcrypt.hash(req.body.password, 10);
       const newUser = new User({
         role: req.body.role,
         fullName: req.body.fullName,
         emailAddress: req.body.emailAddress,
         phoneNumber: req.body.phoneNumber,
+        authorizationLevel: req.body.authorizationLevel,
         password: hash,
         // student details
         studentDetails: {
-          amsId: req.body.amsId,
+          amsId: req.body.studentDetails?.amsId,
           ordinaryLevelIdentificationNumber:
-            req.body.ordinaryLevelIdentificationNumber,
-          dateOfBirth: new Date(req.body.dateOfBirth),
-          gender: req.body.gender,
-          address: req.body.address,
-          highSchoolName: req.body.highSchoolName,
-          gradesGPA: req.body.gradesGPA,
-          documents: req.body.documents,
-          authorizationLevel: req.body.authorizationLevel,
+            req.body.studentDetails?.ordinaryLevelIdentificationNumber,
+          dateOfBirth: req.body.studentDetails?.dateOfBirth,
+          gender: req.body.studentDetails?.gender,
+          address: req.body.studentDetails?.address,
+          highSchoolName: req.body.studentDetails?.highSchoolName,
+          gradesGPA: req.body.studentDetails?.gradesGPA,
+          documents: req.body.studentDetails?.documents,
         },
         // addmission officers
         admissionOfficerDetails: {
-          assignedUniversities: req.body.assignedUniversities,
-          authorizationLevel: req.body.authorizationLevel,
-        },
-        // admin
-        administratorDetails: {
-          authorizationLevel: req.body.authorizationLevel,
+          assignedUniversities:
+            req.body.admissionOfficerDetails?.assignedUniversities,
         },
       });
       newUser
         .save()
         .then((response) => {
-          const token: string = jwt.sign(
-            {
-              id: response._id,
-              role: req.body.role,
-              fullName: req.body.fullName,
-              emailAddress: req.body.emailAddress,
-              phoneNumber: req.body.phoneNumber,
-            },
-            process.env.JWT_SECRET as string
-          );
           res.status(201).json({
             message: "user created",
-            token,
           });
         })
         .catch((err) => {
@@ -74,7 +60,7 @@ class UserController {
 
   async login(req: Request, res: Response) {
     try {
-      const user = await User.findOne({ email: req.body.email });
+      const user = await User.findOne({ emailAddress: req.body.emailAddress });
       if (user) {
         bcrypt.compare(
           req.body.password,
@@ -89,10 +75,10 @@ class UserController {
               const token: string = jwt.sign(
                 {
                   id: user._id,
-                  role: req.body.role,
-                  fullName: req.body.fullName,
-                  emailAddress: req.body.emailAddress,
-                  phoneNumber: req.body.phoneNumber,
+                  role: user.role,
+                  fullName: user.fullName,
+                  emailAddress: user.emailAddress,
+                  phoneNumber: user.phoneNumber,
                 },
                 process.env.JWT_SECRET as string
               );
@@ -100,6 +86,28 @@ class UserController {
               return res.status(200).json({
                 message: "login successful",
                 token: token,
+                data: {
+                  role: user.role,
+                  fullName: user.fullName,
+                  emailAddress: user.emailAddress,
+                  phoneNumber: user.phoneNumber,
+                  authorizationLevel: user.authorizationLevel,
+                  studentDetails: {
+                    amsId: user.studentDetails?.amsId,
+                    ordinaryLevelIdentificationNumber:
+                      user.studentDetails?.ordinaryLevelIdentificationNumber,
+                    dateOfBirth: user.studentDetails?.dateOfBirth,
+                    gender: user.studentDetails?.gender,
+                    address: user.studentDetails?.address,
+                    highSchoolName: user.studentDetails?.highSchoolName,
+                    gradesGPA: user.studentDetails?.gradesGPA,
+                    documents: user.studentDetails?.documents,
+                  },
+                  admissionOfficerDetails: {
+                    assignedUniversities:
+                      user.admissionOfficerDetails?.assignedUniversities,
+                  },
+                },
               });
             }
             res.status(401).json({
@@ -128,49 +136,32 @@ class UserController {
           fullName: req.body.fullName,
           emailAddress: req.body.emailAddress,
           phoneNumber: req.body.phoneNumber,
+          authorizationLevel: req.body.authorizationLevel,
           // student details
           studentDetails: {
-            amsId: req.body.amsId,
+            amsId: req.body.studentDetails?.amsId,
             ordinaryLevelIdentificationNumber:
-              req.body.ordinaryLevelIdentificationNumber,
-            dateOfBirth: new Date(req.body.dateOfBirth),
-            gender: req.body.gender,
-            address: req.body.address,
-            highSchoolName: req.body.highSchoolName,
-            gradesGPA: req.body.gradesGPA,
-            documents: req.body.documents,
-            authorizationLevel: 4,
+              req.body.studentDetails?.ordinaryLevelIdentificationNumber,
+            dateOfBirth: req.body.studentDetails?.dateOfBirth,
+            gender: req.body.studentDetails?.gender,
+            address: req.body.studentDetails?.address,
+            highSchoolName: req.body.studentDetails?.highSchoolName,
+            gradesGPA: req.body.studentDetails?.gradesGPA,
+            documents: req.body.studentDetails?.documents,
           },
           // addmission officers
           admissionOfficerDetails: {
-            assignedUniversities: req.body.assignedUniversities,
-            authorizationLevel: 2,
-            canGenerateConditionalOffers: true,
-            canGenerateFinalOffers: false,
-          },
-          // admin
-          administratorDetails: {
-            authorizationLevel: 1,
-            canGenerateFinalOffersForAll: true,
+            assignedUniversities:
+              req.body.admissionOfficerDetails?.assignedUniversities,
           },
         },
       }
     );
     if (user.acknowledged) {
-      const newUser = await User.findOne({ _id: req.params.id });
-      const token: string = jwt.sign(
-        {
-          id: newUser?._id,
-          role: newUser?.role,
-          fullName: newUser?.fullName,
-          emailAddress: newUser?.emailAddress,
-          phoneNumber: newUser?.phoneNumber,
-        },
-        process.env.JWT_SECRET as string
-      );
+      const data = await User.findOne({ _id: req.params.id });
       res.status(200).json({
         message: "update successful",
-        token: token,
+        data,
       });
     } else {
       res.status(404).json({
@@ -249,11 +240,11 @@ class UserController {
 
   async students(req: Request, res: Response) {
     try {
-      const students = await User.find({ role: "STUDENT" }).sort({
+      const data = await User.find({ role: "STUDENT" }).sort({
         createdAt: -1,
       });
-      if (students) {
-        return res.status(200).json(students);
+      if (data) {
+        return res.status(200).json(data);
       } else {
         return res.status(404).json({
           message: "no data found",
@@ -269,13 +260,11 @@ class UserController {
 
   async adminOfficers(req: Request, res: Response) {
     try {
-      const adminOfficers = await User.find({ role: "ADMISSION_OFFICER" }).sort(
-        {
-          createdAt: -1,
-        }
-      );
-      if (adminOfficers) {
-        return res.status(200).json(adminOfficers);
+      const data = await User.find({ role: "ADMISSION_OFFICER" }).sort({
+        createdAt: -1,
+      });
+      if (data) {
+        return res.status(200).json(data);
       } else {
         return res.status(404).json({
           message: "no data found",
