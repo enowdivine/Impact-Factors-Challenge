@@ -30,7 +30,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.use(`/api/${process.env.API_VERSION}/user`, userRoutes);
+app.use(`/api/${process.env.API_VERSION}/users`, userRoutes);
 app.use(`/api/${process.env.API_VERSION}/universities`, universityRoutes);
 app.use(`/api/${process.env.API_VERSION}/programs`, programRoutes);
 

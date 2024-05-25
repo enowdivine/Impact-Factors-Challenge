@@ -17,6 +17,7 @@ class UserController {
       const hash = await bcrypt.hash(req.body.password, 10);
       const newUser = new User({
         role: req.body.role,
+        image: req.body.image,
         fullName: req.body.fullName,
         emailAddress: req.body.emailAddress,
         phoneNumber: req.body.phoneNumber,
@@ -33,6 +34,14 @@ class UserController {
           highSchoolName: req.body.studentDetails?.highSchoolName,
           gradesGPA: req.body.studentDetails?.gradesGPA,
           documents: req.body.studentDetails?.documents,
+          // guardian details
+          guardian: {
+            guardianName: req.body.studentDetails?.guardian?.guardianName,
+            guardianEmail: req.body.studentDetails?.guardian?.guardianEmail,
+            guardianPhone: req.body.studentDetails?.guardian?.guardianPhone,
+            guardianAge: req.body.studentDetails?.guardian?.guardianAge,
+            guardianAddress: req.body.studentDetails?.guardian?.guardianAddress,
+          },
         },
         // addmission officers
         admissionOfficerDetails: {
@@ -133,6 +142,7 @@ class UserController {
       {
         $set: {
           role: req.body.role,
+          image: req.body.image,
           fullName: req.body.fullName,
           emailAddress: req.body.emailAddress,
           phoneNumber: req.body.phoneNumber,
@@ -148,6 +158,15 @@ class UserController {
             highSchoolName: req.body.studentDetails?.highSchoolName,
             gradesGPA: req.body.studentDetails?.gradesGPA,
             documents: req.body.studentDetails?.documents,
+            // guardian details
+            guardian: {
+              guardianName: req.body.studentDetails?.guardian?.guardianName,
+              guardianEmail: req.body.studentDetails?.guardian?.guardianEmail,
+              guardianPhone: req.body.studentDetails?.guardian?.guardianPhone,
+              guardianAge: req.body.studentDetails?.guardian?.guardianAge,
+              guardianAddress:
+                req.body.studentDetails?.guardian?.guardianAddress,
+            },
           },
           // addmission officers
           admissionOfficerDetails: {
@@ -234,6 +253,24 @@ class UserController {
       console.error("error deleting user", error);
       return res.status(500).json({
         message: "error deleting user",
+      });
+    }
+  }
+
+  async user(req: Request, res: Response) {
+    try {
+      const data = await User.findOne({ _id: req.params.id });
+      if (data) {
+        return res.status(200).json(data);
+      } else {
+        return res.status(404).json({
+          message: "no data found",
+        });
+      }
+    } catch (error) {
+      console.error("error fetching data", error);
+      return res.status(500).json({
+        message: "error fetching data",
       });
     }
   }

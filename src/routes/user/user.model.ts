@@ -8,6 +8,7 @@ const userSchema = new Schema(
       enum: ["STUDENT", "ADMISSION_OFFICER", "ADMIN"],
       required: true,
     },
+    image: { type: String },
     fullName: { type: String, required: true },
     emailAddress: { type: String, unique: true, required: true },
     phoneNumber: { type: String, unique: true },
@@ -35,6 +36,14 @@ const userSchema = new Schema(
           },
         },
       ],
+      // Guardians information
+      guardian: {
+        guardianName: { type: String },
+        guardianEmail: { type: String, unique: true },
+        guardianPhone: { type: String, unique: true },
+        guardianAge: { type: Number },
+        guardianAddress: { type: String },
+      },
     },
 
     // Common fields for Admission Officers
