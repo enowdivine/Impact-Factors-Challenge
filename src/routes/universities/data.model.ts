@@ -31,7 +31,7 @@ const universitySchema = new Schema(
     },
     contactInformation: {
       phone: {
-        type: String,
+        type: Number,
         required: true,
       },
       email: {
@@ -51,7 +51,7 @@ const universitySchema = new Schema(
         },
       },
       mobileMoney: {
-        type: String,
+        type: Number,
         required: false,
       },
     },

@@ -297,7 +297,9 @@ class UserController {
 
   async adminOfficers(req: Request, res: Response) {
     try {
-      const data = await User.find({ role: "ADMISSION_OFFICER" }).sort({
+      const data = await User.find({
+        role: { $in: ["ADMISSION_OFFICER", "AECO_ADMIN"] },
+      }).sort({
         createdAt: -1,
       });
       if (data) {

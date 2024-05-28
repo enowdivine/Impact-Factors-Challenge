@@ -82,6 +82,28 @@ class ProgramController {
     }
   }
 
+  async assignedUniversities(req: Request, res: Response) {
+    try {
+      const data = await University.find({
+        _id: { $in: req.query.universityIds },
+      }).sort({
+        createdAt: -1,
+      });
+      if (data) {
+        return res.status(200).json(data);
+      } else {
+        return res.status(404).json({
+          message: "no data found",
+        });
+      }
+    } catch (error) {
+      console.error("error fetching data", error);
+      return res.status(500).json({
+        message: "error fetching data",
+      });
+    }
+  }
+
   async update(req: Request, res: Response) {
     try {
       const updated = await University.updateOne(

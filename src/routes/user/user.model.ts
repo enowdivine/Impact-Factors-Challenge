@@ -5,14 +5,14 @@ const userSchema = new Schema(
   {
     role: {
       type: String,
-      enum: ["STUDENT", "ADMISSION_OFFICER", "ADMIN"],
+      enum: ["STUDENT", "AECO_ADMIN", "ADMISSION_OFFICER", "ADMIN"],
       required: true,
     },
     image: { type: String },
     fullName: { type: String, required: true },
     emailAddress: { type: String, unique: true, required: true },
-    phoneNumber: { type: String, unique: true },
-    authorizationLevel: { type: Number, enum: [1, 2, 3, 4], default: 1 },
+    phoneNumber: { type: Number, unique: true },
+    authorizationLevel: { type: Number, enum: [1, 2, 3, 4], default: 4 },
     password: { type: String, required: true },
 
     // Common fields for Students
@@ -40,10 +40,11 @@ const userSchema = new Schema(
       guardian: {
         guardianName: { type: String },
         guardianEmail: { type: String, unique: true },
-        guardianPhone: { type: String, unique: true },
+        guardianPhone: { type: Number, unique: true },
         guardianAge: { type: Number },
         guardianAddress: { type: String },
       },
+      programs: [String],
     },
 
     // Common fields for Admission Officers

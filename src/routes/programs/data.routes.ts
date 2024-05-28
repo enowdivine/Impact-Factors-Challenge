@@ -6,7 +6,7 @@ const router: Router = express.Router();
 const university = new University();
 
 router.post("/create", userAuth, university.create);
-router.get("/:id", userAuth, university.readOne);
+router.get("/details/:id", userAuth, university.readOne);
 router.get("/universities/:id", userAuth, university.readByUniversityId);
 router.get("/", userAuth, university.read);
 router.put("/update/:id", userAuth, university.update);
