@@ -8,6 +8,7 @@ import cors from "cors";
 import userRoutes from "./routes/user/user.routes";
 import universityRoutes from "./routes/universities/data.routes";
 import programRoutes from "./routes/programs/data.routes";
+import applicationRoutes from "./routes/applications/data.routes";
 
 const path = require("path");
 export const appRoot = path.resolve(__dirname);
@@ -33,6 +34,7 @@ app.use(bodyParser.json());
 app.use(`/api/${process.env.API_VERSION}/users`, userRoutes);
 app.use(`/api/${process.env.API_VERSION}/universities`, universityRoutes);
 app.use(`/api/${process.env.API_VERSION}/programs`, programRoutes);
+app.use(`/api/${process.env.API_VERSION}/applications`, applicationRoutes);
 
 app.get("/", (req: Request, res: Response) => {
   res.send(`Campus Camer 🚀 `);
