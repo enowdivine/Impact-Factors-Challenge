@@ -3,6 +3,14 @@ const Schema = mongoose.Schema;
 
 const universitySchema = new Schema(
   {
+    image: {
+      type: String,
+      default: null,
+    },
+    letterHead: {
+      type: String,
+      default: null,
+    },
     name: {
       type: String,
       required: true,
@@ -54,6 +62,10 @@ const universitySchema = new Schema(
         type: Number,
         required: false,
       },
+    },
+    signatory: {
+      type: String,
+      default: "",
     },
   },
   {

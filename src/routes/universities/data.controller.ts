@@ -1,11 +1,13 @@
 import { Request, Response } from "express";
 import University from "./data.model";
 
-class ProgramController {
+class UniversityController {
   async create(req: Request, res: Response) {
     try {
       const university = new University({
         name: req.body.name,
+        image: req.body.image,
+        letterHead: req.body.letterHead,
         location: {
           city: req.body.location.city,
           stateOrProvince: req.body.location.stateOrProvince,
@@ -24,6 +26,7 @@ class ProgramController {
           },
           mobileMoney: req.body.paymentDetails.mobileMoney,
         },
+        signatory: req.body.signatory,
       });
       await university
         .save()
@@ -113,6 +116,8 @@ class ProgramController {
         {
           $set: {
             name: req.body.name,
+            image: req.body.image,
+            letterHead: req.body.letterHead,
             location: {
               city: req.body.location.city,
               stateOrProvince: req.body.location.stateOrProvince,
@@ -132,6 +137,7 @@ class ProgramController {
               },
               mobileMoney: req.body.paymentDetails.mobileMoney,
             },
+            signatory: req.body.signatory,
           },
         }
       );
@@ -173,4 +179,4 @@ class ProgramController {
   }
 }
 
-export default ProgramController;
+export default UniversityController;
