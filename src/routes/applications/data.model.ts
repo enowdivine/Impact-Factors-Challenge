@@ -29,6 +29,18 @@ const applicationSchema = new Schema(
       enum: ["PENDING", "PROCESSING", "ACCEPTED", "REJECTED"],
       default: "PENDING",
     },
+    documents: [
+      {
+        title: {
+          type: String,
+          required: true,
+        },
+        value: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
   },
   {
     timestamps: true,

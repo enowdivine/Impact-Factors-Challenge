@@ -12,7 +12,7 @@ const userSchema = new Schema(
     fullName: { type: String, required: true },
     emailAddress: { type: String, unique: true, required: true },
     phoneNumber: { type: Number, unique: true },
-    authorizationLevel: { type: Number, enum: [1, 2], default: 4 },
+    authorizationLevel: { type: Number, enum: [1, 2], default: null },
     password: { type: String, required: true },
 
     // Common fields for Students

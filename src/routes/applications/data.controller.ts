@@ -105,6 +105,7 @@ class ApplicationController {
             programName: req.body.programName,
             isPaid: req.body.isPaid,
             status: req.body.status,
+            documents: req.body.documents,
           },
         }
       );
