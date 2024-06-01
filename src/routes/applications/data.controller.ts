@@ -8,7 +8,9 @@ class ApplicationController {
         studentId: req.body.studentId,
         programId: req.body.programId,
         universityId: req.body.universityId,
+        studentName: req.body.studentName,
         programName: req.body.programName,
+        universityName: req.body.universityName,
         isPaid: req.body.isPaid,
         status: req.body.status,
       });
@@ -73,6 +75,46 @@ class ApplicationController {
     }
   }
 
+  async readByStudentId(req: Request, res: Response) {
+    try {
+      const data = await Application.find({ studentId: req.params.id }).sort({
+        createdAt: -1,
+      });
+      if (data) {
+        return res.status(200).json(data);
+      } else {
+        return res.status(404).json({
+          message: "data not found",
+        });
+      }
+    } catch (error) {
+      console.error("error fetching data", error);
+      return res.status(500).json({
+        message: "error fetching data",
+      });
+    }
+  }
+
+  async readByProgramId(req: Request, res: Response) {
+    try {
+      const data = await Application.find({ programId: req.params.id }).sort({
+        createdAt: -1,
+      });
+      if (data) {
+        return res.status(200).json(data);
+      } else {
+        return res.status(404).json({
+          message: "data not found",
+        });
+      }
+    } catch (error) {
+      console.error("error fetching data", error);
+      return res.status(500).json({
+        message: "error fetching data",
+      });
+    }
+  }
+
   async read(req: Request, res: Response) {
     try {
       const data = await Application.find().sort({ createdAt: -1 });
@@ -102,7 +144,9 @@ class ApplicationController {
             studentId: req.body.studentId,
             programId: req.body.programId,
             universityId: req.body.universityId,
+            studentName: req.body.studentName,
             programName: req.body.programName,
+            universityName: req.body.universityName,
             isPaid: req.body.isPaid,
             status: req.body.status,
             documents: req.body.documents,

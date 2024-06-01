@@ -15,7 +15,15 @@ const applicationSchema = new Schema(
       type: String,
       required: true,
     },
+    studentName: {
+      type: String,
+      required: true,
+    },
     programName: {
+      type: String,
+      required: true,
+    },
+    universityName: {
       type: String,
       required: true,
     },
