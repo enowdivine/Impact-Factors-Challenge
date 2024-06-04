@@ -147,6 +147,8 @@ class UserController {
           emailAddress: req.body.emailAddress,
           phoneNumber: req.body.phoneNumber,
           authorizationLevel: req.body.authorizationLevel,
+          password:
+            req.body.password && (await bcrypt.hash(req.body.password, 10)),
           // student details
           studentDetails: {
             amsId: req.body.studentDetails?.amsId,
