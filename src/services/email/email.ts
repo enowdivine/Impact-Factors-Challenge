@@ -44,10 +44,3 @@ export default function mailer(option: Option): void {
     return;
   }
 }
-
-mailer({
-  to: "sirdivine16@gmail.com",
-  subject: `Welcome`,
-  title: "title",
-  message: `<h1>Hello</h1>`,
-});

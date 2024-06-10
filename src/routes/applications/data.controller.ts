@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import Application from "./data.model";
+import sendEmail from "../../services/email/email";
+import userModel from "../user/user.model";
 
 class ApplicationController {
   async create(req: Request, res: Response) {
@@ -141,9 +143,6 @@ class ApplicationController {
         },
         {
           $set: {
-            studentId: req.body.studentId,
-            programId: req.body.programId,
-            universityId: req.body.universityId,
             studentName: req.body.studentName,
             programName: req.body.programName,
             universityName: req.body.universityName,
@@ -154,6 +153,17 @@ class ApplicationController {
         }
       );
       if (updated.acknowledged) {
+        // Send Email
+        if (req.body.status) {
+          sendEmail({
+            to: req.body.studentEmail,
+            subject: `Application Status<Campus Camer Inc> - ${req.body.status}`,
+            message: "",
+            title: "",
+          });
+        }
+
+        // Send response
         res.status(200).json({
           message: "success",
         });

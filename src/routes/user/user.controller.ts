@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import User from "./user.model";
 import bcrypt from "bcrypt";
 import _ from "lodash";
+import sendEmail from "../../services/email/email";
 
 class UserController {
   async register(req: Request, res: Response) {
@@ -52,6 +53,13 @@ class UserController {
       newUser
         .save()
         .then((response) => {
+          sendEmail({
+            to: req.body.emailAddress,
+            subject: req.body.subject,
+            message: "",
+            title: "",
+          });
+
           res.status(201).json({
             message: "user created",
           });
