@@ -11,6 +11,44 @@ const programSchema = new Schema(
       type: String,
       required: true,
     },
+
+    awardingBody: {
+      type: String,
+      required: true,
+    },
+    tuitionFee: {
+      type: String,
+      required: true,
+    },
+    initialDeposit: {
+      type: String,
+      required: true,
+    },
+    otherFees: {
+      type: String,
+      required: true,
+    },
+    teachingMode: {
+      type: String,
+      required: true,
+    },
+    teachingMethods: {
+      type: String,
+      required: true,
+    },
+    academicYear: {
+      type: String,
+      required: true,
+    },
+    startDate: {
+      type: Date,
+      required: true,
+    },
+    endDate: {
+      type: Date,
+      required: true,
+    },
+
     levelOfStudy: {
       type: String,
       required: true,

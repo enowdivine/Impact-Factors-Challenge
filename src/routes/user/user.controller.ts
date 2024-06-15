@@ -4,6 +4,7 @@ import User from "./user.model";
 import bcrypt from "bcrypt";
 import _ from "lodash";
 import sendEmail from "../../services/email/email";
+import Application from "../applications/data.model";
 
 class UserController {
   async register(req: Request, res: Response) {
@@ -143,6 +144,16 @@ class UserController {
   }
 
   async update(req: Request, res: Response) {
+    const applicationUpdate = await Application.updateOne(
+      {
+        studentId: req.params.id,
+      },
+      {
+        $set: {
+          studentName: req.body.fullName,
+        },
+      }
+    );
     const user = await User.updateOne(
       {
         _id: req.params.id,
@@ -186,7 +197,7 @@ class UserController {
         },
       }
     );
-    if (user.acknowledged) {
+    if (applicationUpdate.acknowledged && user.acknowledged) {
       const data = await User.findOne({ _id: req.params.id });
       res.status(200).json({
         message: "update successful",

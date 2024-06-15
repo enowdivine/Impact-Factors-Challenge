@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import University from "./data.model";
+import Application from "../applications/data.model";
 
 class UniversityController {
   async create(req: Request, res: Response) {
@@ -109,6 +110,16 @@ class UniversityController {
 
   async update(req: Request, res: Response) {
     try {
+      const applicationUpdate = await Application.updateOne(
+        {
+          studentId: req.params.id,
+        },
+        {
+          $set: {
+            universityId: req.body.name,
+          },
+        }
+      );
       const updated = await University.updateOne(
         {
           _id: req.params.id,
@@ -141,7 +152,7 @@ class UniversityController {
           },
         }
       );
-      if (updated.acknowledged) {
+      if (applicationUpdate.acknowledged && updated.acknowledged) {
         res.status(200).json({
           message: "success",
         });

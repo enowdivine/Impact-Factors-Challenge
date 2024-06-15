@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Program from "./data.model";
+import Application from "../applications/data.model";
 
 class ProgramController {
   async create(req: Request, res: Response) {
@@ -14,6 +15,16 @@ class ProgramController {
         location: req.body.location,
         admissionRequirements: req.body.admissionRequirements,
         conditionsForAcceptance: req.body.conditionsForAcceptance,
+
+        awardingBody: req.body.awardingBody,
+        tuitionFee: req.body.tuitionFee,
+        initialDeposit: req.body.initialDeposit,
+        otherFees: req.body.otherFees,
+        teachingMode: req.body.teachingMode,
+        teachingMethods: req.body.teachingMethods,
+        academicYear: req.body.academicYear,
+        startDate: req.body.startDate,
+        endDate: req.body.endDate,
       });
       await program
         .save()
@@ -94,6 +105,16 @@ class ProgramController {
 
   async update(req: Request, res: Response) {
     try {
+      const applicationUpdate = await Application.updateOne(
+        {
+          programId: req.params.id,
+        },
+        {
+          $set: {
+            programName: req.body.name,
+          },
+        }
+      );
       const updated = await Program.updateOne(
         {
           _id: req.params.id,
@@ -109,10 +130,20 @@ class ProgramController {
             location: req.body.location,
             admissionRequirements: req.body.admissionRequirements,
             conditionsForAcceptance: req.body.conditionsForAcceptance,
+            //
+            awardingBody: req.body.awardingBody,
+            tuitionFee: req.body.tuitionFee,
+            initialDeposit: req.body.initialDeposit,
+            otherFees: req.body.otherFees,
+            teachingMode: req.body.teachingMode,
+            teachingMethods: req.body.teachingMethods,
+            academicYear: req.body.academicYear,
+            startDate: req.body.startDate,
+            endDate: req.body.endDate,
           },
         }
       );
-      if (updated.acknowledged) {
+      if (applicationUpdate.acknowledged && updated.acknowledged) {
         res.status(200).json({
           message: "success",
         });
