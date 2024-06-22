@@ -11,7 +11,6 @@ const programSchema = new Schema(
       type: String,
       required: true,
     },
-
     awardingBody: {
       type: String,
       required: true,
