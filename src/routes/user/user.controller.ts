@@ -97,6 +97,7 @@ class UserController {
                   fullName: user.fullName,
                   emailAddress: user.emailAddress,
                   phoneNumber: user.phoneNumber,
+                  authorizationLevel: user.authorizationLevel,
                 },
                 process.env.JWT_SECRET as string
               );
