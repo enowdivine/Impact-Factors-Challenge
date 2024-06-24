@@ -2,11 +2,27 @@ import { Request, Response } from "express";
 import Application from "./data.model";
 import sendEmail from "../../services/email/email";
 import userModel from "../user/user.model";
+import Counter from "./appID.model";
 
 class ApplicationController {
   async create(req: Request, res: Response) {
     try {
+      const abbreviation = "CCM" + req.body.abbreviation;
+      const currentYear = new Date().getFullYear().toString().slice(-2);
+
+      // Find and update the counter
+      const result = await Counter.findOneAndUpdate(
+        { abbreviation: abbreviation, year: currentYear },
+        { $inc: { count: 1 } },
+        { new: true, upsert: true }
+      );
+
+      // Generate the application ID
+      const number = String(result.count).padStart(3, "0");
+      const applicationID = `${abbreviation}${currentYear}${number}`;
+
       const data = new Application({
+        uniqueAppID: applicationID,
         studentId: req.body.studentId,
         programId: req.body.programId,
         universityId: req.body.universityId,
@@ -30,7 +46,7 @@ class ApplicationController {
           });
         });
     } catch (error) {
-      console.error("error uploading resource", error);
+      console.error("an error occured", error);
       return res.status(500).json({
         message: "an error occured",
       });

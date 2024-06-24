@@ -15,6 +15,11 @@ const universitySchema = new Schema(
       type: String,
       required: true,
     },
+    abbreviation: {
+      type: String,
+      required: true,
+      maxlength: 3,
+    },
     location: {
       city: {
         type: String,

@@ -5,8 +5,17 @@ import Application from "../applications/data.model";
 class UniversityController {
   async create(req: Request, res: Response) {
     try {
+      const uniCheck = await University.findOne({
+        abbreviation: req.body.abbreviation,
+      });
+      if (uniCheck) {
+        return res.status(401).json({
+          message: "abbreviation already exist",
+        });
+      }
       const university = new University({
         name: req.body.name,
+        abbreviation: req.body.abbreviation,
         image: req.body.image,
         letterHead: req.body.letterHead,
         location: {
@@ -110,6 +119,24 @@ class UniversityController {
 
   async update(req: Request, res: Response) {
     try {
+      if (req.body.abbreviation) {
+        const uniCheck = await University.findOne({
+          _id: req.params.id,
+        });
+        if (uniCheck) {
+          if (uniCheck.abbreviation !== req.body.abbreviation) {
+            const secondCheck = await University.findOne({
+              abbreviation: req.body.abbreviation,
+            });
+            if (secondCheck) {
+              return res.status(401).json({
+                message: "Abbreviation already exist",
+              });
+            }
+          }
+        }
+      }
+
       const applicationUpdate = await Application.updateOne(
         {
           studentId: req.params.id,
@@ -127,6 +154,7 @@ class UniversityController {
         {
           $set: {
             name: req.body.name,
+            abbreviation: req.body.abbreviation,
             image: req.body.image,
             letterHead: req.body.letterHead,
             location: {

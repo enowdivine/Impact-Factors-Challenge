@@ -3,10 +3,8 @@ const Schema = mongoose.Schema;
 
 const applicationSchema = new Schema(
   {
-    studentId: {
-      type: String,
-      required: true,
-    },
+    uniqueAppID: { type: String, required: true },
+    studentId: { type: String, required: true },
     programId: {
       type: String,
       required: true,
