@@ -204,6 +204,67 @@ class ProgramController {
       });
     }
   }
+
+  async advancedSearch(req: Request, res: Response) {
+    try {
+      const { name, levelOfStudy, location, universityId, startDate } =
+        req.query;
+      const searchCriteria: any = {};
+
+      if (name) {
+        searchCriteria.name = { $regex: name, $options: "i" };
+      }
+      if (levelOfStudy) {
+        searchCriteria.levelOfStudy = levelOfStudy;
+      }
+      if (location) {
+        searchCriteria.location = location;
+      }
+      if (universityId) {
+        searchCriteria.universityId = universityId;
+      }
+      if (startDate && typeof startDate === "string") {
+        searchCriteria.startDate = { $gte: new Date(startDate) };
+      }
+
+      const programs = await Program.find(searchCriteria)
+        .populate({
+          path: "universityId",
+          model: University,
+        })
+        .sort({ createdAt: -1 });
+
+      let relatedPrograms: any[] = [];
+      if (name) {
+        // Find related programs with similar names
+        relatedPrograms = await Program.find({
+          name: { $regex: name, $options: "i" },
+          _id: { $nin: programs.map((program) => program._id) }, // exclude already found programs
+        })
+          .populate({
+            path: "universityId",
+            model: University,
+          })
+          .sort({ createdAt: -1 });
+      }
+
+      if (programs.length > 0 || relatedPrograms.length > 0) {
+        return res.status(200).json({
+          programs,
+          relatedPrograms,
+        });
+      } else {
+        return res.status(404).json({
+          message: "No programs found",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching data", error);
+      return res.status(500).json({
+        message: "Error fetching data",
+      });
+    }
+  }
 }
 
 export default ProgramController;

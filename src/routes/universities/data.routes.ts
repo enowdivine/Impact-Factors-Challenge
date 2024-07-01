@@ -9,7 +9,7 @@ router.post("/create", userAuth, university.create);
 router.get("/details/:id", userAuth, university.readOne);
 router.get("/", userAuth, university.read);
 router.get("/assigned-universities", userAuth, university.assignedUniversities);
-router.get("/cities", userAuth, university.cities);
+router.get("/cities", university.cities);
 router.put("/update/:id", userAuth, university.update);
 router.delete("/delete/:id", userAuth, university.deleteItem);
 
