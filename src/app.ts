@@ -10,6 +10,7 @@ import universityRoutes from "./routes/universities/data.routes";
 import programRoutes from "./routes/programs/data.routes";
 import applicationRoutes from "./routes/applications/data.routes";
 import paymentRoutes from "./routes/payments/tranzak.routes";
+import locationRoutes from "./routes/locations/location.routes";
 
 const path = require("path");
 export const appRoot = path.resolve(__dirname);
@@ -37,6 +38,7 @@ app.use(`/api/${process.env.API_VERSION}/universities`, universityRoutes);
 app.use(`/api/${process.env.API_VERSION}/programs`, programRoutes);
 app.use(`/api/${process.env.API_VERSION}/applications`, applicationRoutes);
 app.use(`/api/${process.env.API_VERSION}/payments`, paymentRoutes);
+app.use(`/api/${process.env.API_VERSION}/locations`, locationRoutes);
 
 app.get("/", (req: Request, res: Response) => {
   res.send(`Campus Camer 🚀 `);

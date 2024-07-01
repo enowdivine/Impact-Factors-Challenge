@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Program from "./data.model";
 import Application from "../applications/data.model";
+import University from "../universities/data.model";
 
 class ProgramController {
   async create(req: Request, res: Response) {
@@ -88,6 +89,30 @@ class ProgramController {
   async read(req: Request, res: Response) {
     try {
       const data = await Program.find().sort({ createdAt: -1 });
+      if (data) {
+        return res.status(200).json(data);
+      } else {
+        return res.status(404).json({
+          message: "no data found",
+        });
+      }
+    } catch (error) {
+      console.error("error fetching data", error);
+      return res.status(500).json({
+        message: "error fetching data",
+      });
+    }
+  }
+
+  async readWithUniversity(req: Request, res: Response) {
+    try {
+      const data = await Program.find()
+        .populate({
+          path: "universityId",
+          model: University,
+        })
+        .sort({ createdAt: -1 })
+        .exec();
       if (data) {
         return res.status(200).json(data);
       } else {

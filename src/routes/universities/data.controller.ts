@@ -117,6 +117,24 @@ class UniversityController {
     }
   }
 
+  async cities(req: Request, res: Response) {
+    try {
+      const uniqueCities = await University.distinct("location.city");
+      if (uniqueCities && uniqueCities.length > 0) {
+        return res.status(200).json(uniqueCities);
+      } else {
+        return res.status(404).json({
+          message: "No cities found",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching data", error);
+      return res.status(500).json({
+        message: "Error fetching data",
+      });
+    }
+  }
+
   async update(req: Request, res: Response) {
     try {
       if (req.body.abbreviation) {
@@ -139,11 +157,11 @@ class UniversityController {
 
       const applicationUpdate = await Application.updateOne(
         {
-          studentId: req.params.id,
+          universityId: req.params.id,
         },
         {
           $set: {
-            universityId: req.body.name,
+            name: req.body.name,
           },
         }
       );
