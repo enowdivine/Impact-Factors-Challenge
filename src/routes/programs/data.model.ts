@@ -35,6 +35,10 @@ const programSchema = new Schema(
       type: String,
       required: true,
     },
+    mediumOfInstruction: {
+      type: String,
+      required: true,
+    },
     academicYear: {
       type: String,
       required: true,

@@ -23,6 +23,7 @@ class ProgramController {
         otherFees: req.body.otherFees,
         teachingMode: req.body.teachingMode,
         teachingMethods: req.body.teachingMethods,
+        mediumOfInstruction: req.body.mediumOfInstruction,
         academicYear: req.body.academicYear,
         startDate: req.body.startDate,
         endDate: req.body.endDate,
@@ -162,6 +163,7 @@ class ProgramController {
             otherFees: req.body.otherFees,
             teachingMode: req.body.teachingMode,
             teachingMethods: req.body.teachingMethods,
+            mediumOfInstruction: req.body.mediumOfInstruction,
             academicYear: req.body.academicYear,
             startDate: req.body.startDate,
             endDate: req.body.endDate,
@@ -207,24 +209,66 @@ class ProgramController {
 
   async advancedSearch(req: Request, res: Response) {
     try {
-      const { name, levelOfStudy, location, universityId, startDate } =
-        req.query;
+      const {
+        name,
+        levelOfStudy,
+        location,
+        academicYear,
+        tuitionFee,
+        duration,
+      } = req.query;
+
       const searchCriteria: any = {};
 
+      const toRegExpArray = (query: any): RegExp[] => {
+        if (!query) return [];
+        if (Array.isArray(query)) {
+          return query.map((q) => new RegExp(q, "i"));
+        } else {
+          return [new RegExp(query, "i")];
+        }
+      };
+
+      const toNumberRangeArray = (
+        query: any
+      ): { $gte: number; $lte: number }[] => {
+        if (!query) return [];
+        if (Array.isArray(query)) {
+          return query.map(([min, max]) => ({ $gte: min, $lte: max }));
+        } else {
+          return [{ $gte: query[0], $lte: query[1] }];
+        }
+      };
+
       if (name) {
-        searchCriteria.name = { $regex: name, $options: "i" };
+        searchCriteria.name = { $in: toRegExpArray(name) };
       }
       if (levelOfStudy) {
-        searchCriteria.levelOfStudy = levelOfStudy;
+        searchCriteria.levelOfStudy = { $in: toRegExpArray(levelOfStudy) };
       }
       if (location) {
-        searchCriteria.location = location;
+        searchCriteria.location = { $in: toRegExpArray(location) };
       }
-      if (universityId) {
-        searchCriteria.universityId = universityId;
+      if (academicYear) {
+        if (Array.isArray(academicYear)) {
+          searchCriteria.academicYear = {
+            $in: (academicYear as string[]).map((year) => new Date(year)),
+          };
+        } else {
+          searchCriteria.academicYear = {
+            $in: [new Date(academicYear as string)],
+          };
+        }
       }
-      if (startDate && typeof startDate === "string") {
-        searchCriteria.startDate = { $gte: new Date(startDate) };
+      if (tuitionFee) {
+        searchCriteria.$or = toNumberRangeArray(tuitionFee).map((range) => ({
+          tuitionFee: range,
+        }));
+      }
+      if (duration) {
+        searchCriteria.$or = toNumberRangeArray(duration).map((range) => ({
+          duration: range,
+        }));
       }
 
       const programs = await Program.find(searchCriteria)
@@ -236,10 +280,9 @@ class ProgramController {
 
       let relatedPrograms: any[] = [];
       if (name) {
-        // Find related programs with similar names
         relatedPrograms = await Program.find({
-          name: { $regex: name, $options: "i" },
-          _id: { $nin: programs.map((program) => program._id) }, // exclude already found programs
+          name: { $in: toRegExpArray(name) },
+          _id: { $nin: programs.map((program) => program._id) },
         })
           .populate({
             path: "universityId",

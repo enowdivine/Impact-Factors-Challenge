@@ -31,7 +31,7 @@ const universitySchema = new Schema(
       },
       country: {
         type: String,
-        required: true,
+        default: "Cameroon",
       },
     },
     description: {
