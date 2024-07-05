@@ -9,6 +9,11 @@ router.post("/create", userAuth, application.create);
 
 router.get("/details/:id", userAuth, application.readOne);
 router.get("/universities/:id", userAuth, application.readByUniversityId);
+router.get(
+  "/assigned-universities",
+  userAuth,
+  application.readByAssignedUniversities
+);
 router.get("/students/:id", userAuth, application.readByStudentId);
 router.get("/programs/:id", userAuth, application.readByProgramId);
 router.get("/", userAuth, application.read);

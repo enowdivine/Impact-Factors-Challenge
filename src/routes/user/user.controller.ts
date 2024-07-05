@@ -98,6 +98,8 @@ class UserController {
                   emailAddress: user.emailAddress,
                   phoneNumber: user.phoneNumber,
                   authorizationLevel: user.authorizationLevel,
+                  assignedUniversities:
+                    user.admissionOfficerDetails?.assignedUniversities,
                 },
                 process.env.JWT_SECRET as string
               );
