@@ -23,6 +23,8 @@ class UserController {
         fullName: req.body.fullName,
         emailAddress: req.body.emailAddress,
         phoneNumber: req.body.phoneNumber,
+        nationalIDNumber: req.body.nationalIDNumber,
+        citizenship: req.body.citizenship,
         authorizationLevel: req.body.authorizationLevel,
         password: hash,
         // student details
@@ -168,6 +170,8 @@ class UserController {
           fullName: req.body.fullName,
           emailAddress: req.body.emailAddress,
           phoneNumber: req.body.phoneNumber,
+          nationalIDNumber: req.body.nationalIDNumber,
+          citizenship: req.body.citizenship,
           authorizationLevel: req.body.authorizationLevel,
           password:
             req.body.password && (await bcrypt.hash(req.body.password, 10)),

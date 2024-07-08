@@ -12,6 +12,8 @@ const userSchema = new Schema(
     fullName: { type: String, required: true },
     emailAddress: { type: String, unique: true, required: true },
     phoneNumber: { type: Number, unique: true },
+    nationalIDNumber: { type: String, required: true },
+    citizenship: { type: String, default: "Cameroonian" },
     authorizationLevel: { type: Number, enum: [1, 2], default: null },
     password: { type: String, required: true },
 

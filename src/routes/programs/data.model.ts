@@ -55,7 +55,6 @@ const programSchema = new Schema(
     levelOfStudy: {
       type: String,
       required: true,
-      enum: ["Undergraduate", "Graduate", "Diploma", "Certificate", "Other"], // example levels of study
     },
     description: {
       type: String,
@@ -72,7 +71,6 @@ const programSchema = new Schema(
     location: {
       type: String,
       required: true,
-      enum: ["On campus", "Online", "Hybrid", "Other"], // example locations
     },
     admissionRequirements: [
       {
