@@ -4,6 +4,13 @@ import sendEmail from "../../services/email/email";
 import userModel from "../user/user.model";
 import Counter from "./appID.model";
 
+import {
+  newApplication,
+  processingApplication,
+  rejectedApplication,
+  acceptedApplication,
+} from "./templates/email";
+
 class ApplicationController {
   async create(req: Request, res: Response) {
     try {
@@ -34,7 +41,19 @@ class ApplicationController {
       });
       await data
         .save()
-        .then(() => {
+        .then(async () => {
+          const student = await userModel.findOne({ _id: req.body.studentId });
+          sendEmail({
+            to: student!.emailAddress,
+            subject: `Application Recieved <Campus Camer Inc> - ${req.body.programName}`,
+            message: newApplication(
+              req.body.studentName,
+              req.body.programName,
+              req.body.universityName
+            ),
+            title: "",
+          });
+
           res.status(201).json({
             message: "success",
           });
@@ -193,11 +212,31 @@ class ApplicationController {
       if (updated.acknowledged) {
         // Send Email
         if (req.body.status) {
+          const application = await Application.findOne({ _id: req.params.id });
           sendEmail({
             to: req.body.studentEmail,
             subject: `Application Status<Campus Camer Inc> - ${req.body.status}`,
-            message: "",
-            title: "",
+            message:
+              req.body.status === "PROCESSING"
+                ? processingApplication(
+                    application!.studentName,
+                    application!.programName,
+                    application!.universityName
+                  )
+                : req.body.status === "ACCEPTED"
+                ? acceptedApplication(
+                    application!.studentName,
+                    application!.programName,
+                    application!.universityName
+                  )
+                : req.body.status === "REJECTED"
+                ? rejectedApplication(
+                    application!.studentName,
+                    application!.programName,
+                    application!.universityName
+                  )
+                : "",
+            title: `Application Status | ${req.body.status}`,
           });
         }
 

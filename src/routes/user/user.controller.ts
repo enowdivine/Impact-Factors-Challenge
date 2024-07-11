@@ -6,6 +6,8 @@ import _ from "lodash";
 import sendEmail from "../../services/email/email";
 import Application from "../applications/data.model";
 
+import { studentRegistration } from "./templates/email";
+
 class UserController {
   async register(req: Request, res: Response) {
     try {
@@ -56,12 +58,14 @@ class UserController {
       newUser
         .save()
         .then((response) => {
-          sendEmail({
-            to: req.body.emailAddress,
-            subject: req.body.subject,
-            message: "",
-            title: "",
-          });
+          if (req.body.role === "STUDENT") {
+            sendEmail({
+              to: req.body.emailAddress,
+              subject: req.body.subject,
+              message: studentRegistration(req.body.fullName),
+              title: "Welcome To Campus Camer",
+            });
+          }
 
           res.status(201).json({
             message: "user created",

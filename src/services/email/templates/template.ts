@@ -1,7 +1,6 @@
 export default function email(emailTitle: string, emailContent: string) {
   return `
- 
-  <html lang="en">
+ <html lang="en">
 
 <head>
     <meta charset="UTF-8" />
@@ -182,7 +181,7 @@ export default function email(emailTitle: string, emailContent: string) {
         }
 
         .expert-welcome-mail {
-            text-align: center;
+            /* text-align: center; */
             width: 80%;
             margin: 40px auto;
             font-size: 18px;
@@ -230,23 +229,22 @@ export default function email(emailTitle: string, emailContent: string) {
         </div>
         <div class="email-title">
             <p>
-                Hi Tony <span class="username">Stark</span>, welcome to
-                <span class="brand-title-color">Campus</span> camer
+                <!-- Dear Tony <span class="username">Stark</span>, welcome to
+                <span class="brand-title-color">Campus</span> camer -->
+                ${emailTitle}
             </p>
-            <!-- ${emailTitle} -->
         </div>
         <div class="email-content-container">
             <!-- Email Content Goes Here -->
             <div class="expert-welcome-mail">
-                <h3>Before Starting your adventure</h3>
+                <!-- <h3>Before Starting your adventure</h3>
                 <div>
                     Lorem ipsum dolor sit amet consectetur, adipisicing elit. Libero et ipsam consequatur voluptate
                     adipisci sint illo excepturi, eos perferendis quibusdam voluptas odit impedit fugiat, obcaecati
                     fugit deleniti ab temporibus consectetur?
-                </div>
+                </div> -->
+                ${emailContent}
             </div>
-            <!-- Email Content Ends Here -->
-            <!-- ${emailContent} -->
         </div>
         <div class="social-media-container">
             <div class="social-media-icons">
@@ -268,6 +266,5 @@ export default function email(emailTitle: string, emailContent: string) {
 </body>
 
 </html>
-
   `;
 }
