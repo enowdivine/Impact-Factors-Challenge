@@ -196,6 +196,7 @@ class UniversityController {
             },
             signatory: req.body.signatory,
             featured: req.body.featured,
+            hasSchorlaships: req.body.hasSchorlaships,
           },
         }
       );

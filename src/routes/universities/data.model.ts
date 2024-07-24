@@ -76,6 +76,10 @@ const universitySchema = new Schema(
       type: Boolean,
       default: false,
     },
+    hasSchorlaships: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
