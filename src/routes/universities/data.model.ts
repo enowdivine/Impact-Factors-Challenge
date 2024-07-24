@@ -72,6 +72,10 @@ const universitySchema = new Schema(
       type: String,
       default: "",
     },
+    featured: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

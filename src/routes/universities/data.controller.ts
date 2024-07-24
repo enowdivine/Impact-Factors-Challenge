@@ -195,6 +195,7 @@ class UniversityController {
               mobileMoney: req.body.paymentDetails.mobileMoney,
             },
             signatory: req.body.signatory,
+            featured: req.body.featured,
           },
         }
       );
