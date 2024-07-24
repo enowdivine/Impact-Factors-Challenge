@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import University from "./data.model";
 import Application from "../applications/data.model";
+import Program from "../programs/data.model";
 
 class UniversityController {
   async create(req: Request, res: Response) {
@@ -114,6 +115,33 @@ class UniversityController {
       return res.status(500).json({
         message: "error fetching data",
       });
+    }
+  }
+
+  async featuredUniversities(req: Request, res: Response) {
+    try {
+      const universities = await University.find({ featured: true }).sort({
+        createdAt: -1,
+      });
+      if (!universities.length) {
+        return res.status(404).json({ message: "No universities found" });
+      }
+      const universitiesWithProgramCount = await Promise.all(
+        universities.map(async (university) => {
+          const programCount = await Program.countDocuments({
+            universityId: university._id,
+          });
+          return {
+            ...university.toObject(), // Convert Mongoose document to plain object
+            programCount,
+          };
+        })
+      );
+
+      return res.status(200).json(universitiesWithProgramCount);
+    } catch (error) {
+      console.error("Error fetching data", error);
+      return res.status(500).json({ message: "Error fetching data" });
     }
   }
 

@@ -7,8 +7,9 @@ const university = new University();
 
 router.post("/create", userAuth, university.create);
 router.get("/details/:id", userAuth, university.readOne);
-router.get("/", university.read);
+router.get("/", userAuth, university.read);
 router.get("/assigned-universities", userAuth, university.assignedUniversities);
+router.get("/featured-universities", university.featuredUniversities);
 router.get("/cities", university.cities);
 router.put("/update/:id", userAuth, university.update);
 router.delete("/delete/:id", userAuth, university.deleteItem);
