@@ -5,7 +5,13 @@ const userSchema = new Schema(
   {
     role: {
       type: String,
-      enum: ["STUDENT", "AECO_ADMIN", "ADMISSION_OFFICER", "ADMIN"],
+      enum: [
+        "STUDENT",
+        "COUNSELLOR",
+        "AECO_ADMIN",
+        "ADMISSION_OFFICER",
+        "ADMIN",
+      ],
       required: true,
     },
     image: { type: String },
@@ -14,7 +20,7 @@ const userSchema = new Schema(
     phoneNumber: { type: Number, unique: true },
     nationalIDNumber: { type: String, required: true },
     citizenship: { type: String, default: "Cameroonian" },
-    authorizationLevel: { type: Number, enum: [1, 2], default: null },
+    authorizationLevel: { type: Number, enum: [1, 2, 3], default: null },
     password: { type: String, required: true },
 
     // Common fields for Students

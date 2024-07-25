@@ -145,11 +145,43 @@ class UniversityController {
     }
   }
 
+  // async cities(req: Request, res: Response) {
+  //   try {
+  //     const uniqueCities = await University.distinct("location.city");
+  //     if (uniqueCities && uniqueCities.length > 0) {
+  //       return res.status(200).json(uniqueCities);
+  //     } else {
+  //       return res.status(404).json({
+  //         message: "No cities found",
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching data", error);
+  //     return res.status(500).json({
+  //       message: "Error fetching data",
+  //     });
+  //   }
+  // }
   async cities(req: Request, res: Response) {
     try {
-      const uniqueCities = await University.distinct("location.city");
-      if (uniqueCities && uniqueCities.length > 0) {
-        return res.status(200).json(uniqueCities);
+      const cityData = await University.aggregate([
+        {
+          $group: {
+            _id: "$location.city",
+            universityCount: { $sum: 1 },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            city: "$_id",
+            universityCount: 1,
+          },
+        },
+      ]);
+
+      if (cityData && cityData.length > 0) {
+        return res.status(200).json(cityData);
       } else {
         return res.status(404).json({
           message: "No cities found",
