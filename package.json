@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "PORT=5001 node build/app.js",
+    "start": "PORT=4100 node build/app.js",
     "dev": "nodemon src/app.ts",
     "build": "tsc --project .",
     "postinstall": "tsc"
