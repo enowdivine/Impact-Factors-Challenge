@@ -44,7 +44,7 @@ app.get("/", (req: Request, res: Response) => {
   res.send(`Campus Camer 🚀 `);
 });
 
-const PORT: any = process.env.PORT || 4000;
+const PORT: any = process.env.PORT || 4100;
 server.listen(PORT, () => {
   console.log(`server listening on port ${PORT}, 🚀`);
 });
