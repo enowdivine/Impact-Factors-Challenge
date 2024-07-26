@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import bodyParser = require("body-parser");
 import dbConnect from "./config/db";
-import dotenv from "dotenv";
+// import dotenv from "dotenv";
 import http from "http";
 import cors from "cors";
 // api imports
@@ -22,7 +22,7 @@ const corsOptions = {
   optionSuccessStatus: 200,
 };
 
-dotenv.config();
+require("dotenv").config();
 const app = express();
 const server: any = http.createServer(app);
 
