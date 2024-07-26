@@ -6,7 +6,7 @@
   "scripts": {
     "start": "PORT=5001 node build/app.js",
     "dev": "nodemon src/app.ts",
-    "build": "tsc --project . && cp -r src/uploads build/uploads",
+    "build": "tsc --project .",
     "postinstall": "tsc"
   },
   "keywords": [],
