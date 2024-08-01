@@ -19,6 +19,7 @@ class UniversityController {
         abbreviation: req.body.abbreviation,
         image: req.body.image,
         letterHead: req.body.letterHead,
+        coverPhoto: req.body.coverPhoto,
         location: {
           city: req.body.location.city,
           stateOrProvince: req.body.location.stateOrProvince,
@@ -235,6 +236,7 @@ class UniversityController {
             abbreviation: req.body.abbreviation,
             image: req.body.image,
             letterHead: req.body.letterHead,
+            coverPhoto: req.body.coverPhoto,
             location: {
               city: req.body.location.city,
               stateOrProvince: req.body.location.stateOrProvince,
