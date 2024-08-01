@@ -11,6 +11,10 @@ const universitySchema = new Schema(
       type: String,
       default: null,
     },
+    coverPhoto: {
+      type: String,
+      default: null,
+    },
     name: {
       type: String,
       required: true,
