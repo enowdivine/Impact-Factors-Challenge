@@ -47,16 +47,15 @@ class UniversityController {
             message: "success",
           });
         })
-        .catch((err) => {
+        .catch((err: any) => {
           res.status(500).json({
-            message: "an error occured",
+            message: err.message || "An error occured",
             error: err,
           });
         });
-    } catch (error) {
-      console.error("error uploading resource", error);
+    } catch (error: any) {
       return res.status(500).json({
-        message: "an error occured",
+        message: error.message || "An error occured",
       });
     }
   }
@@ -71,10 +70,9 @@ class UniversityController {
           message: "data not found",
         });
       }
-    } catch (error) {
-      console.error("error fetching data", error);
+    } catch (error: any) {
       return res.status(500).json({
-        message: "error fetching data",
+        message: error.message || "Error fetching data",
       });
     }
   }
@@ -89,10 +87,9 @@ class UniversityController {
           message: "no data found",
         });
       }
-    } catch (error) {
-      console.error("error fetching data", error);
+    } catch (error: any) {
       return res.status(500).json({
-        message: "error fetching data",
+        message: error.message || "Error fetching data",
       });
     }
   }
@@ -111,10 +108,9 @@ class UniversityController {
           message: "no data found",
         });
       }
-    } catch (error) {
-      console.error("error fetching data", error);
+    } catch (error: any) {
       return res.status(500).json({
-        message: "error fetching data",
+        message: error.message || "Error fetching data",
       });
     }
   }
@@ -141,7 +137,6 @@ class UniversityController {
 
       return res.status(200).json(universitiesWithProgramCount);
     } catch (error) {
-      console.error("Error fetching data", error);
       return res.status(500).json({ message: "Error fetching data" });
     }
   }
@@ -189,7 +184,6 @@ class UniversityController {
         });
       }
     } catch (error) {
-      console.error("Error fetching data", error);
       return res.status(500).json({
         message: "Error fetching data",
       });
@@ -271,10 +265,9 @@ class UniversityController {
           message: "an error occured",
         });
       }
-    } catch (error) {
-      console.error("error updating data", error);
+    } catch (error: any) {
       return res.status(500).json({
-        message: "error updating data",
+        message: error.message || "Error updating data",
       });
     }
   }
@@ -291,10 +284,9 @@ class UniversityController {
           message: "data not found",
         });
       }
-    } catch (error) {
-      console.error("error deleting data", error);
+    } catch (error: any) {
       return res.status(500).json({
-        message: "error deleting data",
+        message: error.message || "Error deleting data",
       });
     }
   }

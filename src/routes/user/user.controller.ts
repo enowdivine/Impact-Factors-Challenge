@@ -71,14 +71,16 @@ class UserController {
             message: "user created",
           });
         })
-        .catch((err) => {
+        .catch((err: any) => {
           res.status(500).json({
-            message: "error creating user",
+            message: err.message || "Error creating user",
             error: err,
           });
         });
-    } catch (error) {
-      console.error("error in user registration", error);
+    } catch (error: any) {
+      return res.status(500).json({
+        message: error.message || "Error in user registration",
+      });
     }
   }
 
@@ -148,8 +150,10 @@ class UserController {
           message: "authentication failed",
         });
       }
-    } catch (error) {
-      console.error("login error", error);
+    } catch (error: any) {
+      return res.status(500).json({
+        message: error.message || "Authentication failed",
+      });
     }
   }
 
@@ -282,10 +286,9 @@ class UserController {
           message: "user not found",
         });
       }
-    } catch (error) {
-      console.error("error deleting user", error);
+    } catch (error: any) {
       return res.status(500).json({
-        message: "error deleting user",
+        message: error.message || "error deleting user",
       });
     }
   }
@@ -300,10 +303,9 @@ class UserController {
           message: "no data found",
         });
       }
-    } catch (error) {
-      console.error("error fetching data", error);
+    } catch (error: any) {
       return res.status(500).json({
-        message: "error fetching data",
+        message: error.message || "Error fetching data",
       });
     }
   }
@@ -320,10 +322,9 @@ class UserController {
           message: "no data found",
         });
       }
-    } catch (error) {
-      console.error("error fetching data", error);
+    } catch (error: any) {
       return res.status(500).json({
-        message: "error fetching data",
+        message: error.message || "Error fetching data",
       });
     }
   }
@@ -342,10 +343,9 @@ class UserController {
           message: "no data found",
         });
       }
-    } catch (error) {
-      console.error("error fetching data", error);
+    } catch (error: any) {
       return res.status(500).json({
-        message: "error fetching data",
+        message: error.message || "Error fetching data",
       });
     }
   }

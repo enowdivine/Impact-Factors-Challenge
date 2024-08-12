@@ -104,7 +104,7 @@ class TranzakController {
       }
     } catch (error: any) {
       res.status(500).json({
-        message: "Transaction Failed",
+        message: error.message || "Transaction Failed",
         error,
       });
     }
@@ -120,10 +120,9 @@ class TranzakController {
           message: "no data found",
         });
       }
-    } catch (error) {
-      console.error("error fetching data", error);
+    } catch (error: any) {
       return res.status(500).json({
-        message: "error fetching data",
+        message: error.message || "Error fetching data",
       });
     }
   }
@@ -140,10 +139,9 @@ class TranzakController {
           message: "data not found",
         });
       }
-    } catch (error) {
-      console.error("error fetching data", error);
+    } catch (error: any) {
       return res.status(500).json({
-        message: "error fetching data",
+        message: error.message || "Error fetching data",
       });
     }
   }
@@ -162,10 +160,9 @@ class TranzakController {
           message: "data not found",
         });
       }
-    } catch (error) {
-      console.error("error fetching data", error);
+    } catch (error: any) {
       return res.status(500).json({
-        message: "error fetching data",
+        message: error.message || "Error fetching data",
       });
     }
   }

@@ -17,8 +17,8 @@ const userSchema = new Schema(
     image: { type: String },
     fullName: { type: String, required: true },
     emailAddress: { type: String, unique: true, required: true },
-    phoneNumber: { type: Number, unique: true },
-    nationalIDNumber: { type: String, required: true },
+    phoneNumber: { type: Number, unique: true, required: true },
+    nationalIDNumber: { type: String },
     citizenship: { type: String, default: "Cameroonian" },
     authorizationLevel: { type: Number, enum: [1, 2, 3], default: null },
     password: { type: String, required: true },
@@ -36,11 +36,9 @@ const userSchema = new Schema(
         {
           title: {
             type: String,
-            required: true,
           },
           link: {
             type: String,
-            required: true,
           },
         },
       ],

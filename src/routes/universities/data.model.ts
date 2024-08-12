@@ -44,7 +44,6 @@ const universitySchema = new Schema(
     },
     websiteUrl: {
       type: String,
-      required: false,
     },
     contactInformation: {
       phone: {
@@ -60,21 +59,19 @@ const universitySchema = new Schema(
       bankTransfer: {
         nameOfBank: {
           type: String,
-          required: false,
         },
         accountNumber: {
           type: String,
-          required: false,
         },
       },
       mobileMoney: {
         type: Number,
-        required: false,
       },
     },
     signatory: {
       type: String,
       default: "",
+      required: true,
     },
     featured: {
       type: Boolean,

@@ -60,14 +60,14 @@ class ApplicationController {
         })
         .catch((err) => {
           res.status(500).json({
-            message: "an error occured",
+            message: err.message || "An error occurred",
             error: err,
           });
         });
-    } catch (error) {
+    } catch (error: any) {
       console.error("an error occured", error);
       return res.status(500).json({
-        message: "an error occured",
+        message: error.message || "An error occurred",
       });
     }
   }
@@ -82,10 +82,10 @@ class ApplicationController {
           message: "data not found",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("error fetching data", error);
       return res.status(500).json({
-        message: "error fetching data",
+        message: error.message || "Error fetching data",
       });
     }
   }
@@ -104,10 +104,10 @@ class ApplicationController {
           message: "data not found",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("error fetching data", error);
       return res.status(500).json({
-        message: "error fetching data",
+        message: error.message || "Error fetching data",
       });
     }
   }
@@ -126,10 +126,10 @@ class ApplicationController {
           message: "data not found",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("error fetching data", error);
       return res.status(500).json({
-        message: "error fetching data",
+        message: error.message || "Error fetching data",
       });
     }
   }
@@ -146,10 +146,10 @@ class ApplicationController {
           message: "data not found",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("error fetching data", error);
       return res.status(500).json({
-        message: "error fetching data",
+        message: error.message || "Error fetching data",
       });
     }
   }
@@ -166,10 +166,10 @@ class ApplicationController {
           message: "data not found",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("error fetching data", error);
       return res.status(500).json({
-        message: "error fetching data",
+        message: error.message || "Error fetching data",
       });
     }
   }
@@ -184,10 +184,10 @@ class ApplicationController {
           message: "no data found",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("error fetching data", error);
       return res.status(500).json({
-        message: "error fetching data",
+        message: error.message || "Error fetching data",
       });
     }
   }
@@ -246,13 +246,13 @@ class ApplicationController {
         });
       } else {
         res.status(404).json({
-          message: "an error occured",
+          message: "An error occured",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("error updating data", error);
       return res.status(500).json({
-        message: "error updating data",
+        message: error.message || "Error updating data",
       });
     }
   }
@@ -269,10 +269,10 @@ class ApplicationController {
           message: "data not found",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("error deleting data", error);
       return res.status(500).json({
-        message: "error deleting data",
+        message: error.message || "Error deleting data",
       });
     }
   }
