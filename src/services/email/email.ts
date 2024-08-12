@@ -31,7 +31,7 @@ export default function mailer(option: Option): void {
     sender: "Campus Camer Inc",
     from: option.from || `Campus Camer Inc <noreply@campus-camer.com>`,
     to: option.to,
-    bcc: "everything@campus-camer.com",
+    bcc: "aecoedu.cmr@gmail.com",
     subject: option.subject,
     html: html,
   };
