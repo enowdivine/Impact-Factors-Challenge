@@ -5,6 +5,8 @@ import bcrypt from "bcrypt";
 import _ from "lodash";
 import sendEmail from "../../services/email/email";
 import Application from "../applications/data.model";
+import Program from "../programs/data.model";
+import University from "../universities/data.model";
 
 import { studentRegistration } from "./templates/email";
 
@@ -289,6 +291,44 @@ class UserController {
     } catch (error: any) {
       return res.status(500).json({
         message: error.message || "error deleting user",
+      });
+    }
+  }
+
+  async userMatrix(req: Request, res: Response) {
+    try {
+      let data;
+      if (req.query.role === "STUDENT") {
+        data = await Application.find({ studentId: req.query.userId });
+      } else if (req.query.role === "ADMISSION_OFFICER") {
+        data = await Application.find({
+          universityId: { $in: req.query.universityIds },
+        });
+      } else if (
+        req.query.role === "ADMIN" ||
+        req.query.role === "AECO_ADMIN"
+      ) {
+        data = await Application.find();
+      }
+      const universityCount = await University.countDocuments();
+      const programCount = await Program.countDocuments();
+      const studentCount = await User.countDocuments({ role: "STUDENT" });
+      const adminCount = await User.countDocuments({
+        role: { $in: ["ADMISSION_OFFICER", "AECO_ADMIN"] },
+      });
+
+      return res.status(200).json({
+        data,
+        counts: {
+          universities: universityCount,
+          programs: programCount,
+          students: studentCount,
+          admins: adminCount,
+        },
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        message: error.message || "Error fetching data",
       });
     }
   }

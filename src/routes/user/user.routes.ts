@@ -5,8 +5,10 @@ import userAuth from "../../middleware/auth/user";
 const router = express.Router();
 const user = new User();
 
-router.post("/register", userAuth, user.register);
+router.post("/register", user.register);
 router.post("/login", user.login);
+
+router.get("/matrix", userAuth, user.userMatrix);
 
 router.get("/details/:id", userAuth, user.user);
 router.get("/students", userAuth, user.students);
