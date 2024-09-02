@@ -1,4 +1,4 @@
-export function studentRegistration(username: string) {
+export function userSignup(username: string) {
   return `
             <h3>Dear ${username},</h3>
             <p>

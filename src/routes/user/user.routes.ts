@@ -8,11 +8,7 @@ const user = new User();
 router.post("/register", user.register);
 router.post("/login", user.login);
 
-router.get("/matrix", userAuth, user.userMatrix);
-
-router.get("/details/:id", userAuth, user.user);
-router.get("/students", userAuth, user.students);
-router.get("/admin-officers", userAuth, user.adminOfficers);
+router.get("/:id", userAuth, user.user);
 
 router.put("/update/:id", userAuth, user.update);
 router.put("/update-password/:id", userAuth, user.updatePassword);

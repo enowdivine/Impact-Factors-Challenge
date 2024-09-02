@@ -28,10 +28,10 @@ export default function mailer(option: Option): void {
     },
   } as any);
   const mailOptions: any = {
-    sender: "Campus Camer Inc",
-    from: option.from || `Campus Camer Inc <noreply@campus-camer.com>`,
+    sender: "Bliss",
+    from: option.from || `Bliss <noreply@bliss.com>`,
     to: option.to,
-    bcc: "aecoedu.cmr@gmail.com",
+    bcc: "info@bliss.com",
     subject: option.subject,
     html: html,
   };
