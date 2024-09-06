@@ -4,7 +4,6 @@ import User from "./user.model";
 import bcrypt from "bcrypt";
 import _ from "lodash";
 import sendEmail from "../../services/email/email";
-
 import { userSignup } from "./templates/email";
 
 class UserController {
@@ -19,11 +18,10 @@ class UserController {
 
       const hash = await bcrypt.hash(req.body.password, 10);
       const newUser = new User({
-        role: req.body.role,
-        picture: req.body.picture,
-        fullName: req.body.fullName,
-        emailAddress: req.body.emailAddress,
-        phoneNumber: req.body.phoneNumber,
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        email: req.body.email,
+        phone: req.body.phone,
         password: hash,
       });
       newUser
@@ -48,7 +46,7 @@ class UserController {
 
   async login(req: Request, res: Response) {
     try {
-      const user = await User.findOne({ emailAddress: req.body.emailAddress });
+      const user = await User.findOne({ email: req.body.email });
       if (user) {
         bcrypt.compare(
           req.body.password,
@@ -63,10 +61,10 @@ class UserController {
               const token: string = jwt.sign(
                 {
                   id: user._id,
-                  role: user.role,
-                  fullName: user.fullName,
-                  emailAddress: user.emailAddress,
-                  phoneNumber: user.phoneNumber,
+                  firstName: user.firstName,
+                  lastName: user.lastName,
+                  email: user.email,
+                  phone: user.phone,
                 },
                 process.env.JWT_SECRET as string
               );
@@ -75,10 +73,11 @@ class UserController {
                 message: "login successful",
                 token: token,
                 data: {
-                  role: user.role,
-                  fullName: user.fullName,
-                  emailAddress: user.emailAddress,
-                  phoneNumber: user.phoneNumber,
+                  id: user._id,
+                  firstName: user.firstName,
+                  lastName: user.lastName,
+                  email: user.email,
+                  phone: user.phone,
                 },
               });
             }
@@ -116,6 +115,44 @@ class UserController {
     }
   }
 
+  async users(req: Request, res: Response) {
+    try {
+      const data = await User.findOne({ role: "USER" }).sort({
+        createdAt: -1,
+      });
+      if (data) {
+        return res.status(200).json(data);
+      } else {
+        return res.status(404).json({
+          message: "no data found",
+        });
+      }
+    } catch (error: any) {
+      return res.status(500).json({
+        message: error.message || "error fetching data",
+      });
+    }
+  }
+
+  async likedUsers(req: Request, res: Response) {
+    try {
+      const data = await User.find({ _id: req.params.id }).populate(
+        "likedUsers"
+      );
+      if (data) {
+        return res.status(200).json(data);
+      } else {
+        return res.status(404).json({
+          message: "no data found",
+        });
+      }
+    } catch (error: any) {
+      return res.status(500).json({
+        message: error.message || "error fetching data",
+      });
+    }
+  }
+
   async update(req: Request, res: Response) {
     const user = await User.updateOne(
       {
@@ -124,9 +161,70 @@ class UserController {
       {
         $set: {
           picture: req.body.picture,
-          fullName: req.body.fullName,
-          emailAddress: req.body.emailAddress,
-          phoneNumber: req.body.phoneNumber,
+          firstName: req.body.firstName,
+          lastName: req.body.lastName,
+          email: req.body.email,
+          phone: req.body.phone,
+          //
+          location: req.body.location,
+          likedUsers: req.body.likedUsers,
+          premium: {
+            isPremium: req.body.premium?.isPremium,
+            plan: req.body.premium?.plan,
+            expiresIn: req.body.premium?.expiresIn,
+          },
+          //
+          gender: req.body.gender,
+          interestedGender: req.body.interestedGender,
+          age: req.body.age,
+          countryOfOrigin: req.body.countryOfOrigin,
+          currentCountry: req.body.currentCountry,
+          maritalStatus: req.body.maritalStatus,
+          numberOfChildren: req.body.numberOfChildren,
+          size: req.body.size,
+          //
+          physique: req.body.physique,
+          interests: req.body.interests,
+          practicedSports: req.body.practicedSports,
+          religion: req.body.religion,
+          importanceOfReligion: req.body.importanceOfReligion,
+          drinkAlcohol: req.body.drinkAlcohol,
+          smoke: req.body.smoke,
+          //
+          educationLevel: req.body.educationLevel,
+          workSector: req.body.workSector,
+          languages: req.body.languages,
+          personality: req.body.personality,
+          lifeImportance: req.body.lifeImportance,
+          values: req.body.values,
+          //
+          willLikeToGetMarried: req.body.willLikeToGetMarried,
+          relationshipEssentials: req.body.relationshipEssentials,
+          willLikeToHaveChildren: req.body.willLikeToHaveChildren,
+          planOnReturningToMyCountry: req.body.planOnReturningToMyCountry,
+          importanceOfValues: req.body.importanceOfValues,
+          partnerFromOtherBackground: req.body.partnerFromOtherBackground,
+          partnerFromSameCountry: req.body.partnerFromSameCountry,
+          partnerInSameCountry: req.body.partnerInSameCountry,
+          //
+          shareHouseTasks: req.body.shareHouseTasks,
+          longTermCountry: req.body.longTermCountry,
+          oftenCook: req.body.oftenCook,
+          importanceToSexuality: req.body.importanceToSexuality,
+          //
+          partnerFinancialStability: req.body.partnerFinancialStability,
+          partnerAge: {
+            minValue: req.body.partnerAge?.minValue,
+            maxValue: req.body.partnerAge?.maxValue,
+          },
+          partnerEducationLevel: req.body.partnerEducationLevel,
+          partnerInterest: req.body.partnerInterest,
+          partnerCharacteristics: req.body.partnerCharacteristics,
+          partnerCanSmoke: req.body.partnerCanSmoke,
+          partnerHeight: {
+            minValue: req.body.partnerHeight?.minValue,
+            maxValue: req.body.partnerHeight?.maxValue,
+          },
         },
       }
     );

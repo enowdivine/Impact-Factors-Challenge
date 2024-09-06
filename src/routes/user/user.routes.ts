@@ -9,6 +9,8 @@ router.post("/register", user.register);
 router.post("/login", user.login);
 
 router.get("/:id", userAuth, user.user);
+router.get("/", userAuth, user.users);
+router.get("/:id/likes", userAuth, user.likedUsers);
 
 router.put("/update/:id", userAuth, user.update);
 router.put("/update-password/:id", userAuth, user.updatePassword);
