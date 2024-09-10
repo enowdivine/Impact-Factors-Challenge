@@ -6,15 +6,18 @@ const router = express.Router();
 const user = new User();
 
 router.post("/register", user.register);
+router.post("/verify-email", user.verifyEmail);
 router.post("/login", user.login);
+router.post("/forgot-password", user.forgotPassword);
+router.post("/new-password", user.newPassword);
 
-router.get("/:id", userAuth, user.user);
-router.get("/", userAuth, user.users);
-router.get("/:id/likes", userAuth, user.likedUsers);
+router.get("/:id", user.user);
+router.get("/", user.users);
+router.get("/:id/likes", user.likedUsers);
 
-router.put("/update/:id", userAuth, user.update);
-router.put("/update-password/:id", userAuth, user.updatePassword);
+router.put("/update/:id", user.update);
+router.put("/update-password/:id", user.updatePassword);
 
-router.delete("/delete/:id", userAuth, user.deleteUser);
+router.delete("/delete/:id", user.deleteUser);
 
 export default router;
