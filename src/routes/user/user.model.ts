@@ -19,7 +19,7 @@ const userSchema = new Schema(
     location: { type: String },
     likedUsers: [String],
     premium: {
-      isPremium: { type: Boolean },
+      isPremium: { type: Boolean, default: false },
       plan: { type: String, default: "FREE" },
       expiresIn: { type: Date },
     },
