@@ -7,6 +7,7 @@ const user = new User();
 
 router.post("/register", user.register);
 router.post("/verify-email", user.verifyEmail);
+router.post("/email-verification", user.emailVerification);
 router.post("/login", user.login);
 router.post("/forgot-password", user.forgotPassword);
 router.post("/new-password", user.newPassword);

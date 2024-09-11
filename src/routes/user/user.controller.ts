@@ -239,10 +239,6 @@ class UserController {
                 },
               });
             }
-            res.status(401).json({
-              message:
-                "Authentication failed. Check login credentials and try again.",
-            });
           }
         );
       } else {
@@ -285,6 +281,37 @@ class UserController {
       }
     } catch (error: any) {
       return res.status(500).json({
+        message: error.message || "Error in generating code",
+      });
+    }
+  }
+
+  async emailVerification(req: Request, res: Response) {
+    try {
+      const user = await User.findOne({ email: req.body.email });
+      if (!user) {
+        res.status(409).json({
+          message: "User does not exist. Check your email address.",
+        });
+      } else {
+        // Generate the six-digit verification code
+        const verificationCode = generateVerificationCode();
+        verificationCodes.set(req.body.email, verificationCode);
+
+        // Send verification code via email
+        sendEmail({
+          to: req.body.email,
+          title: "Email verification code",
+          subject: "Verify Your Email",
+          message: userSignup(user.firstName, verificationCode),
+        });
+
+        res.status(201).json({
+          message: "User created",
+        });
+      }
+    } catch (error: any) {
+      res.status(500).json({
         message: error.message || "Error in generating code",
       });
     }
