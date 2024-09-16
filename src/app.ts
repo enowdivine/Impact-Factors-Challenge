@@ -21,7 +21,7 @@ dotenv.config();
 const app = express();
 const server: any = http.createServer(app);
 
-dbConnect();
+// dbConnect();
 
 app.use(cors(corsOptions));
 app.use(express.json());
