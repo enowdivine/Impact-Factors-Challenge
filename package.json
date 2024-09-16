@@ -7,7 +7,7 @@
     "start": "node build/app.js",
     "dev": "nodemon src/app.ts",
     "build": "tsc --project .",
-    "postinstall": "tsc"
+    "postinstall": "rm -rf build && tsc"
   },
   "keywords": [],
   "author": "",
@@ -38,8 +38,5 @@
     "nodemailer": "^6.9.13",
     "socket.io": "^4.7.2",
     "uuidv4": "^6.2.13"
-  },
-  "engines": {
-    "node": "16.20.0"
   }
 }
