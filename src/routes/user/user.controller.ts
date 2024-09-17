@@ -15,7 +15,7 @@ class UserController {
     try {
       const user = await User.findOne({ email: req.body.email });
       if (user) {
-        res.status(409).json({
+        return res.status(409).json({
           message: "User already exist",
         });
       }
@@ -51,7 +51,7 @@ class UserController {
             message: userSignup(req.body.firstName, verificationCode),
           });
 
-          res.status(201).json({
+          return res.status(201).json({
             message: "user created",
             token: token,
             user: {
@@ -107,13 +107,13 @@ class UserController {
           });
         })
         .catch((err: any) => {
-          res.status(500).json({
+          return res.status(500).json({
             message: err.message || "Error creating user",
             error: err,
           });
         });
     } catch (error: any) {
-      res.status(500).json({
+      return res.status(500).json({
         message: error.message || "Error in user registration",
       });
     }
