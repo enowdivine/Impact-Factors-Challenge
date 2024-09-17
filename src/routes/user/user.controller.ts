@@ -156,8 +156,8 @@ class UserController {
   async login(req: Request, res: Response) {
     try {
       const user = await User.findOne({ email: req.body.email });
-      if (!user?.emailVerified) {
-        res.status(500).json({
+      if (user?.emailVerified) {
+        return res.status(500).json({
           message: "Email not verified. Please verify your email to continue.",
         });
       }
@@ -168,7 +168,7 @@ class UserController {
           user.password!,
           (err: any, result: any) => {
             if (err) {
-              res.status(401).json({
+              return res.status(401).json({
                 message:
                   "Authentication failed. Check login credentials and try again.",
               });
@@ -184,7 +184,7 @@ class UserController {
                 process.env.JWT_SECRET as string
               );
 
-              res.status(200).json({
+              return res.status(200).json({
                 message: "Login successful",
                 token: token,
                 user: {
@@ -242,12 +242,12 @@ class UserController {
           }
         );
       } else {
-        res.status(401).json({
+        return res.status(401).json({
           message: "Account not found. Check login credentials and try again.",
         });
       }
     } catch (error: any) {
-      res.status(500).json({
+      return res.status(500).json({
         message:
           error.message ||
           "Authentication failed. Check login credentials and try again.",
@@ -473,6 +473,12 @@ class UserController {
           firstName: req.body.firstName,
           lastName: req.body.lastName,
           email: req.body.email,
+          profilePrivacy: req.body.profilePrivacy,
+          //
+          questionOne: req.body.questionOne,
+          answerOne: req.body.answerOne,
+          questionTwo: req.body.questionTwo,
+          answerTwo: req.body.answerTwo,
           //
           location: req.body.location,
           likedUsers: req.body.likedUsers,

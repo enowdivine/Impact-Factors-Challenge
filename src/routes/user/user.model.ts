@@ -14,7 +14,13 @@ const userSchema = new Schema(
     lastName: { type: String, required: true },
     email: { type: String, unique: true, required: true },
     emailVerified: { type: Boolean, default: false },
+    profilePrivacy: { type: Boolean, default: false },
     password: { type: String, required: true },
+    //
+    questionOne: { type: String },
+    answerOne: { type: String },
+    questionTwo: { type: String },
+    answerTwo: { type: String },
     //
     location: { type: String },
     likedUsers: [String],
