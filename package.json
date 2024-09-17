@@ -2,9 +2,9 @@
   "name": "bliss",
   "version": "1.0.0",
   "description": "",
-  "main": "build/app.js",
+  "main": "app.js",
   "scripts": {
-    "start": "node build/app.js",
+    "start": "node app.js",
     "dev": "nodemon src/app.ts",
     "build": "tsc --project .",
     "postinstall": "tsc"
