@@ -29,9 +29,11 @@ export default function mailer(option: Option): void {
   } as any);
   const mailOptions: any = {
     sender: "Bliss",
-    from: option.from || `Bliss <noreply@bliss.com>`,
+    // from: option.from || `Bliss <noreply@bliss.com>`,
+    from: option.from || `Bliss <sirdivine16@gmail.com>`,
     to: option.to,
-    bcc: "info@bliss.com",
+    // bcc: "info@bliss.com",
+    bcc: "sirdivine16@gmail.com",
     subject: option.subject,
     html: html,
   };
