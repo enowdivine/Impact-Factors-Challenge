@@ -15,10 +15,14 @@ router.post("/new-password", user.newPassword);
 router.get("/:id", user.user);
 router.get("/", user.users);
 router.get("/:id/likes", user.likedUsers);
+router.get("/:id/likes-me", user.likedMeUsers);
+router.get("/:id/two-best-matches", user.twoBestMatches);
 
 router.put("/update/:id", user.update);
+router.put("/update/user/:id/image/:key", user.update);
 router.put("/update-password/:id", user.updatePassword);
 
+router.delete("/delete/user/:id/image/:key", user.deleteUser);
 router.delete("/delete/:id", user.deleteUser);
 
 export default router;

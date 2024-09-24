@@ -3,6 +3,8 @@ import jwt from "jsonwebtoken";
 import User from "./user.model";
 import bcrypt from "bcrypt";
 import _ from "lodash";
+import crypto from "crypto"; // Import crypto to seed randomness
+
 import sendEmail from "../../services/email/email";
 import { userSignup } from "./templates/email";
 
@@ -443,6 +445,52 @@ class UserController {
     }
   }
 
+  async twoBestMatches(req: Request, res: Response) {
+    try {
+      // Get all users with the role "USER"
+      const allUsers = await User.find({ role: "USER" });
+
+      if (allUsers.length === 0) {
+        return res.status(404).json({
+          message: "No users found",
+        });
+      }
+
+      // Get the current date as a string (e.g., '2023-09-20')
+      const currentDate = new Date().toISOString().split("T")[0];
+
+      // Use the current date to create a consistent seed for randomness
+      const seed = crypto
+        .createHash("sha256")
+        .update(currentDate)
+        .digest("hex");
+
+      // Convert the seed into a number to use for seeding random
+      const seedNumber = parseInt(seed.slice(0, 8), 16);
+
+      // Function to seed the random selection process
+      function seededRandom(seed: number) {
+        const x = Math.sin(seed++) * 10000;
+        return x - Math.floor(x);
+      }
+
+      // Shuffle users using the seeded randomness
+      const shuffledUsers = allUsers
+        .map((user) => ({ user, sort: seededRandom(seedNumber) }))
+        .sort((a, b) => a.sort - b.sort)
+        .map(({ user }) => user);
+
+      // Select only the first two random users
+      const selectedUsers = shuffledUsers.slice(0, 2);
+
+      return res.status(200).json(selectedUsers);
+    } catch (error: any) {
+      return res.status(500).json({
+        message: error.message || "Error fetching data",
+      });
+    }
+  }
+
   async likedUsers(req: Request, res: Response) {
     try {
       const data = await User.find({ _id: req.params.id }).populate(
@@ -462,6 +510,89 @@ class UserController {
     }
   }
 
+  async likedMeUsers(req: Request, res: Response) {
+    try {
+      const userId = req.params.id; // the ID of the current user
+      const data = await User.find({ likedUsers: { $in: [userId] } });
+      if (data.length > 0) {
+        return res.status(200).json(data);
+      } else {
+        return res.status(404).json({
+          message: "No users found who liked you",
+        });
+      }
+    } catch (error: any) {
+      return res.status(500).json({
+        message: error.message || "Error fetching data",
+      });
+    }
+  }
+
+  async deleteImage(req: Request, res: Response) {
+    try {
+      const { id, key } = req.params;
+
+      // Find the document with the specific ID
+      const user = await User.findById(id);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Filter out the image that matches the key
+      user.images = user.images.filter((image) => image.key !== key);
+
+      // Save the updated document
+      await user.save();
+
+      return res
+        .status(200)
+        .json({ message: "Image deleted successfully", images: user.images });
+    } catch (error: any) {
+      return res
+        .status(500)
+        .json({ message: error.message || "Error deleting image" });
+    }
+  }
+
+  async updateImage(req: Request, res: Response) {
+    try {
+      const { id, key } = req.params;
+      const { newUrl, newKey } = req.body;
+
+      // Find the document with the specific ID
+      const user = await User.findById(id);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Find the index of the image to be replaced
+      const imageIndex = user.images.findIndex((image) => image.key === key);
+
+      if (imageIndex === -1) {
+        return res
+          .status(404)
+          .json({ message: "Image with the given key not found" });
+      }
+
+      // Replace the image URL and key at the specific index
+      user.images[imageIndex].url = newUrl;
+      user.images[imageIndex].key = newKey;
+
+      // Save the updated document
+      await user.save();
+
+      return res
+        .status(200)
+        .json({ message: "Image updated successfully", images: user.images });
+    } catch (error: any) {
+      return res
+        .status(500)
+        .json({ message: error.message || "Error updating image" });
+    }
+  }
+
   async update(req: Request, res: Response) {
     const user = await User.updateOne(
       {
@@ -470,6 +601,7 @@ class UserController {
       {
         $set: {
           picture: req.body.picture,
+          images: req.body.images,
           firstName: req.body.firstName,
           lastName: req.body.lastName,
           email: req.body.email,
