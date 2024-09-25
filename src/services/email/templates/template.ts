@@ -35,7 +35,7 @@ export default function email(emailTitle: string, emailContent: string) {
         }
 
         .brand-title-color {
-            color: #7a24a1;
+            color: #10C0BA;
         }
 
         .brand-subtitle {
@@ -137,6 +137,10 @@ export default function email(emailTitle: string, emailContent: string) {
             margin: 10px 0;
         }
 
+        .footer-description a {
+            color: #10C0BA;
+        }
+
         .username {
             font-weight: bold;
         }
@@ -146,7 +150,7 @@ export default function email(emailTitle: string, emailContent: string) {
         }
 
         .action_btn {
-            background-color: #7a24a1;
+            background-color: #10C0BA;
             color: white !important;
             border: none;
             border-radius: 30px;
@@ -164,7 +168,7 @@ export default function email(emailTitle: string, emailContent: string) {
         }
 
         .email-content .links {
-            color: #7a24a1;
+            color: #10C0BA;
             text-decoration: none;
         }
 
@@ -173,10 +177,10 @@ export default function email(emailTitle: string, emailContent: string) {
         }
 
         .email-content .activation-code span {
-            border: 1px dotted #7a24a1;
+            border: 1px dotted #10C0BA;
             border-radius: 30px;
             padding: 10px 35px;
-            color: #7a24a1;
+            color: #10C0BA;
             letter-spacing: 5px;
         }
 
