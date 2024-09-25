@@ -26,6 +26,7 @@ class UserController {
       const newUser = new User({
         firstName: req.body.firstName,
         lastName: req.body.lastName,
+        username: req.body.username,
         email: req.body.email,
         password: hash,
       });
@@ -604,6 +605,7 @@ class UserController {
           images: req.body.images,
           firstName: req.body.firstName,
           lastName: req.body.lastName,
+          username: req.body.username,
           email: req.body.email,
           profilePrivacy: req.body.profilePrivacy,
           //

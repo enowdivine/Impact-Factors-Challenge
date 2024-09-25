@@ -16,6 +16,7 @@ const userSchema = new Schema(
     images: [{ url: { type: String }, key: { type: String } }],
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
+    username: { type: String, required: true },
     email: { type: String, unique: true, required: true },
     emailVerified: { type: Boolean, default: false },
     profilePrivacy: { type: Boolean, default: false },
