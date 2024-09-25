@@ -137,8 +137,7 @@ class UserController {
       // Mark the user as verified
       const user = await User.findOneAndUpdate(
         { email: req.body.email },
-        { emailVerified: true },
-        { new: true }
+        { emailVerified: true }
       );
 
       if (user) {
@@ -159,7 +158,7 @@ class UserController {
   async login(req: Request, res: Response) {
     try {
       const user = await User.findOne({ email: req.body.email });
-      if (user?.emailVerified) {
+      if (!user?.emailVerified) {
         return res.status(500).json({
           message: "Email not verified. Please verify your email to continue.",
         });
