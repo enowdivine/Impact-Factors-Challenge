@@ -668,6 +668,10 @@ class UserController {
             minValue: req.body.partnerHeight?.minValue,
             maxValue: req.body.partnerHeight?.maxValue,
           },
+          partnerRange: {
+            minValue: req.body.partnerRange?.minValue,
+            maxValue: req.body.partnerRange?.maxValue,
+          },
         },
       }
     );

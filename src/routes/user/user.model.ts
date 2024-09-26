@@ -88,6 +88,10 @@ const userSchema = new Schema(
       minValue: { type: Number },
       maxValue: { type: Number },
     },
+    partnerRange: {
+      minValue: { type: Number },
+      maxValue: { type: Number },
+    },
   },
   {
     timestamps: true,

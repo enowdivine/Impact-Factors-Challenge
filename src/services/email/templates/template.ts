@@ -62,9 +62,9 @@ export default function email(emailTitle: string, emailContent: string) {
             margin-top: 30px;
         }
 
-        .logo-container img {
-            /* border-radius: 50%; */
-        }
+        /* .logo-container img {
+            border-radius: 50%;
+        } */
 
         .email-title {
             width: 100%;
