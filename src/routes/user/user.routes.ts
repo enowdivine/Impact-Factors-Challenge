@@ -13,10 +13,12 @@ router.post("/forgot-password", user.forgotPassword);
 router.post("/new-password", user.newPassword);
 
 router.get("/:id", user.user);
-router.get("/", user.users);
+router.get("/:id/list", user.users);
 router.get("/:id/likes", user.likedUsers);
 router.get("/:id/likes-me", user.likedMeUsers);
 router.get("/:id/two-best-matches", user.twoBestMatches);
+
+router.put("/like/:userId/:likedUserId", user.toggleLikeUser);
 
 router.put("/update/:id", user.update);
 router.put("/update/user/:id/image/:key", user.update);

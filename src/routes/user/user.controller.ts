@@ -428,19 +428,45 @@ class UserController {
 
   async users(req: Request, res: Response) {
     try {
-      const data = await User.findOne({ role: "USER" }).sort({
-        createdAt: -1,
+      const currentUserId = req.params.id;
+
+      // Default values for page and limit if not provided in the query
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+
+      // Calculate the starting index for the query based on page and limit
+      const skip = (page - 1) * limit;
+
+      // Fetch the total count of users excluding the current user
+      const totalUsers = await User.countDocuments({
+        role: "USER",
+        _id: { $ne: currentUserId }, // Exclude the current user
       });
-      if (data) {
-        return res.status(200).json(data);
+
+      // Fetch the paginated users excluding the current user
+      const users = await User.find({
+        role: "USER",
+        _id: { $ne: currentUserId }, // Exclude the current user
+      })
+        .sort({ createdAt: -1 })
+        .skip(skip) // Skip users for previous pages
+        .limit(limit); // Limit the number of users per page
+
+      if (users && users.length > 0) {
+        return res.status(200).json({
+          users,
+          currentPage: page,
+          totalPages: Math.ceil(totalUsers / limit),
+          totalUsers: totalUsers,
+        });
       } else {
         return res.status(404).json({
-          message: "no data found",
+          message: "No data found",
         });
       }
     } catch (error: any) {
       return res.status(500).json({
-        message: error.message || "error fetching data",
+        message: error.message || "Error fetching data",
       });
     }
   }
@@ -487,6 +513,56 @@ class UserController {
     } catch (error: any) {
       return res.status(500).json({
         message: error.message || "Error fetching data",
+      });
+    }
+  }
+
+  async toggleLikeUser(req: Request, res: Response) {
+    try {
+      const { userId } = req.params; // ID of the user performing the like/unlike
+      const { likedUserId } = req.params; // ID of the user to be liked/unliked
+
+      if (!userId || !likedUserId) {
+        return res
+          .status(400)
+          .json({ message: "Both userId and likedUserId are required." });
+      }
+
+      // Find the user who is performing the like/unlike
+      const user = await User.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found." });
+      }
+
+      // Check if the likedUserId already exists in the likedUsers array
+      const isLiked = user.likedUsers.includes(likedUserId);
+
+      // Toggle logic: If already liked, remove from likedUsers. If not liked, add to likedUsers.
+      const update = isLiked
+        ? { $pull: { likedUsers: likedUserId } } // Remove likedUserId
+        : { $addToSet: { likedUsers: likedUserId } }; // Add likedUserId
+
+      // Update the user document
+      const updatedUser = await User.findByIdAndUpdate(userId, update, {
+        new: true,
+      }).select("likedUsers");
+
+      // If for some reason update failed, return error
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Error updating like status." });
+      }
+
+      // Return the updated likedUsers list
+      return res.status(200).json({
+        message: isLiked
+          ? "User unliked successfully."
+          : "User liked successfully.",
+        likedUsers: updatedUser.likedUsers, // Return the updated likedUsers array
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        message: error.message || "Error toggling like/unlike status.",
       });
     }
   }
