@@ -17,6 +17,7 @@ router.get("/:id/list", user.users);
 router.get("/:id/likes", user.likedUsers);
 router.get("/:id/likes-me", user.likedMeUsers);
 router.get("/:id/two-best-matches", user.twoBestMatches);
+router.get("/:id/mutual-liked-users", user.mutualLikedUsers);
 
 router.put("/like/:userId/:likedUserId", user.toggleLikeUser);
 

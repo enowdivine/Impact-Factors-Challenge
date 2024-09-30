@@ -590,13 +590,34 @@ class UserController {
     try {
       const userId = req.params.id; // the ID of the current user
       const data = await User.find({ likedUsers: { $in: [userId] } });
-      if (data.length > 0) {
-        return res.status(200).json(data);
-      } else {
-        return res.status(404).json({
-          message: "No users found who liked you",
-        });
+      return res.status(200).json(data);
+    } catch (error: any) {
+      return res.status(500).json({
+        message: error.message || "Error fetching data",
+      });
+    }
+  }
+
+  async mutualLikedUsers(req: Request, res: Response) {
+    try {
+      const userId = req.params.id; // ID of the current user
+
+      // Find the current user to get the list of users they like
+      const currentUser = await User.findById(userId);
+
+      if (!currentUser) {
+        return res.status(404).json({ message: "User not found" });
       }
+
+      const likedUsersByMe = currentUser.likedUsers; // List of users liked by the current user
+
+      // Find users who like the current user and are also liked by the current user
+      const mutualLikes = await User.find({
+        _id: { $in: likedUsersByMe }, // Only consider users liked by the current user
+        likedUsers: { $in: [userId] }, // Who also like the current user
+      });
+
+      return res.status(200).json(mutualLikes);
     } catch (error: any) {
       return res.status(500).json({
         message: error.message || "Error fetching data",
