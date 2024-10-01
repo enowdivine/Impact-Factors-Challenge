@@ -82,7 +82,7 @@ const userSchema = new Schema(
     },
     partnerEducationLevel: { type: String },
     partnerAttraction: [String],
-    partnerPhysique: [String],
+    partnerPhysique: { type: String },
     partnerSmoking: { type: String },
     partnerHeight: {
       minValue: { type: Number },

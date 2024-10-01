@@ -65,9 +65,17 @@ class UserController {
               lastName: response.lastName,
               email: response.email,
               emailVerified: response.emailVerified,
+              profilePrivacy: response.profilePrivacy,
+              //
+              questionOne: response.questionOne,
+              answerOne: response.answerOne,
+              questionTwo: response.questionTwo,
+              answerTwo: response.answerTwo,
+              //
               location: response.location,
               likedUsers: response.likedUsers,
               premium: response.premium,
+              //
               gender: response.gender,
               interestedGender: response.interestedGender,
               age: response.age,
@@ -76,18 +84,21 @@ class UserController {
               maritalStatus: response.maritalStatus,
               numberOfChildren: response.numberOfChildren,
               height: response.height,
+              //
               physique: response.physique,
               interests: response.interests,
               practicedSports: response.practicedSports,
               religion: response.religion,
               importanceOfReligion: response.importanceOfReligion,
               smoking: response.smoking,
+              //
               educationLevel: response.educationLevel,
               occupation: response.occupation,
               languages: response.languages,
               personality: response.personality,
               importantInLife: response.importantInLife,
               values: response.values,
+              //
               wantMarriage: response.wantMarriage,
               relationshipEssentials: response.relationshipEssentials,
               wantChildren: response.wantChildren,
@@ -96,14 +107,18 @@ class UserController {
               partnerFromOtherBackground: response.partnerFromOtherBackground,
               partnerFromSameCountry: response.partnerFromSameCountry,
               partnerInSameCountry: response.partnerInSameCountry,
+              //
               shareHouseholdTasks: response.shareHouseholdTasks,
               longTermCountries: response.longTermCountries,
+              //
               partnerAge: response.partnerAge,
               partnerEducationLevel: response.partnerEducationLevel,
               partnerAttraction: response.partnerAttraction,
               partnerPhysique: response.partnerPhysique,
               partnerSmoking: response.partnerSmoking,
               partnerHeight: response.partnerHeight,
+              partnerRange: response.partnerRange,
+              //
               createdAt: response.createdAt,
               updatedAt: response.updatedAt,
             },
@@ -158,13 +173,15 @@ class UserController {
   async login(req: Request, res: Response) {
     try {
       const user = await User.findOne({ email: req.body.email });
-      if (!user?.emailVerified) {
-        return res.status(500).json({
-          message: "Email not verified. Please verify your email to continue.",
-        });
-      }
 
       if (user) {
+        if (!user?.emailVerified) {
+          return res.status(500).json({
+            message:
+              "Email not verified. Please verify your email to continue.",
+          });
+        }
+
         bcrypt.compare(
           req.body.password,
           user.password!,
@@ -197,9 +214,17 @@ class UserController {
                   lastName: user.lastName,
                   email: user.email,
                   emailVerified: user.emailVerified,
+                  profilePrivacy: user.profilePrivacy,
+                  //
+                  questionOne: user.questionOne,
+                  answerOne: user.answerOne,
+                  questionTwo: user.questionTwo,
+                  answerTwo: user.answerTwo,
+                  //
                   location: user.location,
                   likedUsers: user.likedUsers,
                   premium: user.premium,
+                  //
                   gender: user.gender,
                   interestedGender: user.interestedGender,
                   age: user.age,
@@ -208,18 +233,21 @@ class UserController {
                   maritalStatus: user.maritalStatus,
                   numberOfChildren: user.numberOfChildren,
                   height: user.height,
+                  //
                   physique: user.physique,
                   interests: user.interests,
                   practicedSports: user.practicedSports,
                   religion: user.religion,
                   importanceOfReligion: user.importanceOfReligion,
                   smoking: user.smoking,
+                  //
                   educationLevel: user.educationLevel,
                   occupation: user.occupation,
                   languages: user.languages,
                   personality: user.personality,
                   importantInLife: user.importantInLife,
                   values: user.values,
+                  //
                   wantMarriage: user.wantMarriage,
                   relationshipEssentials: user.relationshipEssentials,
                   wantChildren: user.wantChildren,
@@ -228,14 +256,17 @@ class UserController {
                   partnerFromOtherBackground: user.partnerFromOtherBackground,
                   partnerFromSameCountry: user.partnerFromSameCountry,
                   partnerInSameCountry: user.partnerInSameCountry,
+                  //
                   shareHouseholdTasks: user.shareHouseholdTasks,
                   longTermCountries: user.longTermCountries,
+                  //
                   partnerAge: user.partnerAge,
                   partnerEducationLevel: user.partnerEducationLevel,
                   partnerAttraction: user.partnerAttraction,
                   partnerPhysique: user.partnerPhysique,
                   partnerSmoking: user.partnerSmoking,
                   partnerHeight: user.partnerHeight,
+                  partnerRange: user.partnerRange,
                   createdAt: user.createdAt,
                   updatedAt: user.updatedAt,
                 },
@@ -452,18 +483,12 @@ class UserController {
         .skip(skip) // Skip users for previous pages
         .limit(limit); // Limit the number of users per page
 
-      if (users && users.length > 0) {
-        return res.status(200).json({
-          users,
-          currentPage: page,
-          totalPages: Math.ceil(totalUsers / limit),
-          totalUsers: totalUsers,
-        });
-      } else {
-        return res.status(404).json({
-          message: "No data found",
-        });
-      }
+      return res.status(200).json({
+        users,
+        currentPage: page,
+        totalPages: Math.ceil(totalUsers / limit),
+        totalUsers: totalUsers,
+      });
     } catch (error: any) {
       return res.status(500).json({
         message: error.message || "Error fetching data",
