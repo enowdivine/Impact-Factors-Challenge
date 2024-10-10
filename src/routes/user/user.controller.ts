@@ -71,6 +71,7 @@ class UserController {
               answerOne: response.answerOne,
               questionTwo: response.questionTwo,
               answerTwo: response.answerTwo,
+              bio: response.bio,
               //
               location: response.location,
               likedUsers: response.likedUsers,
@@ -80,7 +81,7 @@ class UserController {
               interestedGender: response.interestedGender,
               age: response.age,
               countryOfOrigin: response.countryOfOrigin,
-              currentCountry: response.currentCountry,
+              currentLocation: response.currentLocation,
               maritalStatus: response.maritalStatus,
               numberOfChildren: response.numberOfChildren,
               height: response.height,
@@ -117,7 +118,8 @@ class UserController {
               partnerPhysique: response.partnerPhysique,
               partnerSmoking: response.partnerSmoking,
               partnerHeight: response.partnerHeight,
-              partnerRange: response.partnerRange,
+              //
+              status: response.status,
               //
               createdAt: response.createdAt,
               updatedAt: response.updatedAt,
@@ -220,6 +222,7 @@ class UserController {
                   answerOne: user.answerOne,
                   questionTwo: user.questionTwo,
                   answerTwo: user.answerTwo,
+                  bio: user.bio,
                   //
                   location: user.location,
                   likedUsers: user.likedUsers,
@@ -229,7 +232,7 @@ class UserController {
                   interestedGender: user.interestedGender,
                   age: user.age,
                   countryOfOrigin: user.countryOfOrigin,
-                  currentCountry: user.currentCountry,
+                  currentLocation: user.currentLocation,
                   maritalStatus: user.maritalStatus,
                   numberOfChildren: user.numberOfChildren,
                   height: user.height,
@@ -266,7 +269,9 @@ class UserController {
                   partnerPhysique: user.partnerPhysique,
                   partnerSmoking: user.partnerSmoking,
                   partnerHeight: user.partnerHeight,
-                  partnerRange: user.partnerRange,
+                  //
+                  status: user.status,
+                  //
                   createdAt: user.createdAt,
                   updatedAt: user.updatedAt,
                 },
@@ -734,6 +739,7 @@ class UserController {
           answerOne: req.body.answerOne,
           questionTwo: req.body.questionTwo,
           answerTwo: req.body.answerTwo,
+          bio: req.body.bio,
           //
           location: req.body.location,
           likedUsers: req.body.likedUsers,
@@ -747,7 +753,7 @@ class UserController {
           interestedGender: req.body.interestedGender,
           age: req.body.age,
           countryOfOrigin: req.body.countryOfOrigin,
-          currentCountry: req.body.currentCountry,
+          currentLocation: req.body.currentLocation,
           maritalStatus: req.body.maritalStatus,
           numberOfChildren: req.body.numberOfChildren,
           height: req.body.height,
@@ -790,10 +796,9 @@ class UserController {
             minValue: req.body.partnerHeight?.minValue,
             maxValue: req.body.partnerHeight?.maxValue,
           },
-          partnerRange: {
-            minValue: req.body.partnerRange?.minValue,
-            maxValue: req.body.partnerRange?.maxValue,
-          },
+          //
+          //
+          status: req.body.status,
         },
       }
     );

@@ -26,6 +26,7 @@ const userSchema = new Schema(
     answerOne: { type: String },
     questionTwo: { type: String },
     answerTwo: { type: String },
+    bio: { type: String },
     //
     location: { type: String },
     likedUsers: [String],
@@ -42,7 +43,7 @@ const userSchema = new Schema(
       type: Object,
       default: {},
     },
-    currentCountry: {
+    currentLocation: {
       type: Object,
       default: {},
     },
@@ -88,9 +89,13 @@ const userSchema = new Schema(
       minValue: { type: Number },
       maxValue: { type: Number },
     },
-    partnerRange: {
-      minValue: { type: Number },
-      maxValue: { type: Number },
+    //
+    //
+    status: {
+      type: String,
+      enum: ["ACTIVE", "FROZEN"],
+      required: true,
+      default: "ACTIVE",
     },
   },
   {
