@@ -22,7 +22,7 @@ router.get("/:id/mutual-liked-users", user.mutualLikedUsers);
 router.put("/like/:userId/:likedUserId", user.toggleLikeUser);
 
 router.put("/update/:id", user.update);
-router.put("/update/user/:id/image/:key", user.update);
+router.put("/update/user/:id/image/:key", user.updateImage);
 router.put("/update-password/:id", user.updatePassword);
 
 router.delete("/delete/user/:id/image/:key", user.deleteUser);

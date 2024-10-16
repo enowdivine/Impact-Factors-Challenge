@@ -60,9 +60,11 @@ class UserController {
             user: {
               id: response._id,
               role: response.role,
-              picture: response.picture,
+              profilePicture: response.profilePicture,
+              images: response.images,
               firstName: response.firstName,
               lastName: response.lastName,
+              username: response.username,
               email: response.email,
               emailVerified: response.emailVerified,
               profilePrivacy: response.profilePrivacy,
@@ -211,9 +213,11 @@ class UserController {
                 user: {
                   id: user._id,
                   role: user.role,
-                  picture: user.picture,
+                  profilePicture: user.profilePicture,
+                  images: user.images,
                   firstName: user.firstName,
                   lastName: user.lastName,
+                  username: user.username,
                   email: user.email,
                   emailVerified: user.emailVerified,
                   profilePrivacy: user.profilePrivacy,
@@ -727,7 +731,7 @@ class UserController {
       },
       {
         $set: {
-          picture: req.body.picture,
+          profilePicture: req.body.profilePicture,
           images: req.body.images,
           firstName: req.body.firstName,
           lastName: req.body.lastName,
@@ -804,10 +808,80 @@ class UserController {
     );
     if (user.acknowledged) {
       const data = await User.findOne({ _id: req.params.id });
-      res.status(200).json({
-        message: "update successful",
-        data,
-      });
+      if (data) {
+        res.status(200).json({
+          message: "update successful",
+          user: {
+            id: data._id,
+            role: data.role,
+            profilePicture: data.profilePicture,
+            images: data.images,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            username: data.username,
+            email: data.email,
+            emailVerified: data.emailVerified,
+            profilePrivacy: data.profilePrivacy,
+            //
+            questionOne: data.questionOne,
+            answerOne: data.answerOne,
+            questionTwo: data.questionTwo,
+            answerTwo: data.answerTwo,
+            bio: data.bio,
+            //
+            location: data.location,
+            likedUsers: data.likedUsers,
+            premium: data.premium,
+            //
+            gender: data.gender,
+            interestedGender: data.interestedGender,
+            age: data.age,
+            countryOfOrigin: data.countryOfOrigin,
+            currentLocation: data.currentLocation,
+            maritalStatus: data.maritalStatus,
+            numberOfChildren: data.numberOfChildren,
+            height: data.height,
+            //
+            physique: data.physique,
+            interests: data.interests,
+            practicedSports: data.practicedSports,
+            religion: data.religion,
+            importanceOfReligion: data.importanceOfReligion,
+            smoking: data.smoking,
+            //
+            educationLevel: data.educationLevel,
+            occupation: data.occupation,
+            languages: data.languages,
+            personality: data.personality,
+            importantInLife: data.importantInLife,
+            values: data.values,
+            //
+            wantMarriage: data.wantMarriage,
+            relationshipEssentials: data.relationshipEssentials,
+            wantChildren: data.wantChildren,
+            returnToCountry: data.returnToCountry,
+            culturalValuesImportance: data.culturalValuesImportance,
+            partnerFromOtherBackground: data.partnerFromOtherBackground,
+            partnerFromSameCountry: data.partnerFromSameCountry,
+            partnerInSameCountry: data.partnerInSameCountry,
+            //
+            shareHouseholdTasks: data.shareHouseholdTasks,
+            longTermCountries: data.longTermCountries,
+            //
+            partnerAge: data.partnerAge,
+            partnerEducationLevel: data.partnerEducationLevel,
+            partnerAttraction: data.partnerAttraction,
+            partnerPhysique: data.partnerPhysique,
+            partnerSmoking: data.partnerSmoking,
+            partnerHeight: data.partnerHeight,
+            //
+            status: data.status,
+            //
+            createdAt: data.createdAt,
+            updatedAt: data.updatedAt,
+          },
+        });
+      }
     } else {
       res.status(404).json({
         message: "user not found",

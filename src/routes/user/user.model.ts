@@ -9,11 +9,11 @@ const userSchema = new Schema(
       required: true,
       default: "USER",
     },
-    picture: {
-      key: { type: String },
-      url: { type: String },
+    profilePicture: {
+      type: Object,
+      default: {},
     },
-    images: [{ url: { type: String }, key: { type: String } }],
+    images: [],
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     username: { type: String, required: true },
