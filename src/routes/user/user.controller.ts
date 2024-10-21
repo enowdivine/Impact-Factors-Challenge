@@ -7,6 +7,7 @@ import crypto from "crypto"; // Import crypto to seed randomness
 
 import sendEmail from "../../services/email/email";
 import { userSignup } from "./templates/email";
+import { generateToken } from "../streamChat/stream.controller";
 
 const verificationCodes = new Map();
 const generateVerificationCode = () =>
@@ -32,7 +33,7 @@ class UserController {
       });
       newUser
         .save()
-        .then((response) => {
+        .then(async (response) => {
           const token: string = jwt.sign(
             {
               id: response._id,
@@ -41,6 +42,13 @@ class UserController {
               email: response.email,
             },
             process.env.JWT_SECRET as string
+          );
+          const streamResult = await generateToken(
+            response._id.toString(),
+            response.firstName,
+            response.lastName,
+            response.email,
+            response.profilePicture.url
           );
           // Generate the six-digit verification code
           const verificationCode = generateVerificationCode();
@@ -57,6 +65,7 @@ class UserController {
           return res.status(201).json({
             message: "user created",
             token: token,
+            streamToken: streamResult.token,
             user: {
               id: response._id,
               role: response.role,
@@ -189,7 +198,7 @@ class UserController {
         bcrypt.compare(
           req.body.password,
           user.password!,
-          (err: any, result: any) => {
+          async (err: any, result: any) => {
             if (err) {
               return res.status(401).json({
                 message:
@@ -207,9 +216,18 @@ class UserController {
                 process.env.JWT_SECRET as string
               );
 
+              const streamResult = await generateToken(
+                user._id.toString(),
+                user.firstName,
+                user.lastName,
+                user.email,
+                user.profilePicture.url
+              );
+
               return res.status(200).json({
                 message: "Login successful",
                 token: token,
+                streamToken: streamResult.token,
                 user: {
                   id: user._id,
                   role: user.role,
@@ -688,8 +706,8 @@ class UserController {
 
   async updateImage(req: Request, res: Response) {
     try {
-      const { id, key } = req.params;
-      const { newUrl, newKey } = req.body;
+      const { id } = req.params;
+      const { key, newUrl, newKey } = req.body;
 
       // Find the document with the specific ID
       const user = await User.findById(id);
@@ -716,7 +734,7 @@ class UserController {
 
       return res
         .status(200)
-        .json({ message: "Image updated successfully", images: user.images });
+        .json({ message: "Image updated successfully", user: user });
     } catch (error: any) {
       return res
         .status(500)
