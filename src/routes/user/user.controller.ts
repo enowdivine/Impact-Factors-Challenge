@@ -677,9 +677,113 @@ class UserController {
     }
   }
 
+  async addImage(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { url, key } = req.body;
+
+      // Find the document with the specific ID
+      const user = await User.findById(id);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (user.images.length >= 5) {
+        return res
+          .status(500)
+          .json({ message: "You can only add up to 5 images" });
+      }
+
+      // Add the new image to the images array
+      user.images.push({ url, key });
+
+      // Save the updated document
+      await user.save();
+
+      return res.status(200).json({
+        message: "Image added successfully",
+        user: {
+          id: user._id,
+          role: user.role,
+          profilePicture: user.profilePicture,
+          images: user.images,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          username: user.username,
+          email: user.email,
+          emailVerified: user.emailVerified,
+          profilePrivacy: user.profilePrivacy,
+          //
+          questionOne: user.questionOne,
+          answerOne: user.answerOne,
+          questionTwo: user.questionTwo,
+          answerTwo: user.answerTwo,
+          bio: user.bio,
+          //
+          location: user.location,
+          likedUsers: user.likedUsers,
+          premium: user.premium,
+          //
+          gender: user.gender,
+          interestedGender: user.interestedGender,
+          age: user.age,
+          countryOfOrigin: user.countryOfOrigin,
+          currentLocation: user.currentLocation,
+          maritalStatus: user.maritalStatus,
+          numberOfChildren: user.numberOfChildren,
+          height: user.height,
+          //
+          physique: user.physique,
+          interests: user.interests,
+          practicedSports: user.practicedSports,
+          religion: user.religion,
+          importanceOfReligion: user.importanceOfReligion,
+          smoking: user.smoking,
+          //
+          educationLevel: user.educationLevel,
+          occupation: user.occupation,
+          languages: user.languages,
+          personality: user.personality,
+          importantInLife: user.importantInLife,
+          values: user.values,
+          //
+          wantMarriage: user.wantMarriage,
+          relationshipEssentials: user.relationshipEssentials,
+          wantChildren: user.wantChildren,
+          returnToCountry: user.returnToCountry,
+          culturalValuesImportance: user.culturalValuesImportance,
+          partnerFromOtherBackground: user.partnerFromOtherBackground,
+          partnerFromSameCountry: user.partnerFromSameCountry,
+          partnerInSameCountry: user.partnerInSameCountry,
+          //
+          shareHouseholdTasks: user.shareHouseholdTasks,
+          longTermCountries: user.longTermCountries,
+          //
+          partnerAge: user.partnerAge,
+          partnerEducationLevel: user.partnerEducationLevel,
+          partnerAttraction: user.partnerAttraction,
+          partnerPhysique: user.partnerPhysique,
+          partnerSmoking: user.partnerSmoking,
+          partnerHeight: user.partnerHeight,
+          //
+          status: user.status,
+          //
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        },
+      });
+    } catch (error: any) {
+      return res
+        .status(500)
+        .json({ message: error.message || "Error adding image" });
+    }
+  }
+
   async deleteImage(req: Request, res: Response) {
     try {
-      const { id, key } = req.params;
+      const { id } = req.params;
+      const { key } = req.body;
 
       // Find the document with the specific ID
       const user = await User.findById(id);
@@ -694,9 +798,78 @@ class UserController {
       // Save the updated document
       await user.save();
 
-      return res
-        .status(200)
-        .json({ message: "Image deleted successfully", images: user.images });
+      return res.status(200).json({
+        message: "Image deleted successfully",
+        user: {
+          id: user._id,
+          role: user.role,
+          profilePicture: user.profilePicture,
+          images: user.images,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          username: user.username,
+          email: user.email,
+          emailVerified: user.emailVerified,
+          profilePrivacy: user.profilePrivacy,
+          //
+          questionOne: user.questionOne,
+          answerOne: user.answerOne,
+          questionTwo: user.questionTwo,
+          answerTwo: user.answerTwo,
+          bio: user.bio,
+          //
+          location: user.location,
+          likedUsers: user.likedUsers,
+          premium: user.premium,
+          //
+          gender: user.gender,
+          interestedGender: user.interestedGender,
+          age: user.age,
+          countryOfOrigin: user.countryOfOrigin,
+          currentLocation: user.currentLocation,
+          maritalStatus: user.maritalStatus,
+          numberOfChildren: user.numberOfChildren,
+          height: user.height,
+          //
+          physique: user.physique,
+          interests: user.interests,
+          practicedSports: user.practicedSports,
+          religion: user.religion,
+          importanceOfReligion: user.importanceOfReligion,
+          smoking: user.smoking,
+          //
+          educationLevel: user.educationLevel,
+          occupation: user.occupation,
+          languages: user.languages,
+          personality: user.personality,
+          importantInLife: user.importantInLife,
+          values: user.values,
+          //
+          wantMarriage: user.wantMarriage,
+          relationshipEssentials: user.relationshipEssentials,
+          wantChildren: user.wantChildren,
+          returnToCountry: user.returnToCountry,
+          culturalValuesImportance: user.culturalValuesImportance,
+          partnerFromOtherBackground: user.partnerFromOtherBackground,
+          partnerFromSameCountry: user.partnerFromSameCountry,
+          partnerInSameCountry: user.partnerInSameCountry,
+          //
+          shareHouseholdTasks: user.shareHouseholdTasks,
+          longTermCountries: user.longTermCountries,
+          //
+          partnerAge: user.partnerAge,
+          partnerEducationLevel: user.partnerEducationLevel,
+          partnerAttraction: user.partnerAttraction,
+          partnerPhysique: user.partnerPhysique,
+          partnerSmoking: user.partnerSmoking,
+          partnerHeight: user.partnerHeight,
+          //
+          status: user.status,
+          //
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        },
+      });
     } catch (error: any) {
       return res
         .status(500)
@@ -732,9 +905,78 @@ class UserController {
       // Save the updated document
       await user.save();
 
-      return res
-        .status(200)
-        .json({ message: "Image updated successfully", user: user });
+      return res.status(200).json({
+        message: "Image updated successfully",
+        user: {
+          id: user._id,
+          role: user.role,
+          profilePicture: user.profilePicture,
+          images: user.images,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          username: user.username,
+          email: user.email,
+          emailVerified: user.emailVerified,
+          profilePrivacy: user.profilePrivacy,
+          //
+          questionOne: user.questionOne,
+          answerOne: user.answerOne,
+          questionTwo: user.questionTwo,
+          answerTwo: user.answerTwo,
+          bio: user.bio,
+          //
+          location: user.location,
+          likedUsers: user.likedUsers,
+          premium: user.premium,
+          //
+          gender: user.gender,
+          interestedGender: user.interestedGender,
+          age: user.age,
+          countryOfOrigin: user.countryOfOrigin,
+          currentLocation: user.currentLocation,
+          maritalStatus: user.maritalStatus,
+          numberOfChildren: user.numberOfChildren,
+          height: user.height,
+          //
+          physique: user.physique,
+          interests: user.interests,
+          practicedSports: user.practicedSports,
+          religion: user.religion,
+          importanceOfReligion: user.importanceOfReligion,
+          smoking: user.smoking,
+          //
+          educationLevel: user.educationLevel,
+          occupation: user.occupation,
+          languages: user.languages,
+          personality: user.personality,
+          importantInLife: user.importantInLife,
+          values: user.values,
+          //
+          wantMarriage: user.wantMarriage,
+          relationshipEssentials: user.relationshipEssentials,
+          wantChildren: user.wantChildren,
+          returnToCountry: user.returnToCountry,
+          culturalValuesImportance: user.culturalValuesImportance,
+          partnerFromOtherBackground: user.partnerFromOtherBackground,
+          partnerFromSameCountry: user.partnerFromSameCountry,
+          partnerInSameCountry: user.partnerInSameCountry,
+          //
+          shareHouseholdTasks: user.shareHouseholdTasks,
+          longTermCountries: user.longTermCountries,
+          //
+          partnerAge: user.partnerAge,
+          partnerEducationLevel: user.partnerEducationLevel,
+          partnerAttraction: user.partnerAttraction,
+          partnerPhysique: user.partnerPhysique,
+          partnerSmoking: user.partnerSmoking,
+          partnerHeight: user.partnerHeight,
+          //
+          status: user.status,
+          //
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        },
+      });
     } catch (error: any) {
       return res
         .status(500)
