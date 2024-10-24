@@ -1163,7 +1163,7 @@ class UserController {
       }
     } catch (error: any) {
       return res.status(500).json({
-        message: error.message || "error deleting user",
+        message: error.message || "error deleting account",
       });
     }
   }
