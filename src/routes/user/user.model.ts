@@ -21,6 +21,7 @@ const userSchema = new Schema(
     emailVerified: { type: Boolean, default: false },
     profilePrivacy: { type: Boolean, default: false },
     password: { type: String, required: true },
+    isProfileCompleted: { type: Boolean, default: false },
     //
     questionOne: { type: String },
     answerOne: { type: String },

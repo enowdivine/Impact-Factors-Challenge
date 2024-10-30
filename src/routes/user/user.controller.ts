@@ -77,6 +77,7 @@ class UserController {
               email: response.email,
               emailVerified: response.emailVerified,
               profilePrivacy: response.profilePrivacy,
+              isProfileCompleted: response.isProfileCompleted,
               //
               questionOne: response.questionOne,
               answerOne: response.answerOne,
@@ -239,6 +240,7 @@ class UserController {
                   email: user.email,
                   emailVerified: user.emailVerified,
                   profilePrivacy: user.profilePrivacy,
+                  isProfileCompleted: user.isProfileCompleted,
                   //
                   questionOne: user.questionOne,
                   answerOne: user.answerOne,
@@ -714,6 +716,7 @@ class UserController {
           email: user.email,
           emailVerified: user.emailVerified,
           profilePrivacy: user.profilePrivacy,
+          isProfileCompleted: user.isProfileCompleted,
           //
           questionOne: user.questionOne,
           answerOne: user.answerOne,
@@ -818,6 +821,7 @@ class UserController {
           email: user.email,
           emailVerified: user.emailVerified,
           profilePrivacy: user.profilePrivacy,
+          isProfileCompleted: user.isProfileCompleted,
           //
           questionOne: user.questionOne,
           answerOne: user.answerOne,
@@ -925,6 +929,7 @@ class UserController {
           email: user.email,
           emailVerified: user.emailVerified,
           profilePrivacy: user.profilePrivacy,
+          isProfileCompleted: user.isProfileCompleted,
           //
           questionOne: user.questionOne,
           answerOne: user.answerOne,
@@ -1005,6 +1010,7 @@ class UserController {
           username: req.body.username,
           email: req.body.email,
           profilePrivacy: req.body.profilePrivacy,
+          isProfileCompleted: req.body.isProfileCompleted,
           //
           questionOne: req.body.questionOne,
           answerOne: req.body.answerOne,
@@ -1089,6 +1095,7 @@ class UserController {
             email: data.email,
             emailVerified: data.emailVerified,
             profilePrivacy: data.profilePrivacy,
+            isProfileCompleted: data.isProfileCompleted,
             //
             questionOne: data.questionOne,
             answerOne: data.answerOne,
