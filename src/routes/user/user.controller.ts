@@ -527,8 +527,14 @@ class UserController {
 
   async twoBestMatches(req: Request, res: Response) {
     try {
+      // Get the user ID of the person making the request
+      const requestingUserId = req.params.id;
+
       // Get all users with the role "USER"
-      const allUsers = await User.find({ role: "USER" });
+      const allUsers = await User.find({
+        role: "USER",
+        _id: { $ne: requestingUserId }, // Exclude the requesting user
+      });
 
       if (allUsers.length === 0) {
         return res.status(404).json({
