@@ -190,9 +190,94 @@ class UserController {
 
       if (user) {
         if (!user?.emailVerified) {
-          return res.status(500).json({
-            message:
-              "Email not verified. Please verify your email to continue.",
+          // return res.status(500).json({
+          //   message:
+          //     "Email not verified. Please verify your email to continue.",
+          // });
+          // Generate the six-digit verification code
+          const verificationCode = generateVerificationCode();
+          verificationCodes.set(req.body.email, verificationCode);
+
+          // Send verification code via email
+          sendEmail({
+            to: req.body.email,
+            title: "Email verification code",
+            subject: "Verify Your Email",
+            message: userSignup(user.firstName, verificationCode),
+          });
+
+          return res.status(200).json({
+            message: "Success",
+            user: {
+              id: user._id,
+              role: user.role,
+              profilePicture: user.profilePicture,
+              images: user.images,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              username: user.username,
+              email: user.email,
+              emailVerified: user.emailVerified,
+              profilePrivacy: user.profilePrivacy,
+              isProfileCompleted: user.isProfileCompleted,
+              //
+              questionOne: user.questionOne,
+              answerOne: user.answerOne,
+              questionTwo: user.questionTwo,
+              answerTwo: user.answerTwo,
+              bio: user.bio,
+              //
+              location: user.location,
+              likedUsers: user.likedUsers,
+              premium: user.premium,
+              //
+              gender: user.gender,
+              interestedGender: user.interestedGender,
+              age: user.age,
+              countryOfOrigin: user.countryOfOrigin,
+              currentLocation: user.currentLocation,
+              maritalStatus: user.maritalStatus,
+              numberOfChildren: user.numberOfChildren,
+              height: user.height,
+              //
+              physique: user.physique,
+              interests: user.interests,
+              practicedSports: user.practicedSports,
+              religion: user.religion,
+              importanceOfReligion: user.importanceOfReligion,
+              smoking: user.smoking,
+              //
+              educationLevel: user.educationLevel,
+              occupation: user.occupation,
+              languages: user.languages,
+              personality: user.personality,
+              importantInLife: user.importantInLife,
+              values: user.values,
+              //
+              wantMarriage: user.wantMarriage,
+              relationshipEssentials: user.relationshipEssentials,
+              wantChildren: user.wantChildren,
+              returnToCountry: user.returnToCountry,
+              culturalValuesImportance: user.culturalValuesImportance,
+              partnerFromOtherBackground: user.partnerFromOtherBackground,
+              partnerFromSameCountry: user.partnerFromSameCountry,
+              partnerInSameCountry: user.partnerInSameCountry,
+              //
+              shareHouseholdTasks: user.shareHouseholdTasks,
+              longTermCountries: user.longTermCountries,
+              //
+              partnerAge: user.partnerAge,
+              partnerEducationLevel: user.partnerEducationLevel,
+              partnerAttraction: user.partnerAttraction,
+              partnerPhysique: user.partnerPhysique,
+              partnerSmoking: user.partnerSmoking,
+              partnerHeight: user.partnerHeight,
+              //
+              status: user.status,
+              //
+              createdAt: user.createdAt,
+              updatedAt: user.updatedAt,
+            },
           });
         }
 
