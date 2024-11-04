@@ -153,6 +153,43 @@ class AlgorithmController {
       console.log("Error generatiing users:", error);
     }
   }
+
+  async users(req: Request, res: Response) {
+    try {
+      // Default values for page and limit if not provided in the query
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+
+      // Calculate the starting index for the query based on page and limit
+      const skip = (page - 1) * limit;
+
+      // Fetch the total count of users excluding the current user
+      const totalUsers = await User.countDocuments({
+        role: "USER",
+        gender: "WOMAN",
+      });
+
+      // Fetch the paginated users excluding the current user
+      const users = await User.find({
+        role: "USER",
+        gender: "MAN",
+      })
+        .sort({ createdAt: -1 })
+        .skip(skip) // Skip users for previous pages
+        .limit(limit); // Limit the number of users per page
+
+      return res.status(200).json({
+        users,
+        currentPage: page,
+        totalPages: Math.ceil(totalUsers / limit),
+        totalUsers: totalUsers,
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        message: error.message || "Error fetching data",
+      });
+    }
+  }
 }
 
 export default AlgorithmController;
