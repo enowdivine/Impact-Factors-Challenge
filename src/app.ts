@@ -6,6 +6,7 @@ import http from "http";
 import cors from "cors";
 // api imports
 import userRoutes from "./routes/user/user.routes";
+import algorithmRoutes from "./routes/algorithm/algm.routes";
 
 const path = require("path");
 export const appRoot = path.resolve(__dirname);
@@ -29,6 +30,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.use(`/api/${process.env.API_VERSION}/users`, userRoutes);
+app.use(`/api/${process.env.API_VERSION}/algorithm`, algorithmRoutes);
 
 app.get("/", (req: Request, res: Response) => {
   res.send(`Bliss Server 🚀 `);
