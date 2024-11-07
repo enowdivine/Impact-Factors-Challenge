@@ -9,6 +9,9 @@ import sendEmail from "../../services/email/email";
 import { userSignup } from "./templates/email";
 import { generateToken } from "../streamChat/stream.controller";
 
+// ALGORITHM IMPORTS
+import { getFilteredUsers } from "../algorithm/algm.combinedFilters";
+
 const verificationCodes = new Map();
 const generateVerificationCode = () =>
   Math.floor(100000 + Math.random() * 900000);
@@ -28,7 +31,7 @@ class UserController {
         firstName: req.body.firstName,
         lastName: req.body.lastName,
         username: req.body.username,
-        email: req.body.email,
+        email: req.body.email.toLowerCase(),
         password: hash,
       });
       newUser
@@ -186,7 +189,7 @@ class UserController {
 
   async login(req: Request, res: Response) {
     try {
-      const user = await User.findOne({ email: req.body.email });
+      const user = await User.findOne({ email: req.body.email.toLowerCase() });
 
       if (user) {
         if (!user?.emailVerified) {
@@ -582,23 +585,16 @@ class UserController {
       // Calculate the starting index for the query based on page and limit
       const skip = (page - 1) * limit;
 
-      // Fetch the total count of users excluding the current user
-      const totalUsers = await User.countDocuments({
-        role: "USER",
-        _id: { $ne: currentUserId }, // Exclude the current user
-      });
+      // Step 1: Get all filtered users
+      let users = await getFilteredUsers(currentUserId);
 
-      // Fetch the paginated users excluding the current user
-      const users = await User.find({
-        role: "USER",
-        _id: { $ne: currentUserId }, // Exclude the current user
-      })
-        .sort({ createdAt: -1 })
-        .skip(skip) // Skip users for previous pages
-        .limit(limit); // Limit the number of users per page
+      // Step 2: Implement pagination on the filtered users
+      const totalUsers = users.length; // Total number of filtered users
+      const paginatedUsers = users.slice(skip, skip + limit); // Slice the array to get the paginated results
 
+      // Step 3: Return the paginated users
       return res.status(200).json({
-        users,
+        users: paginatedUsers,
         currentPage: page,
         totalPages: Math.ceil(totalUsers / limit),
         totalUsers: totalUsers,

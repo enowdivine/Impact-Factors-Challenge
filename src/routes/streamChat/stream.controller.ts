@@ -37,29 +37,3 @@ export async function generateToken(
     return { success: false, message: "Error generating token" };
   }
 }
-
-// Example Usage
-// (async () => {
-//   try {
-//     const userId = "12345";
-//     const firstName = "John";
-//     const lastName = "Doe";
-//     const email = "john.doe@example.com";
-//     const profilePictureUrl = "https://example.com/profile.jpg";
-
-//     const result = await generateToken(
-//       userId,
-//       firstName,
-//       lastName,
-//       email,
-//       profilePictureUrl
-//     );
-//     if (result.success) {
-//       console.log("Token generated:", result.token);
-//     } else {
-//       console.log("Error:", result.message);
-//     }
-//   } catch (err) {
-//     console.error(err);
-//   }
-// })();
