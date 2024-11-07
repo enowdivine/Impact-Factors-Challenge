@@ -247,8 +247,8 @@ export const generateRandomUser = async () => {
     lastName: faker.name.lastName(),
     username: faker.internet.userName(),
     email: faker.internet.email().toLowerCase(),
-    emailVerified: faker.datatype.boolean(),
-    isProfileCompleted: faker.datatype.boolean(),
+    emailVerified: true,
+    isProfileCompleted: true,
     profilePrivacy: faker.datatype.boolean(),
     password: hashedPassword, // Use the hashed password
     questionOne: faker.helpers.arrayElement(QUESTIONS.optionQuestions),
