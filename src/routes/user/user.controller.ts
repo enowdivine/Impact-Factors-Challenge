@@ -705,6 +705,58 @@ class UserController {
     }
   }
 
+  async dislikeUser(req: Request, res: Response) {
+    try {
+      const { userId } = req.params;
+      const { dislikedUserId } = req.params;
+
+      if (!userId || !dislikedUserId) {
+        return res
+          .status(400)
+          .json({ message: "Both userId and dislikedUserId are required." });
+      }
+
+      // Find the user who is performing the dislike action
+      const user = await User.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found." });
+      }
+
+      // Check if the dislikedUserId already exists in the dislikedUsers array
+      const isDisliked = user.dislikedUsers.includes(dislikedUserId);
+
+      // Toggle logic: If already disliked, remove from dislikedUsers. If not disliked, add to dislikedUsers.
+      const update = isDisliked
+        ? { $pull: { dislikedUsers: dislikedUserId } } // Remove dislikedUserId
+        : { $addToSet: { dislikedUsers: dislikedUserId } }; // Add dislikedUserId
+
+      // Update the user document
+      const updatedUser = await User.findByIdAndUpdate(userId, update, {
+        new: true,
+      }).select("dislikedUsers");
+
+      // If for some reason the update failed, return an error
+      if (!updatedUser) {
+        return res
+          .status(500)
+          .json({ message: "Error updating dislike status." });
+      }
+
+      // Return the updated dislikedUsers list
+      return res.status(200).json({
+        message: isDisliked
+          ? "User removed from dislikes successfully."
+          : "User disliked successfully.",
+        dislikedUsers: updatedUser.dislikedUsers, // Return the updated dislikedUsers array
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        message: error.message || "Error toggling dislike status.",
+      });
+    }
+  }
+
   async likedUsers(req: Request, res: Response) {
     try {
       const data = await User.find({ _id: req.params.id }).populate(

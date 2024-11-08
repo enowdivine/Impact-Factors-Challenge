@@ -1,7 +1,7 @@
 import axios from "axios";
+import bcrypt from "bcrypt";
 import { faker } from "@faker-js/faker";
-import { QUESTIONS } from "../algm.data";
-import bcrypt from "bcrypt"; // Import bcrypt
+import { QUESTIONS } from "../algm.data"; // Import the QUESTIONS data
 
 // Define the Country object structure
 interface Country {
@@ -12,201 +12,151 @@ interface Country {
   name: string;
   region: string;
   subregion: string;
+  latitude: number;
+  longitude: number;
 }
 
-// Function to generate a random Country object
-const generateRandomCountry = (): Country => {
-  const europeanCountries: Country[] = [
-    {
-      cca2: "CH",
-      currency: "CHF",
-      callingCode: "41",
-      flag: "🇨🇭",
-      name: "Switzerland",
-      region: "Europe",
-      subregion: "Western Europe",
-    },
-    {
-      cca2: "DE",
-      currency: "EUR",
-      callingCode: "49",
-      flag: "🇩🇪",
-      name: "Germany",
-      region: "Europe",
-      subregion: "Western Europe",
-    },
-    {
-      cca2: "FR",
-      currency: "EUR",
-      callingCode: "33",
-      flag: "🇫🇷",
-      name: "France",
-      region: "Europe",
-      subregion: "Western Europe",
-    },
-    {
-      cca2: "IT",
-      currency: "EUR",
-      callingCode: "39",
-      flag: "🇮🇹",
-      name: "Italy",
-      region: "Europe",
-      subregion: "Southern Europe",
-    },
-    {
-      cca2: "ES",
-      currency: "EUR",
-      callingCode: "34",
-      flag: "🇪🇸",
-      name: "Spain",
-      region: "Europe",
-      subregion: "Southern Europe",
-    },
-    {
-      cca2: "NL",
-      currency: "EUR",
-      callingCode: "31",
-      flag: "🇳🇱",
-      name: "Netherlands",
-      region: "Europe",
-      subregion: "Western Europe",
-    },
-    {
-      cca2: "BE",
-      currency: "EUR",
-      callingCode: "32",
-      flag: "🇧🇪",
-      name: "Belgium",
-      region: "Europe",
-      subregion: "Western Europe",
-    },
-    {
-      cca2: "AT",
-      currency: "EUR",
-      callingCode: "43",
-      flag: "🇦🇹",
-      name: "Austria",
-      region: "Europe",
-      subregion: "Western Europe",
-    },
-    {
-      cca2: "GR",
-      currency: "EUR",
-      callingCode: "30",
-      flag: "🇬🇷",
-      name: "Greece",
-      region: "Europe",
-      subregion: "Southern Europe",
-    },
-    {
-      cca2: "PT",
-      currency: "EUR",
-      callingCode: "351",
-      flag: "🇵🇹",
-      name: "Portugal",
-      region: "Europe",
-      subregion: "Southern Europe",
-    },
-    {
-      cca2: "SE",
-      currency: "SEK",
-      callingCode: "46",
-      flag: "🇸🇪",
-      name: "Sweden",
-      region: "Europe",
-      subregion: "Northern Europe",
-    },
-    {
-      cca2: "NO",
-      currency: "NOK",
-      callingCode: "47",
-      flag: "🇳🇴",
-      name: "Norway",
-      region: "Europe",
-      subregion: "Northern Europe",
-    },
-    {
-      cca2: "DK",
-      currency: "DKK",
-      callingCode: "45",
-      flag: "🇩🇰",
-      name: "Denmark",
-      region: "Europe",
-      subregion: "Northern Europe",
-    },
-    {
-      cca2: "FI",
-      currency: "EUR",
-      callingCode: "358",
-      flag: "🇫🇮",
-      name: "Finland",
-      region: "Europe",
-      subregion: "Northern Europe",
-    },
-    {
-      cca2: "IE",
-      currency: "EUR",
-      callingCode: "353",
-      flag: "🇮🇪",
-      name: "Ireland",
-      region: "Europe",
-      subregion: "Northern Europe",
-    },
-    {
-      cca2: "GB",
-      currency: "GBP",
-      callingCode: "44",
-      flag: "🇬🇧",
-      name: "United Kingdom",
-      region: "Europe",
-      subregion: "Northern Europe",
-    },
-    {
-      cca2: "CZ",
-      currency: "CZK",
-      callingCode: "420",
-      flag: "🇨🇿",
-      name: "Czech Republic",
-      region: "Europe",
-      subregion: "Central Europe",
-    },
-    {
-      cca2: "PL",
-      currency: "PLN",
-      callingCode: "48",
-      flag: "🇵🇱",
-      name: "Poland",
-      region: "Europe",
-      subregion: "Central Europe",
-    },
-    {
-      cca2: "HU",
-      currency: "HUF",
-      callingCode: "36",
-      flag: "🇭🇺",
-      name: "Hungary",
-      region: "Europe",
-      subregion: "Central Europe",
-    },
-    {
-      cca2: "RO",
-      currency: "RON",
-      callingCode: "40",
-      flag: "🇷🇴",
-      name: "Romania",
-      region: "Europe",
-      subregion: "Eastern Europe",
-    },
-  ];
-
-  // Select a random country from the list
-  return faker.helpers.arrayElement(europeanCountries);
+// Distribution map for user generation
+export const countryDistribution = {
+  France: 250,
+  Belgium: 125,
+  Canada: 125,
+  Switzerland: 100,
+  Germany: 100,
+  UK: 50,
+  Italy: 75,
+  Portugal: 25,
+  Spain: 25,
+  Netherlands: 25,
+  "Rest of Europe": 100,
 };
 
-// Function to generate random user images from the Random User API based on gender
+// Country data with real latitude and longitude
+export const countryData: { [key: string]: Country } = {
+  France: {
+    cca2: "FR",
+    currency: "EUR",
+    callingCode: "33",
+    flag: "🇫🇷",
+    name: "France",
+    region: "Europe",
+    subregion: "Western Europe",
+    latitude: 46.603354,
+    longitude: 1.888334,
+  },
+  Belgium: {
+    cca2: "BE",
+    currency: "EUR",
+    callingCode: "32",
+    flag: "🇧🇪",
+    name: "Belgium",
+    region: "Europe",
+    subregion: "Western Europe",
+    latitude: 50.503887,
+    longitude: 4.469936,
+  },
+  Canada: {
+    cca2: "CA",
+    currency: "CAD",
+    callingCode: "1",
+    flag: "🇨🇦",
+    name: "Canada",
+    region: "Americas",
+    subregion: "Northern America",
+    latitude: 56.130366,
+    longitude: -106.346771,
+  },
+  Switzerland: {
+    cca2: "CH",
+    currency: "CHF",
+    callingCode: "41",
+    flag: "🇨🇭",
+    name: "Switzerland",
+    region: "Europe",
+    subregion: "Western Europe",
+    latitude: 46.818188,
+    longitude: 8.227512,
+  },
+  Germany: {
+    cca2: "DE",
+    currency: "EUR",
+    callingCode: "49",
+    flag: "🇩🇪",
+    name: "Germany",
+    region: "Europe",
+    subregion: "Western Europe",
+    latitude: 51.165691,
+    longitude: 10.451526,
+  },
+  UK: {
+    cca2: "GB",
+    currency: "GBP",
+    callingCode: "44",
+    flag: "🇬🇧",
+    name: "United Kingdom",
+    region: "Europe",
+    subregion: "Northern Europe",
+    latitude: 55.378051,
+    longitude: -3.435973,
+  },
+  Italy: {
+    cca2: "IT",
+    currency: "EUR",
+    callingCode: "39",
+    flag: "🇮🇹",
+    name: "Italy",
+    region: "Europe",
+    subregion: "Southern Europe",
+    latitude: 41.87194,
+    longitude: 12.56738,
+  },
+  Portugal: {
+    cca2: "PT",
+    currency: "EUR",
+    callingCode: "351",
+    flag: "🇵🇹",
+    name: "Portugal",
+    region: "Europe",
+    subregion: "Southern Europe",
+    latitude: 39.399872,
+    longitude: -8.224454,
+  },
+  Spain: {
+    cca2: "ES",
+    currency: "EUR",
+    callingCode: "34",
+    flag: "🇪🇸",
+    name: "Spain",
+    region: "Europe",
+    subregion: "Southern Europe",
+    latitude: 40.463667,
+    longitude: -3.74922,
+  },
+  Netherlands: {
+    cca2: "NL",
+    currency: "EUR",
+    callingCode: "31",
+    flag: "🇳🇱",
+    name: "Netherlands",
+    region: "Europe",
+    subregion: "Western Europe",
+    latitude: 52.132633,
+    longitude: 5.291266,
+  },
+};
+
+// Function to generate a random location within a given range around central coordinates
+const generateRandomLocation = (latitude: number, longitude: number) => {
+  const randomOffset = () => (Math.random() - 0.5) * 0.5; // Offset of up to ±0.25 degrees
+  return {
+    latitude: latitude + randomOffset(),
+    longitude: longitude + randomOffset(),
+  };
+};
+
+// Function to fetch random user images from the Random User API based on gender
 export const fetchRandomImage = async (gender: string) => {
   try {
-    // The gender parameter should be "male" or "female" for the Random User API
     const apiGender = gender === "MAN" ? "male" : "female";
     const response = await axios.get(
       `https://randomuser.me/api/?gender=${apiGender}`
@@ -223,7 +173,7 @@ export const fetchRandomImage = async (gender: string) => {
 };
 
 // Function to generate a random user
-export const generateRandomUser = async () => {
+const generateRandomUser = async (country: Country) => {
   // Randomly select the gender for the user
   const gender = faker.helpers.arrayElement(QUESTIONS.gender);
 
@@ -236,8 +186,14 @@ export const generateRandomUser = async () => {
 
   // Hash the password using bcrypt
   const plainPassword = "1234"; // The plain password
-  const saltRounds = 10; // Number of salt rounds for bcrypt
+  const saltRounds = 10;
   const hashedPassword = await bcrypt.hash(plainPassword, saltRounds);
+
+  // Generate a random location within the country
+  const { latitude, longitude } = generateRandomLocation(
+    country.latitude,
+    country.longitude
+  );
 
   return {
     role: "USER",
@@ -250,30 +206,30 @@ export const generateRandomUser = async () => {
     emailVerified: true,
     isProfileCompleted: true,
     profilePrivacy: faker.datatype.boolean(),
-    password: hashedPassword, // Use the hashed password
+    password: hashedPassword,
     questionOne: faker.helpers.arrayElement(QUESTIONS.optionQuestions),
     answerOne: faker.lorem.sentence(),
     questionTwo: faker.helpers.arrayElement(QUESTIONS.optionQuestions),
     answerTwo: faker.lorem.sentence(),
     bio: faker.lorem.paragraph(),
-    location: faker.address.city(),
+    location: country.name,
     likedUsers: [],
     premium: {
       isPremium: faker.datatype.boolean(),
       plan: faker.helpers.arrayElement(["FREE", "BASIC", "PREMIUM"]),
       expiresIn: faker.date.future(),
     },
-    gender, // Use the randomly selected gender
+    gender,
     interestedGender: faker.helpers.arrayElement(QUESTIONS.interestedGender),
     age: faker.number.int({ min: QUESTIONS.age.min, max: QUESTIONS.age.max }),
-    countryOfOrigin: generateRandomCountry(), // Use the Country object format
+    countryOfOrigin: country,
     currentLocation: {
       city: faker.address.city(),
       region: faker.address.state(),
-      country: faker.address.country(),
+      country: country.name,
       postalCode: faker.address.zipCode(),
-      latitude: faker.address.latitude(),
-      longitude: faker.address.longitude(),
+      latitude,
+      longitude,
     },
     maritalStatus: faker.helpers.arrayElement(QUESTIONS.maritalStatus),
     numberOfChildren: faker.helpers.arrayElement(QUESTIONS.children),
@@ -317,10 +273,16 @@ export const generateRandomUser = async () => {
     shareHouseholdTasks: faker.helpers.arrayElement(
       QUESTIONS.shareHouseholdTasks
     ),
-    longTermCountries: [generateRandomCountry(), generateRandomCountry()], // Array of Country objects
+    longTermCountries: [country, country], // Example of long-term countries
     partnerAge: {
-      minValue: faker.number.int({ min: 20, max: 30 }),
-      maxValue: faker.number.int({ min: 31, max: 50 }),
+      minValue: faker.number.int({
+        min: QUESTIONS.partnerHeight.min,
+        max: 170,
+      }),
+      maxValue: faker.number.int({
+        min: 171,
+        max: QUESTIONS.partnerHeight.max,
+      }),
     },
     partnerEducationLevel: faker.helpers.arrayElement(
       QUESTIONS.partnerEducationLevel
@@ -331,16 +293,7 @@ export const generateRandomUser = async () => {
     ),
     partnerPhysique: faker.helpers.arrayElement(QUESTIONS.partnerPhysique),
     partnerSmoking: faker.helpers.arrayElement(QUESTIONS.partnerSmoking),
-    partnerHeight: {
-      minValue: faker.number.int({
-        min: QUESTIONS.partnerHeight.min,
-        max: 170,
-      }),
-      maxValue: faker.number.int({
-        min: 171,
-        max: QUESTIONS.partnerHeight.max,
-      }),
-    },
-    status: "ACTIVE",
   };
 };
+
+export { generateRandomUser };

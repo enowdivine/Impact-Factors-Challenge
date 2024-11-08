@@ -7,7 +7,7 @@ const filterUsersByGender = async (currentUserId: string) => {
     const currentUser = await User.findById(currentUserId);
     if (!currentUser) throw new Error("Current user not found");
 
-    const { gender, interestedGender } = currentUser;
+    const { gender, interestedGender, likedUsers, dislikedUsers } = currentUser;
 
     // Construct gender filter based on user's preferences
     let genderFilter = {};
@@ -28,9 +28,12 @@ const filterUsersByGender = async (currentUserId: string) => {
       throw new Error("Unsupported gender preferences");
     }
 
-    // Query to fetch users matching gender criteria, excluding the current user
+    // Query to fetch users matching gender criteria, excluding the current user, liked, and disliked users
     const users = await User.find({
-      _id: { $ne: currentUserId }, // Exclude current user
+      _id: {
+        $ne: currentUserId, // Exclude the current user
+        $nin: [...likedUsers, ...dislikedUsers], // Exclude users who are either liked or disliked
+      },
       role: "USER",
       ...genderFilter,
     });

@@ -20,6 +20,7 @@ router.get("/:id/two-best-matches", user.twoBestMatches);
 router.get("/:id/mutual-liked-users", user.mutualLikedUsers);
 
 router.put("/like/:userId/:likedUserId", user.toggleLikeUser);
+router.put("/dislike/:userId/:dislikedUserId", user.dislikeUser);
 
 router.put("/update/:id", user.update);
 router.put("/add-image/:id", user.addImage);
