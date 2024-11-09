@@ -38,7 +38,7 @@ const filterUsersByGender = async (currentUserId: string) => {
       ...genderFilter,
     });
 
-    return users;
+    return { currentUser, users };
   } catch (error) {
     console.error("Error filtering users by gender:", error);
     throw error;

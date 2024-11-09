@@ -1,3 +1,106 @@
+export interface Premium {
+  isPremium: boolean;
+  plan: string;
+  expiresIn?: Date;
+}
+
+export interface PartnerAge {
+  minValue?: number;
+  maxValue?: number;
+}
+
+export interface PartnerHeight {
+  minValue?: number;
+  maxValue?: number;
+}
+
+export interface PartnerRange {
+  minValue?: number;
+  maxValue?: number;
+}
+
+export interface LocationObject {
+  status?: string;
+  message?: string;
+  city?: string;
+  region?: string;
+  country?: string;
+  postalCode?: string;
+  latitude?: number;
+  longitude?: number;
+}
+
+export interface UserImage {
+  url?: string;
+  key?: string;
+}
+
+export interface User {
+  // id?: string;
+  role?: "ADMIN" | "USER";
+
+  profilePicture?: UserImage;
+  images?: UserImage[];
+
+  firstName?: string;
+  lastName?: string;
+  username?: string;
+  email?: string;
+  emailVerified?: boolean;
+  password?: string;
+  isProfileCompleted?: boolean;
+  //
+  profilePrivacy?: boolean;
+  questionOne?: string;
+  answerOne?: string;
+  questionTwo?: string;
+  answerTwo?: string;
+  bio?: string;
+  //
+  location?: string;
+  likedUsers?: string[];
+  dislikedUsers?: string[];
+  premium?: Premium;
+  gender?: string;
+  interestedGender?: string;
+  age?: number;
+  countryOfOrigin?: any;
+  currentLocation?: LocationObject;
+  maritalStatus?: string;
+  numberOfChildren?: string;
+  height?: number;
+  physique?: string;
+  interests?: string[];
+  practicedSports?: string[];
+  religion?: string;
+  importanceOfReligion?: string;
+  smoking?: string;
+  educationLevel?: string;
+  occupation?: string;
+  languages?: string[];
+  personality?: string[];
+  importantInLife?: string[];
+  values?: string[];
+  wantMarriage?: string;
+  relationshipEssentials?: string[];
+  wantChildren?: string;
+  returnToCountry?: string;
+  culturalValuesImportance?: string;
+  partnerFromOtherBackground?: string;
+  partnerFromSameCountry?: string;
+  partnerInSameCountry?: string;
+  shareHouseholdTasks?: string;
+  longTermCountries?: any[];
+  partnerAge?: PartnerAge;
+  partnerEducationLevel?: string;
+  partnerAttraction?: string[];
+  partnerPhysique?: string;
+  partnerSmoking?: string;
+  partnerHeight?: PartnerHeight;
+  //
+  status?: string;
+}
+
 export const QUESTIONS = {
   gender: ["MAN", "WOMAN"],
   interestedGender: ["MAN", "WOMAN"],
