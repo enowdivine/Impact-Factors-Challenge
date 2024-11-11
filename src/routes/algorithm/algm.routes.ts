@@ -6,5 +6,6 @@ const algm = new Algorithm();
 
 router.post("/generate-users", algm.generateUsers);
 router.get("/users", algm.users);
+router.put("/update-users", algm.updateAllUsers);
 
 export default router;

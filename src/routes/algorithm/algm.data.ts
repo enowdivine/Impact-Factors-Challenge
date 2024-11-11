@@ -389,3 +389,70 @@ export const QUESTIONS = {
     "My childhood dream was to…",
   ],
 };
+
+// Weights for each criterion
+export const weights = {
+  partner_from_same_country: 5,
+  country_of_origin: 5,
+  want_children: 4,
+  want_marriage: 3,
+  education_level: 3,
+  partner_age: 3,
+  height: 2,
+  return_to_country: 2,
+  smoking: 2,
+  physique: 1,
+};
+
+// Helper functions to rank different attributes (we rank them to simplify comparisons)
+export const educationLevelRank = {
+  "Primary school": 1,
+  "Secondary school": 2,
+  "High school diploma": 3,
+  "Bachelor’s degree": 4,
+  "Master’s degree": 5,
+  Doctorate: 6,
+  Other: 0,
+};
+
+export const wantChildrenRank = {
+  Yes: 3,
+  "Not sure": 2,
+  No: 1,
+};
+
+export const wantMarriageRank = {
+  "Yes, it's very important to me": 4,
+  "Yes, if my partner wants it": 3,
+  "It doesn't matter": 2,
+  "No, not really": 1,
+};
+
+export const returnToCountryRank = {
+  "No, I don't plan to return": 3,
+  "Yes, maybe, but it depends on the circumstances": 2,
+  "Yes, it's a goal of mine": 1,
+};
+
+export const smokingRank = {
+  No: 3,
+  Occasionally: 2,
+  Yes: 1,
+};
+
+export const physiqueRank = {
+  Athletic: 5,
+  Muscular: 4,
+  Slim: 3,
+  Average: 2,
+  Overweight: 1,
+  "No preference": 0,
+};
+
+export const partnerFromSameCountryRank = {
+  "Yes, it's very important to me": 5,
+  "Yes, it's preferable but not essential": 4,
+  "I don't mind": 3,
+  "No, I’m open to people from other countries": 2,
+  "No, not at all": 1,
+};

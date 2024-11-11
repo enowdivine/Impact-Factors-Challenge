@@ -10,7 +10,7 @@ import { userSignup } from "./templates/email";
 import { generateToken } from "../streamChat/stream.controller";
 
 // ALGORITHM IMPORTS
-import { getFilteredUsers } from "../algorithm/algm.combinedFilters";
+import { getFilteredUsers } from "../algorithm/algorithm";
 
 const verificationCodes = new Map();
 const generateVerificationCode = () =>

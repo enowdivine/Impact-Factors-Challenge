@@ -1,7 +1,12 @@
 import { Request, Response } from "express";
 import User from "../user/user.model";
+import { faker } from "@faker-js/faker";
 
-import { countryDistribution, countryData } from "./generators/algm.generators";
+import {
+  countryDistribution,
+  countryData,
+  westAfricanCountries,
+} from "./generators/algm.generators";
 import { generateRandomUser } from "./generators/algm.generators";
 
 class AlgorithmController {
@@ -39,42 +44,79 @@ class AlgorithmController {
     }
   }
 
-  // async users(req: Request, res: Response) {
-  //   try {
-  //     // Default values for page and limit if not provided in the query
-  //     const page = parseInt(req.query.page as string) || 1;
-  //     const limit = parseInt(req.query.limit as string) || 10;
+  async updateAllUsers(req: Request, res: Response) {
+    try {
+      // Fetch all users with role 'USER'
+      const users = await User.find({ role: "USER" });
 
-  //     // Calculate the starting index for the query based on page and limit
-  //     const skip = (page - 1) * limit;
+      // Check if users exist
+      if (!users || users.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "No users found to update",
+        });
+      }
 
-  //     // Fetch the total count of users excluding the current user
-  //     const totalUsers = await User.countDocuments({
-  //       role: "USER",
-  //       // "currentLocation.country": "Netherlands",
-  //     });
+      // Function to generate a random location within a given range around central coordinates
+      const generateRandomLocation = (latitude: number, longitude: number) => {
+        const randomOffset = () => (Math.random() - 0.5) * 0.1; // Offset of up to ±0.05 degrees
+        return {
+          latitude: latitude + randomOffset(),
+          longitude: longitude + randomOffset(),
+        };
+      };
 
-  //     // Fetch the paginated users excluding the current user
-  //     const users = await User.find({
-  //       role: "USER",
-  //       // "currentLocation.country": "Netherlands",
-  //     })
-  //       .sort({ createdAt: -1 })
-  //       .skip(skip) // Skip users for previous pages
-  //       .limit(limit); // Limit the number of users per page
+      // Loop through each user and update their currentLocation with offsets from their country's coordinates
+      const updatePromises = users.map(async (user) => {
+        // Get the country data for the user's country of origin
+        const country = countryData[user.countryOfOrigin?.name];
 
-  //     return res.status(200).json({
-  //       users,
-  //       currentPage: page,
-  //       totalPages: Math.ceil(totalUsers / limit),
-  //       totalUsers: totalUsers,
-  //     });
-  //   } catch (error: any) {
-  //     return res.status(500).json({
-  //       message: error.message || "Error fetching data",
-  //     });
-  //   }
-  // }
+        // If the country data exists, generate a random location
+        if (country) {
+          const randomLocation = generateRandomLocation(
+            country.latitude,
+            country.longitude
+          );
+
+          // Update the user's currentLocation with the generated random location
+          return User.updateOne(
+            { _id: user._id },
+            {
+              $set: {
+                currentLocation: {
+                  latitude: randomLocation.latitude,
+                  longitude: randomLocation.longitude,
+                },
+              },
+            }
+          );
+        }
+      });
+
+      // Wait for all the updates to finish
+      const results = await Promise.all(updatePromises);
+
+      // Count the number of modified users
+      const modifiedCount = results.filter(
+        (result) => result && result.modifiedCount > 0
+      ).length;
+
+      console.log(
+        `Successfully updated ${modifiedCount} users with new currentLocation.`
+      );
+
+      return res.status(200).json({
+        success: true,
+        modifiedCount: modifiedCount,
+        message: "Users updated successfully",
+      });
+    } catch (error: any) {
+      console.error("Error updating users:", error);
+      return res.status(500).json({
+        message: error.message || "Error updating users",
+      });
+    }
+  }
 
   async users(req: Request, res: Response) {
     try {
@@ -93,10 +135,11 @@ class AlgorithmController {
       // Fetch the paginated users with only email, gender, and interestedGender fields
       const users = await User.find(
         { role: "USER" }, // Query to match all users with role "USER"
-        { email: 1, gender: 1, interestedGender: 1 } // Projection to include only specified fields
-      ).sort({ createdAt: -1 });
-      // .skip(skip) // Skip users for previous pages
-      // .limit(limit); // Limit the number of users per page
+        { email: 1, countryOfOrigin: 1, score: 1 } // Projection to include only specified fields
+      )
+        .sort({ createdAt: -1 })
+        .skip(skip) // Skip users for previous pages
+        .limit(limit); // Limit the number of users per page
 
       return res.status(200).json({
         users,
