@@ -47,7 +47,13 @@ const userSchema = new Schema(
     },
     currentLocation: {
       type: Object,
-      default: {},
+      coordinates: {
+        type: [Number], // Array of numbers: [longitude, latitude]
+      },
+      city: { type: String },
+      region: { type: String },
+      country: { type: String },
+      postalCode: { type: String },
     },
     maritalStatus: { type: String },
     numberOfChildren: { type: String },
@@ -105,15 +111,10 @@ const userSchema = new Schema(
   }
 );
 
-// **ADD THIS CODE BELOW YOUR SCHEMA DEFINITIONS TO CREATE INDEXES**
-
-userSchema.index({ currentLocation: "2dsphere" }); // Geospatial index for currentLocation
-userSchema.index({ gender: 1 }); // Index gender for fast filtering
-userSchema.index({ interestedGender: 1 }); // Index interestedGender for fast filtering
-userSchema.index({
-  "currentLocation.latitude": 1,
-  "currentLocation.longitude": 1,
-}); // Index on location for fast filtering
-userSchema.index({ score: -1 }); // Index score to sort users by matching score
+userSchema.index({ currentLocation: "2dsphere" });
+userSchema.index({ gender: 1 });
+userSchema.index({ interestedGender: 1 });
+userSchema.index({ "currentLocation.coordinates": "2dsphere" });
+userSchema.index({ score: -1 });
 
 export default mongoose.model("User", userSchema);

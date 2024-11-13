@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import User from "../user/user.model";
-import { faker } from "@faker-js/faker";
 
 import {
   countryDistribution,
@@ -135,7 +134,7 @@ class AlgorithmController {
       // Fetch the paginated users with only email, gender, and interestedGender fields
       const users = await User.find(
         { role: "USER" }, // Query to match all users with role "USER"
-        { email: 1, countryOfOrigin: 1, score: 1 } // Projection to include only specified fields
+        { _id: 1, email: 1, currentLocation: 1, score: 1 } // Projection to include only specified fields
       )
         .sort({ createdAt: -1 })
         .skip(skip) // Skip users for previous pages

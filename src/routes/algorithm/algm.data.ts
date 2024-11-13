@@ -22,12 +22,11 @@ export interface PartnerRange {
 export interface LocationObject {
   status?: string;
   message?: string;
+  coordinates?: number[];
   city?: string;
   region?: string;
   country?: string;
   postalCode?: string;
-  latitude?: number;
-  longitude?: number;
 }
 
 export interface UserImage {

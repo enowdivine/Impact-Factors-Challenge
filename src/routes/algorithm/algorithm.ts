@@ -10,7 +10,19 @@ import {
   partnerFromSameCountryRank,
 } from "./algm.data";
 
-// Aggregation pipeline to calculate matching scores
+// Function to calculate a reduced score for criteria based on the difference in ranksconst calculateReducedScore = (
+const calculateReducedScore = (
+  currentUserRank: number,
+  otherUserRank: number,
+  weight: number,
+  rankData: { [key: string]: number }
+): number => {
+  const rankDifference = Math.abs(currentUserRank - otherUserRank);
+  const maxRankDifference = Math.max(...Object.values(rankData)) - 1;
+  const scoreReductionFactor = 1 - rankDifference / maxRankDifference;
+  return weight * scoreReductionFactor;
+};
+
 export const getFilteredUsers = async (currentUserId: string) => {
   try {
     // Fetch the current user to get preferences
@@ -33,22 +45,20 @@ export const getFilteredUsers = async (currentUserId: string) => {
       : {}; // No age filter if partnerAge is not defined
 
     const locationFilter =
-      currentUser.currentLocation?.latitude &&
-      currentUser.currentLocation?.longitude
+      currentUser.currentLocation?.coordinates &&
+      Array.isArray(currentUser.currentLocation.coordinates) &&
+      currentUser.currentLocation.coordinates.length === 2
         ? {
             currentLocation: {
               $geoWithin: {
                 $centerSphere: [
-                  [
-                    currentUser.currentLocation.longitude,
-                    currentUser.currentLocation.latitude,
-                  ],
-                  100 / 6371, // 100 km radius (in radians)
+                  currentUser.currentLocation.coordinates, // [longitude, latitude]
+                  100 / 6371, // 100 km radius converted to radians
                 ],
               },
             },
           }
-        : {}; // No location filter if currentLocation is not provided
+        : {};
 
     // Query to fetch filtered users excluding the current user and liked/disliked users
     const query = {
@@ -59,7 +69,7 @@ export const getFilteredUsers = async (currentUserId: string) => {
       ...genderFilter,
       ...ageFilter,
       ...locationFilter,
-      status: "ACTIVE", // Ensure we only get active users
+      status: "ACTIVE",
     };
 
     // Aggregation pipeline to calculate matching scores
@@ -69,25 +79,28 @@ export const getFilteredUsers = async (currentUserId: string) => {
       {
         $addFields: {
           // Step 2: Add a "score" field based on the comparison of various criteria
-
           score: {
             $add: [
-              // Criterion 1: Country of Origin
+              // Criterion 1: Country of Origin and Partner Preference
               {
                 $cond: {
                   if: {
-                    $and: [
-                      {
-                        $eq: [
-                          "$countryOfOrigin.name",
-                          currentUser.countryOfOrigin.name,
-                        ],
-                      },
-                      { $ne: ["$partnerFromSameCountry", null] },
+                    $eq: [
+                      "$countryOfOrigin.name",
+                      currentUser.countryOfOrigin.name,
                     ],
                   },
-                  then: weights.country_of_origin,
-                  else: 0,
+                  then: weights.partner_from_same_country,
+                  else: calculateReducedScore(
+                    partnerFromSameCountryRank[
+                      currentUser.partnerFromSameCountry as keyof typeof partnerFromSameCountryRank // Type assertion
+                    ],
+                    partnerFromSameCountryRank[
+                      "$partnerFromSameCountry" as keyof typeof partnerFromSameCountryRank // Type assertion
+                    ],
+                    weights.partner_from_same_country,
+                    partnerFromSameCountryRank
+                  ),
                 },
               },
 
@@ -95,23 +108,17 @@ export const getFilteredUsers = async (currentUserId: string) => {
               {
                 $cond: {
                   if: { $eq: ["$wantChildren", currentUser.wantChildren] },
-                  then: {
-                    $multiply: [
-                      weights.want_children,
-                      {
-                        $arrayElemAt: [
-                          Object.values(wantChildrenRank),
-                          {
-                            $indexOfArray: [
-                              Object.keys(wantChildrenRank),
-                              "$wantChildren",
-                            ],
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                  else: 0,
+                  then: weights.want_children,
+                  else: calculateReducedScore(
+                    wantChildrenRank[
+                      currentUser.wantChildren as keyof typeof wantChildrenRank
+                    ], // Type assertion
+                    wantChildrenRank[
+                      "$wantChildren" as keyof typeof wantChildrenRank
+                    ], // Type assertion
+                    weights.want_children,
+                    wantChildrenRank
+                  ),
                 },
               },
 
@@ -119,23 +126,17 @@ export const getFilteredUsers = async (currentUserId: string) => {
               {
                 $cond: {
                   if: { $eq: ["$wantMarriage", currentUser.wantMarriage] },
-                  then: {
-                    $multiply: [
-                      weights.want_marriage,
-                      {
-                        $arrayElemAt: [
-                          Object.values(wantMarriageRank),
-                          {
-                            $indexOfArray: [
-                              Object.keys(wantMarriageRank),
-                              "$wantMarriage",
-                            ],
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                  else: 0,
+                  then: weights.want_marriage,
+                  else: calculateReducedScore(
+                    wantMarriageRank[
+                      currentUser.wantMarriage as keyof typeof wantMarriageRank
+                    ], // Type assertion
+                    wantMarriageRank[
+                      "$wantMarriage" as keyof typeof wantMarriageRank
+                    ], // Type assertion
+                    weights.want_marriage,
+                    wantMarriageRank
+                  ),
                 },
               },
 
@@ -159,7 +160,16 @@ export const getFilteredUsers = async (currentUserId: string) => {
                     ],
                   },
                   then: weights.education_level,
-                  else: 0,
+                  else: calculateReducedScore(
+                    educationLevelRank[
+                      currentUser.educationLevel as keyof typeof educationLevelRank
+                    ], // Type assertion
+                    educationLevelRank[
+                      "$educationLevel" as keyof typeof educationLevelRank
+                    ], // Type assertion
+                    weights.education_level,
+                    educationLevelRank
+                  ),
                 },
               },
 
@@ -171,14 +181,14 @@ export const getFilteredUsers = async (currentUserId: string) => {
                       { $ne: ["$height", null] },
                       {
                         $gte: ["$height", currentUser.partnerHeight?.minValue],
-                      }, // Safely check if partnerHeight exists
+                      },
                       {
                         $lte: ["$height", currentUser.partnerHeight?.maxValue],
-                      }, // Safely check if partnerHeight exists
+                      },
                     ],
                   },
                   then: weights.height,
-                  else: 0,
+                  else: 0, // No reduced score for height, as it's a range check
                 },
               },
 
@@ -188,23 +198,17 @@ export const getFilteredUsers = async (currentUserId: string) => {
                   if: {
                     $eq: ["$returnToCountry", currentUser.returnToCountry],
                   },
-                  then: {
-                    $multiply: [
-                      weights.return_to_country,
-                      {
-                        $arrayElemAt: [
-                          Object.values(returnToCountryRank),
-                          {
-                            $indexOfArray: [
-                              Object.keys(returnToCountryRank),
-                              "$returnToCountry",
-                            ],
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                  else: 0,
+                  then: weights.return_to_country,
+                  else: calculateReducedScore(
+                    returnToCountryRank[
+                      currentUser.returnToCountry as keyof typeof returnToCountryRank
+                    ], // Type assertion
+                    returnToCountryRank[
+                      "$returnToCountry" as keyof typeof returnToCountryRank
+                    ], // Type assertion
+                    weights.return_to_country,
+                    returnToCountryRank
+                  ),
                 },
               },
 
@@ -212,23 +216,15 @@ export const getFilteredUsers = async (currentUserId: string) => {
               {
                 $cond: {
                   if: { $eq: ["$smoking", currentUser.partnerSmoking] },
-                  then: {
-                    $multiply: [
-                      weights.smoking,
-                      {
-                        $arrayElemAt: [
-                          Object.values(smokingRank),
-                          {
-                            $indexOfArray: [
-                              Object.keys(smokingRank),
-                              "$smoking",
-                            ],
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                  else: 0,
+                  then: weights.smoking,
+                  else: calculateReducedScore(
+                    smokingRank[
+                      currentUser.partnerSmoking as keyof typeof smokingRank
+                    ], // Type assertion
+                    smokingRank["$smoking" as keyof typeof smokingRank], // Type assertion
+                    weights.smoking,
+                    smokingRank
+                  ),
                 },
               },
 
@@ -236,69 +232,15 @@ export const getFilteredUsers = async (currentUserId: string) => {
               {
                 $cond: {
                   if: { $eq: ["$physique", currentUser.partnerPhysique] },
-                  then: {
-                    $multiply: [
-                      weights.physique,
-                      {
-                        $arrayElemAt: [
-                          Object.values(physiqueRank),
-                          {
-                            $indexOfArray: [
-                              Object.keys(physiqueRank),
-                              "$physique",
-                            ],
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                  else: 0,
-                },
-              },
-
-              // Criterion 9: Partner Age
-              {
-                $cond: {
-                  if: {
-                    $and: [
-                      { $ne: [currentUser.partnerAge, null] },
-                      { $ne: [currentUser.partnerAge?.minValue, undefined] },
-                      { $ne: [currentUser.partnerAge?.maxValue, undefined] },
-                      { $gte: ["$age", currentUser.partnerAge?.minValue] },
-                      { $lte: ["$age", currentUser.partnerAge?.maxValue] },
-                    ],
-                  },
-                  then: weights.partner_age,
-                  else: 0,
-                },
-              },
-
-              // Criterion 10: Partner from Same Country
-              {
-                $cond: {
-                  if: {
-                    $eq: [
-                      "$partnerFromSameCountry",
-                      currentUser.partnerFromSameCountry,
-                    ],
-                  },
-                  then: {
-                    $multiply: [
-                      weights.partner_from_same_country,
-                      {
-                        $arrayElemAt: [
-                          Object.values(partnerFromSameCountryRank),
-                          {
-                            $indexOfArray: [
-                              Object.keys(partnerFromSameCountryRank),
-                              "$partnerFromSameCountry",
-                            ],
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                  else: 0,
+                  then: weights.physique,
+                  else: calculateReducedScore(
+                    physiqueRank[
+                      currentUser.partnerPhysique as keyof typeof physiqueRank
+                    ], // Type assertion
+                    physiqueRank["$physique" as keyof typeof physiqueRank], // Type assertion
+                    weights.physique,
+                    physiqueRank
+                  ),
                 },
               },
             ],
