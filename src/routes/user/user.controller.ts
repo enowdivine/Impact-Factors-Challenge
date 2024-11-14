@@ -588,7 +588,9 @@ class UserController {
       // Step 1: Get all filtered users
       let result = await getFilteredUsers(currentUserId);
 
-      if (result && result.success && result.users) {
+      console.log("I got here", result);
+
+      if (result.success && result.users) {
         // Step 2: Implement pagination on the filtered users
         const totalUsers = result.users.length; // Total number of filtered users
         const paginatedUsers = result.users.slice(skip, skip + limit); // Slice the array to get the paginated results
@@ -599,6 +601,10 @@ class UserController {
           currentPage: page,
           totalPages: Math.ceil(totalUsers / limit),
           totalUsers: totalUsers,
+        });
+      } else {
+        return res.status(200).json({
+          message: result.message,
         });
       }
     } catch (error: any) {
