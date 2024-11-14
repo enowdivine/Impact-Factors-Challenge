@@ -1,7 +1,7 @@
 import axios from "axios";
 import bcrypt from "bcrypt";
 import { faker } from "@faker-js/faker";
-import { QUESTIONS } from "../algm.data"; // Import the QUESTIONS data
+import { QUESTIONS } from "./algm.types"; // Import the QUESTIONS data
 
 // Define the Country object structure
 interface Country {

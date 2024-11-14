@@ -5,8 +5,8 @@ import {
   countryDistribution,
   countryData,
   westAfricanCountries,
-} from "./generators/algm.generators";
-import { generateRandomUser } from "./generators/algm.generators";
+} from "./algm.generators";
+import { generateRandomUser } from "./algm.generators";
 
 class AlgorithmController {
   async generateUsers(req: Request, res: Response) {
@@ -134,11 +134,11 @@ class AlgorithmController {
       // Fetch the paginated users with only email, gender, and interestedGender fields
       const users = await User.find(
         { role: "USER" }, // Query to match all users with role "USER"
-        { _id: 1, email: 1, currentLocation: 1, score: 1 } // Projection to include only specified fields
-      )
-        .sort({ createdAt: -1 })
-        .skip(skip) // Skip users for previous pages
-        .limit(limit); // Limit the number of users per page
+        { _id: 1, email: 1, gender: 1, interestedGender: 1 } // Projection to include only specified fields
+      );
+      // .sort({ createdAt: -1 })
+      // .skip(skip) // Skip users for previous pages
+      // .limit(limit); // Limit the number of users per page
 
       return res.status(200).json({
         users,

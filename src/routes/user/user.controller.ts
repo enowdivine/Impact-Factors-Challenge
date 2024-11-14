@@ -586,19 +586,21 @@ class UserController {
       const skip = (page - 1) * limit;
 
       // Step 1: Get all filtered users
-      let users = await getFilteredUsers(currentUserId);
+      let result = await getFilteredUsers(currentUserId);
 
-      // Step 2: Implement pagination on the filtered users
-      const totalUsers = users.length; // Total number of filtered users
-      const paginatedUsers = users.slice(skip, skip + limit); // Slice the array to get the paginated results
+      if (result && result.success && result.users) {
+        // Step 2: Implement pagination on the filtered users
+        const totalUsers = result.users.length; // Total number of filtered users
+        const paginatedUsers = result.users.slice(skip, skip + limit); // Slice the array to get the paginated results
 
-      // Step 3: Return the paginated users
-      return res.status(200).json({
-        users: paginatedUsers,
-        currentPage: page,
-        totalPages: Math.ceil(totalUsers / limit),
-        totalUsers: totalUsers,
-      });
+        // Step 3: Return the paginated users
+        return res.status(200).json({
+          users: paginatedUsers,
+          currentPage: page,
+          totalPages: Math.ceil(totalUsers / limit),
+          totalUsers: totalUsers,
+        });
+      }
     } catch (error: any) {
       return res.status(500).json({
         message: error.message || "Error fetching data",
@@ -612,42 +614,44 @@ class UserController {
       const requestingUserId = req.params.id;
 
       // Step 1: Get all filtered users
-      const allUsers = await getFilteredUsers(requestingUserId);
+      const result = await getFilteredUsers(requestingUserId);
 
-      if (allUsers.length === 0) {
-        return res.status(404).json({
-          message: "No users found",
-        });
+      if (result && result.success && result.users) {
+        if (result.users.length === 0) {
+          return res.status(404).json({
+            message: "No users found",
+          });
+        }
+
+        // Get the current date as a string (e.g., '2023-09-20')
+        const currentDate = new Date().toISOString().split("T")[0];
+
+        // Use the current date to create a consistent seed for randomness
+        const seed = crypto
+          .createHash("sha256")
+          .update(currentDate)
+          .digest("hex");
+
+        // Convert the seed into a number to use for seeding random
+        const seedNumber = parseInt(seed.slice(0, 8), 16);
+
+        // Function to seed the random selection process
+        function seededRandom(seed: number) {
+          const x = Math.sin(seed++) * 10000;
+          return x - Math.floor(x);
+        }
+
+        // Shuffle users using the seeded randomness
+        const shuffledUsers = result.users
+          .map((user) => ({ user, sort: seededRandom(seedNumber) }))
+          .sort((a, b) => a.sort - b.sort)
+          .map(({ user }) => user);
+
+        // Select only the first two random users
+        const selectedUsers = shuffledUsers.slice(0, 2);
+
+        return res.status(200).json(selectedUsers);
       }
-
-      // Get the current date as a string (e.g., '2023-09-20')
-      const currentDate = new Date().toISOString().split("T")[0];
-
-      // Use the current date to create a consistent seed for randomness
-      const seed = crypto
-        .createHash("sha256")
-        .update(currentDate)
-        .digest("hex");
-
-      // Convert the seed into a number to use for seeding random
-      const seedNumber = parseInt(seed.slice(0, 8), 16);
-
-      // Function to seed the random selection process
-      function seededRandom(seed: number) {
-        const x = Math.sin(seed++) * 10000;
-        return x - Math.floor(x);
-      }
-
-      // Shuffle users using the seeded randomness
-      const shuffledUsers = allUsers
-        .map((user) => ({ user, sort: seededRandom(seedNumber) }))
-        .sort((a, b) => a.sort - b.sort)
-        .map(({ user }) => user);
-
-      // Select only the first two random users
-      const selectedUsers = shuffledUsers.slice(0, 2);
-
-      return res.status(200).json(selectedUsers);
     } catch (error: any) {
       return res.status(500).json({
         message: error.message || "Error fetching data",
