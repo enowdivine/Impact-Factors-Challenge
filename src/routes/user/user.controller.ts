@@ -588,8 +588,6 @@ class UserController {
       // Step 1: Get all filtered users
       let result = await getFilteredUsers(currentUserId);
 
-      console.log("I got here", result);
-
       if (result.success && result.users) {
         // Step 2: Implement pagination on the filtered users
         const totalUsers = result.users.length; // Total number of filtered users
