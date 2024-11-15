@@ -71,7 +71,7 @@ export const getFilteredUsers = async (currentUserId: string) => {
         },
         ...genderFilter,
         ...ageFilter,
-        ...locationFilter,
+        // ...locationFilter,
         status: "ACTIVE",
       };
 
