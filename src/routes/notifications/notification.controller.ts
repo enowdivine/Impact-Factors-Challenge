@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import User from "../user/user.model";
 import NotificationModel from "../notifications/notification.model";
+import { sendPushNotification } from "../../services/notification/notifiication";
 
 class NotificationController {
   async getUserNotifications(req: Request, res: Response) {
@@ -101,6 +102,41 @@ class NotificationController {
     } catch (error: any) {
       return res.status(500).json({
         message: error.message || "Error generating notifications",
+      });
+    }
+  }
+
+  async sendTestNotification(req: Request, res: Response) {
+    try {
+      // Fetch all users with a notification token
+      const usersWithTokens = await User.find();
+
+      //   console.log(usersWithTokens);
+
+      if (usersWithTokens.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "No users with notification tokens found." });
+      }
+
+      // Loop through each user and send a test notification
+      for (const user of usersWithTokens) {
+        if (user.notificationToken) {
+          // Send a test notification
+          await sendPushNotification(user.notificationToken, {
+            title: "Test Notification",
+            body: "This is a test notification from the server.",
+          });
+        }
+      }
+
+      return res.status(200).json({
+        message:
+          "Test notifications sent successfully to all users with tokens.",
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        message: error.message || "Error sending test notifications",
       });
     }
   }
