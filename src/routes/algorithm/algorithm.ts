@@ -110,7 +110,9 @@ export const getFilteredUsers = async (currentUserId: string) => {
                   $multiply: [
                     wantChildrenData[
                       currentUser.wantChildren as WantChildrenKeys
-                    ]?.[currentUser.wantChildren as WantChildrenKeys] || 1,
+                    ]?.[
+                      "$wantChildren" as WantChildrenKeys // Access the potential match's attribute
+                    ] || 1,
                     weights.wantChildren,
                   ],
                 },
@@ -119,7 +121,9 @@ export const getFilteredUsers = async (currentUserId: string) => {
                   $multiply: [
                     wantMarriageData[
                       currentUser.wantMarriage as WantMarriageKeys
-                    ]?.[currentUser.wantMarriage as WantMarriageKeys] || 1,
+                    ]?.[
+                      "$wantMarriage" as WantMarriageKeys // Access the potential match's attribute
+                    ] || 1,
                     weights.wantMarriage,
                   ],
                 },
@@ -128,7 +132,7 @@ export const getFilteredUsers = async (currentUserId: string) => {
                   $multiply: [
                     educationLevelData[
                       currentUser.educationLevel as EducationLevelKeys
-                    ]?.[currentUser.educationLevel as EducationLevelKeys] || 1,
+                    ]?.["$educationLevel" as EducationLevelKeys] || 1, // Access the potential match's attribute
                     weights.educationLevel,
                   ],
                 },
@@ -141,13 +145,13 @@ export const getFilteredUsers = async (currentUserId: string) => {
                           $and: [
                             {
                               $gte: [
-                                "$height",
+                                "$height.minValue",
                                 currentUser.partnerHeight?.minValue,
                               ],
                             },
                             {
                               $lte: [
-                                "$height",
+                                "$height.maxValue",
                                 currentUser.partnerHeight?.maxValue,
                               ],
                             },
@@ -165,8 +169,7 @@ export const getFilteredUsers = async (currentUserId: string) => {
                   $multiply: [
                     returnToCountryData[
                       currentUser.returnToCountry as ReturnToCountryKeys
-                    ]?.[currentUser.returnToCountry as ReturnToCountryKeys] ||
-                      1,
+                    ]?.["$returnToCountry" as ReturnToCountryKeys] || 1, // Access the potential match's attribute
                     weights.returnToCountry,
                   ],
                 },
@@ -174,7 +177,7 @@ export const getFilteredUsers = async (currentUserId: string) => {
                 {
                   $multiply: [
                     smokingData[currentUser.partnerSmoking as SmokingKeys]?.[
-                      currentUser.partnerSmoking as SmokingKeys
+                      "$smoking" as SmokingKeys // Access the potential match's attribute
                     ] || 1,
                     weights.smokingPreference,
                   ],
@@ -183,7 +186,7 @@ export const getFilteredUsers = async (currentUserId: string) => {
                 {
                   $multiply: [
                     physiqueData[currentUser.physique as PhysiqueKeys]?.[
-                      currentUser.physique as PhysiqueKeys
+                      "$physique" as PhysiqueKeys // Access the potential match's attribute
                     ] || 1,
                     weights.physiquePreference,
                   ],
