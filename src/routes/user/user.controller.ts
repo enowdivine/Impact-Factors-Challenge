@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import User from "./user.model";
+import NotificationModel from "../notifications/notification.model";
 import bcrypt from "bcrypt";
 import _ from "lodash";
 import crypto from "crypto"; // Import crypto to seed randomness
@@ -8,6 +9,7 @@ import crypto from "crypto"; // Import crypto to seed randomness
 import sendEmail from "../../services/email/email";
 import { userSignup } from "./templates/email";
 import { generateToken } from "../streamChat/stream.controller";
+import { sendPushNotification } from "../../services/notification/notifiication";
 
 // ALGORITHM IMPORTS
 import { getFilteredUsers } from "../algorithm/algorithm";
@@ -392,7 +394,7 @@ class UserController {
           }
         );
       } else {
-        return res.status(401).json({
+        return res.status(404).json({
           message: "Account not found. Check login credentials and try again.",
         });
       }
@@ -676,9 +678,14 @@ class UserController {
 
       // Find the user who is performing the like/unlike
       const user = await User.findById(userId);
-
       if (!user) {
         return res.status(404).json({ message: "User not found." });
+      }
+
+      // Find the user who is being liked
+      const likedUser = await User.findById(likedUserId);
+      if (!likedUser) {
+        return res.status(404).json({ message: "Liked user not found." });
       }
 
       // Check if the likedUserId already exists in the likedUsers array
@@ -697,6 +704,67 @@ class UserController {
       // If for some reason update failed, return error
       if (!updatedUser) {
         return res.status(500).json({ message: "Error updating like status." });
+      }
+
+      // If the action is a "like" (not an "unlike")
+      if (!isLiked) {
+        // Create a notification for the liked user
+        const likeNotification = new NotificationModel({
+          userId: likedUserId,
+          type: "Like",
+          message: `${user.firstName} liked your profile`,
+          icon: "heart",
+          backgroundColor: "#FF3D3D1C",
+          color: "#FF3425",
+        });
+        await likeNotification.save();
+
+        // Send a notification to the liked user
+        if (likedUser.notificationToken) {
+          await sendPushNotification(likedUser.notificationToken, {
+            title: "You have a new like!",
+            body: `${user.firstName} liked you. Check it out!`,
+          });
+        }
+
+        // Check if the liked user has also liked the original user
+        const isMatch = likedUser.likedUsers.includes(userId);
+        if (isMatch) {
+          // Create match notifications for both users
+          const matchNotification1 = new NotificationModel({
+            userId: userId,
+            type: "Matches",
+            message: `New match with ${likedUser.firstName}`,
+            icon: "podium",
+            backgroundColor: "#B8E7FE",
+            color: "#00C2FF",
+          });
+          await matchNotification1.save();
+
+          const matchNotification2 = new NotificationModel({
+            userId: likedUserId,
+            type: "Matches",
+            message: `New match with ${user.firstName}`,
+            icon: "podium",
+            backgroundColor: "#B8E7FE",
+            color: "#00C2FF",
+          });
+          await matchNotification2.save();
+
+          // It's a match! Send notifications to both users
+          if (user.notificationToken) {
+            await sendPushNotification(user.notificationToken, {
+              title: "It's a match!",
+              body: `You and ${likedUser.firstName} have liked each other!`,
+            });
+          }
+          if (likedUser.notificationToken) {
+            await sendPushNotification(likedUser.notificationToken, {
+              title: "It's a match!",
+              body: `You and ${user.firstName} have liked each other!`,
+            });
+          }
+        }
       }
 
       // Return the updated likedUsers list

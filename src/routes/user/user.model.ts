@@ -99,6 +99,7 @@ const userSchema = new Schema(
     },
     //
     //
+    notificationToken: { type: String },
     status: {
       type: String,
       enum: ["ACTIVE", "FROZEN"],
