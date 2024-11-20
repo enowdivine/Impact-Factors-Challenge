@@ -281,10 +281,7 @@ export const algorithmHandler = async (currentUserId: string) => {
 
     return {
       success: true,
-      users: matches.map((match) => ({
-        user: match.user2,
-        score: match.score,
-      })),
+      users: matches.map((match) => match.user2),
       message: "Success",
     };
   } catch (error) {
