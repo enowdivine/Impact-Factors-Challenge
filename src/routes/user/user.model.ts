@@ -45,11 +45,13 @@ const userSchema = new Schema(
       type: Object,
       default: {},
     },
+    coordinates: {
+      type: { type: String, default: "Point" },
+      coordinates: [Number],
+    },
+
     currentLocation: {
       type: Object,
-      coordinates: {
-        type: [Number], // Array of numbers: [longitude, latitude]
-      },
       city: { type: String },
       region: { type: String },
       country: { type: String },
@@ -112,10 +114,22 @@ const userSchema = new Schema(
   }
 );
 
-userSchema.index({ currentLocation: "2dsphere" });
-userSchema.index({ gender: 1 });
-userSchema.index({ interestedGender: 1 });
-userSchema.index({ "currentLocation.coordinates": "2dsphere" });
-userSchema.index({ score: -1 });
+// Indexing
+userSchema.index({ email: 1 }, { unique: true }); // Ensure unique emails
+userSchema.index({ coordinates: "2dsphere" }); // Geospatial index
+userSchema.index({ gender: 1 }); // Index for gender filter
+userSchema.index({ interestedGender: 1 }); // Index for interestedGender filter
+userSchema.index({ age: 1 }); // Index for age range queries
+userSchema.index({ status: 1 }); // Index for status filter
+userSchema.index({ updatedAt: 1 }); // Index for efficient updatedAt filtering
+userSchema.index({ createdAt: 1 }); // Index for queries based on user creation time
+userSchema.index({ "premium.isPremium": 1 }); // Index for premium users filter
+userSchema.index({ countryOfOrigin: 1 }); // Index for country of origin queries
+
+// Compound Indexes
+userSchema.index({ gender: 1, interestedGender: 1, status: 1 }); // Compound index for common gender and status queries
+userSchema.index({ age: 1, status: 1 }); // Compound index for age and status queries
+userSchema.index({ coordinates: "2dsphere", status: 1 }); // Geospatial index combined with status
+userSchema.index({ updatedAt: 1, status: 1 }); // Compound index for updated users and status
 
 export default mongoose.model("User", userSchema);

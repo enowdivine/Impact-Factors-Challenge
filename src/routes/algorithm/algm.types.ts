@@ -22,7 +22,6 @@ export interface PartnerRange {
 export interface LocationObject {
   status?: string;
   message?: string;
-  coordinates?: number[];
   city?: string;
   region?: string;
   country?: string;
@@ -64,6 +63,7 @@ export interface User {
   interestedGender?: string;
   age?: number;
   countryOfOrigin?: any;
+  coordinates?: number[];
   currentLocation?: LocationObject;
   maritalStatus?: string;
   numberOfChildren?: string;

@@ -82,12 +82,13 @@ class AlgorithmController {
             { _id: user._id },
             {
               $set: {
-                currentLocation: {
-                  latitude: randomLocation.latitude,
-                  longitude: randomLocation.longitude,
-                },
+                coordinates: [
+                  randomLocation.latitude,
+                  randomLocation.longitude,
+                ],
               },
-            }
+            },
+            { upsert: true }
           );
         }
       });

@@ -12,7 +12,7 @@ import { generateToken } from "../streamChat/stream.controller";
 import { sendPushNotification } from "../../services/notification/notifiication";
 
 // ALGORITHM IMPORTS
-import { getFilteredUsers } from "../algorithm/algorithm";
+import { algorithmHandler } from "../algorithm/algorithm";
 
 const verificationCodes = new Map();
 const generateVerificationCode = () =>
@@ -98,6 +98,7 @@ class UserController {
               interestedGender: response.interestedGender,
               age: response.age,
               countryOfOrigin: response.countryOfOrigin,
+              coordinates: response.coordinates,
               currentLocation: response.currentLocation,
               maritalStatus: response.maritalStatus,
               numberOfChildren: response.numberOfChildren,
@@ -240,6 +241,7 @@ class UserController {
               interestedGender: user.interestedGender,
               age: user.age,
               countryOfOrigin: user.countryOfOrigin,
+              coordinates: user.coordinates,
               currentLocation: user.currentLocation,
               maritalStatus: user.maritalStatus,
               numberOfChildren: user.numberOfChildren,
@@ -346,6 +348,7 @@ class UserController {
                   interestedGender: user.interestedGender,
                   age: user.age,
                   countryOfOrigin: user.countryOfOrigin,
+                  coordinates: user.coordinates,
                   currentLocation: user.currentLocation,
                   maritalStatus: user.maritalStatus,
                   numberOfChildren: user.numberOfChildren,
@@ -588,7 +591,7 @@ class UserController {
       const skip = (page - 1) * limit;
 
       // Step 1: Get all filtered users
-      let result = await getFilteredUsers(currentUserId);
+      let result = await algorithmHandler(currentUserId);
 
       if (result.success && result.users) {
         // Step 2: Implement pagination on the filtered users
@@ -620,7 +623,7 @@ class UserController {
       const requestingUserId = req.params.id;
 
       // Step 1: Get all filtered users
-      const result = await getFilteredUsers(requestingUserId);
+      const result = await algorithmHandler(requestingUserId);
 
       if (result && result.success && result.users) {
         if (result.users.length === 0) {
@@ -944,6 +947,7 @@ class UserController {
           interestedGender: user.interestedGender,
           age: user.age,
           countryOfOrigin: user.countryOfOrigin,
+          coordinates: user.coordinates,
           currentLocation: user.currentLocation,
           maritalStatus: user.maritalStatus,
           numberOfChildren: user.numberOfChildren,
@@ -1049,6 +1053,7 @@ class UserController {
           interestedGender: user.interestedGender,
           age: user.age,
           countryOfOrigin: user.countryOfOrigin,
+          coordinates: user.coordinates,
           currentLocation: user.currentLocation,
           maritalStatus: user.maritalStatus,
           numberOfChildren: user.numberOfChildren,
@@ -1157,6 +1162,7 @@ class UserController {
           interestedGender: user.interestedGender,
           age: user.age,
           countryOfOrigin: user.countryOfOrigin,
+          coordinates: user.coordinates,
           currentLocation: user.currentLocation,
           maritalStatus: user.maritalStatus,
           numberOfChildren: user.numberOfChildren,
@@ -1242,6 +1248,7 @@ class UserController {
           interestedGender: req.body.interestedGender,
           age: req.body.age,
           countryOfOrigin: req.body.countryOfOrigin,
+          coordinates: req.body.coordinates,
           currentLocation: req.body.currentLocation,
           maritalStatus: req.body.maritalStatus,
           numberOfChildren: req.body.numberOfChildren,
@@ -1323,6 +1330,7 @@ class UserController {
             interestedGender: data.interestedGender,
             age: data.age,
             countryOfOrigin: data.countryOfOrigin,
+            coordinates: data.coordinates,
             currentLocation: data.currentLocation,
             maritalStatus: data.maritalStatus,
             numberOfChildren: data.numberOfChildren,

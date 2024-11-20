@@ -460,13 +460,15 @@ const generateRandomUser = async (country: Country) => {
     interestedGender: faker.helpers.arrayElement(QUESTIONS.interestedGender),
     age: faker.number.int({ min: QUESTIONS.age.min, max: QUESTIONS.age.max }),
     countryOfOrigin: countryOfOrigin,
+    coordinates: {
+      type: "Point",
+      coordinates: [longitude, latitude],
+    },
     currentLocation: {
       city: faker.address.city(),
       region: faker.address.state(),
       country: country.name,
       postalCode: faker.address.zipCode(),
-      type: "Point",
-      coordinates: [longitude, latitude],
     },
     maritalStatus: faker.helpers.arrayElement(QUESTIONS.maritalStatus),
     numberOfChildren: faker.helpers.arrayElement(QUESTIONS.children),
