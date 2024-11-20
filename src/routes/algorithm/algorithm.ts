@@ -24,7 +24,13 @@ export const algorithmHandler = async (currentUserId: string) => {
   try {
     // Fetch the current user to get preferences
     const currentUser = await User.findById(currentUserId).exec();
-    if (!currentUser) throw new Error("Current user not found");
+    if (!currentUser) {
+      return {
+        success: false,
+        users: [],
+        message: "Current user not found",
+      };
+    }
 
     // Fetch the latest timestamp of when scores were last computed for this user
     const lastComputation = await UserMatch.findOne({ user1: currentUserId })
