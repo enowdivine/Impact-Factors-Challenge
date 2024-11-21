@@ -30,10 +30,10 @@ export default function mailer(option: Option): void {
   const mailOptions: any = {
     sender: "Bliss",
     // from: option.from || `Bliss <noreply@bliss.com>`,
-    from: option.from || `Bliss <sirdivine16@gmail.com>`,
+    from: option.from || `Bliss <blissdating.contact@gmail.com>`,
     to: option.to,
     // bcc: "info@bliss.com",
-    bcc: "sirdivine16@gmail.com",
+    bcc: "blissdating.contact@gmail.com",
     subject: option.subject,
     html: html,
   };

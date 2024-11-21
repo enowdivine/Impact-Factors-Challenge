@@ -32,6 +32,10 @@ const userSchema = new Schema(
     location: { type: String },
     likedUsers: [String],
     dislikedUsers: [String],
+    likesToday: {
+      count: { type: Number, default: 0 },
+      resetAt: { type: Date },
+    },
     premium: {
       isPremium: { type: Boolean, default: false },
       plan: { type: String, default: "FREE" },

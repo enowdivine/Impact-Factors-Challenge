@@ -7,9 +7,9 @@ import _ from "lodash";
 import crypto from "crypto"; // Import crypto to seed randomness
 
 import sendEmail from "../../services/email/email";
-import { userSignup } from "./templates/email";
+import { userSignup, matchNotification } from "./templates/email";
 import { generateToken } from "../streamChat/stream.controller";
-import { sendPushNotification } from "../../services/notification/notifiication";
+// import { sendPushNotification } from "../../services/notification/notifiication";
 
 // ALGORITHM IMPORTS
 import { algorithmHandler } from "../algorithm/algorithm";
@@ -685,6 +685,30 @@ class UserController {
         return res.status(404).json({ message: "User not found." });
       }
 
+      // Check if the user is premium
+      const isPremium = user.premium?.isPremium;
+
+      // Reset the daily likes if the day has changed
+      const now = new Date();
+      if (
+        !user.likesToday?.resetAt || // No reset date defined
+        now > new Date(user.likesToday.resetAt) // Reset if past reset date
+      ) {
+        user.likesToday = {
+          count: 0,
+          resetAt: new Date(now.setHours(23, 59, 59, 999)), // End of the day
+        };
+        await user.save(); // Save the reset
+      }
+
+      // Enforce the like limit for non-premium users
+      if (!isPremium && user.likesToday.count >= 20) {
+        return res.status(403).json({
+          message:
+            "You have reached your daily like limit. Upgrade to premium for unlimited likes.",
+        });
+      }
+
       // Find the user who is being liked
       const likedUser = await User.findById(likedUserId);
       if (!likedUser) {
@@ -711,6 +735,10 @@ class UserController {
 
       // If the action is a "like" (not an "unlike")
       if (!isLiked) {
+        // Increment the daily like count
+        user.likesToday.count += 1;
+        await user.save();
+
         // Create a notification for the liked user
         const likeNotification = new NotificationModel({
           userId: likedUserId,
@@ -723,12 +751,12 @@ class UserController {
         await likeNotification.save();
 
         // Send a notification to the liked user
-        if (likedUser.notificationToken) {
-          await sendPushNotification(likedUser.notificationToken, {
-            title: "You have a new like!",
-            body: `${user.firstName} liked you. Check it out!`,
-          });
-        }
+        // if (likedUser.notificationToken) {
+        //   await sendPushNotification(likedUser.notificationToken, {
+        //     title: "You have a new like!",
+        //     body: `${user.firstName} liked you. Check it out!`,
+        //   });
+        // }
 
         // Check if the liked user has also liked the original user
         const isMatch = likedUser.likedUsers.includes(userId);
@@ -755,18 +783,31 @@ class UserController {
           await matchNotification2.save();
 
           // It's a match! Send notifications to both users
-          if (user.notificationToken) {
-            await sendPushNotification(user.notificationToken, {
-              title: "It's a match!",
-              body: `You and ${likedUser.firstName} have liked each other!`,
-            });
-          }
-          if (likedUser.notificationToken) {
-            await sendPushNotification(likedUser.notificationToken, {
-              title: "It's a match!",
-              body: `You and ${user.firstName} have liked each other!`,
-            });
-          }
+          // if (user.notificationToken) {
+          //   await sendPushNotification(user.notificationToken, {
+          //     title: "It's a match!",
+          //     body: `You and ${likedUser.firstName} have liked each other!`,
+          //   });
+          // }
+          // if (likedUser.notificationToken) {
+          //   await sendPushNotification(likedUser.notificationToken, {
+          //     title: "It's a match!",
+          //     body: `You and ${user.firstName} have liked each other!`,
+          //   });
+          // }
+
+          sendEmail({
+            to: user.email,
+            title: "It's a Match!",
+            subject: "You Have a New Match on Bliss Dating",
+            message: matchNotification(user.firstName, likedUser.firstName),
+          });
+          sendEmail({
+            to: likedUser.email,
+            title: "It's a Match!",
+            subject: "You Have a New Match on Bliss Dating",
+            message: matchNotification(likedUser.firstName, user.firstName),
+          });
         }
       }
 
@@ -776,6 +817,7 @@ class UserController {
           ? "User unliked successfully."
           : "User liked successfully.",
         likedUsers: updatedUser.likedUsers, // Return the updated likedUsers array
+        likesToday: updatedUser.likesToday,
       });
     } catch (error: any) {
       return res.status(500).json({

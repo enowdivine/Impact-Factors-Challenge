@@ -13,3 +13,21 @@ export function userSignup(username: string, code: number) {
            </p>
   `;
 }
+
+export function matchNotification(username: string, matchName: string) {
+  return `
+    <h3>Hi ${username},</h3>
+    <p>
+      Great news! You and <strong>${matchName}</strong> have liked each other on Bliss Dating.
+    </p>
+    <p>
+      It's a match! Start chatting now and see where this exciting connection takes you.
+    </p>
+    <p>
+      Best Regards,
+    </p>
+    <p>
+      Bliss Dating Team
+    </p>
+  `;
+}
