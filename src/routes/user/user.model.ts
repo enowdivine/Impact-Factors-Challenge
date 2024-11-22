@@ -92,16 +92,16 @@ const userSchema = new Schema(
     longTermCountries: [],
     //
     partnerAge: {
-      minValue: { type: Number },
-      maxValue: { type: Number },
+      minValue: { type: Number, default: 18 },
+      maxValue: { type: Number, default: 35 },
     },
     partnerEducationLevel: { type: String },
     partnerAttraction: [String],
     partnerPhysique: { type: String },
     partnerSmoking: { type: String },
     partnerHeight: {
-      minValue: { type: Number },
-      maxValue: { type: Number },
+      minValue: { type: Number, default: 100 },
+      maxValue: { type: Number, default: 170 },
     },
     //
     //
