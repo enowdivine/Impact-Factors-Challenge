@@ -29,12 +29,17 @@ class UserController {
       }
 
       const hash = await bcrypt.hash(req.body.password, 10);
+      const defaultCoordinates = {
+        type: "Point",
+        coordinates: [0, 0], // Default longitude and latitude
+      };
       const newUser = new User({
         firstName: req.body.firstName,
         lastName: req.body.lastName,
         username: req.body.username,
         email: req.body.email.toLowerCase(),
         password: hash,
+        coordinates: req.body.coordinates || defaultCoordinates,
       });
       newUser
         .save()
@@ -145,6 +150,7 @@ class UserController {
           });
         })
         .catch((err: any) => {
+          console.log(err);
           return res.status(500).json({
             message: err.message || "Error creating user",
             error: err,
