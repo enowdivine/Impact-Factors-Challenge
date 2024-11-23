@@ -7,10 +7,5 @@ const stripe = new Stripe();
 router.get("/subscription-plans", stripe.fetchSubscriptionPlans);
 router.post("/create-customer", stripe.createCustomer);
 router.post("/create-subscription", stripe.createSubscription);
-router.post(
-  "/webhook",
-  express.raw({ type: "application/json" }),
-  stripe.handleWebhook
-);
 
 export default router;

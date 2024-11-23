@@ -9,6 +9,8 @@ import userRoutes from "./routes/user/user.routes";
 import algorithmRoutes from "./routes/algorithm/algm.routes";
 import notificationRoutes from "./routes/notifications/notification.routes";
 import paymentRoutes from "./routes/payments/stripe.routes";
+import StripeController from "./routes/payments/stripe.controller";
+const stripe = new StripeController();
 
 const path = require("path");
 export const appRoot = path.resolve(__dirname);
@@ -27,6 +29,13 @@ const server: any = http.createServer(app);
 dbConnect();
 
 app.use(cors(corsOptions));
+
+app.post(
+  `/api/${process.env.API_VERSION}/callback/webhook`,
+  express.raw({ type: "application/json" }),
+  stripe.handleWebhook
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
