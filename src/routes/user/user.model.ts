@@ -40,6 +40,7 @@ const userSchema = new Schema(
       isPremium: { type: Boolean, default: false },
       plan: { type: String, default: "FREE" },
       expiresIn: { type: Date },
+      stripeCustomerId: { type: String },
     },
     //
     gender: { type: String },
@@ -103,7 +104,6 @@ const userSchema = new Schema(
       minValue: { type: Number, default: 100 },
       maxValue: { type: Number, default: 170 },
     },
-    //
     //
     notificationToken: { type: String },
     status: {

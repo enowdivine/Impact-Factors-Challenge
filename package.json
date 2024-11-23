@@ -40,6 +40,7 @@
     "nodemailer": "^6.9.13",
     "socket.io": "^4.7.2",
     "stream-chat": "^8.40.9",
+    "stripe": "^17.4.0",
     "uuidv4": "^6.2.13"
   },
   "engines": {

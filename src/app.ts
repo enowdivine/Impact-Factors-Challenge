@@ -8,6 +8,7 @@ import cors from "cors";
 import userRoutes from "./routes/user/user.routes";
 import algorithmRoutes from "./routes/algorithm/algm.routes";
 import notificationRoutes from "./routes/notifications/notification.routes";
+import paymentRoutes from "./routes/payments/stripe.routes";
 
 const path = require("path");
 export const appRoot = path.resolve(__dirname);
@@ -33,6 +34,7 @@ app.use(bodyParser.json());
 app.use(`/api/${process.env.API_VERSION}/users`, userRoutes);
 app.use(`/api/${process.env.API_VERSION}/algorithm`, algorithmRoutes);
 app.use(`/api/${process.env.API_VERSION}/notifications`, notificationRoutes);
+app.use(`/api/${process.env.API_VERSION}/stripe`, paymentRoutes);
 
 app.get("/", (req: Request, res: Response) => {
   res.send(`Bliss Server 🚀 `);
