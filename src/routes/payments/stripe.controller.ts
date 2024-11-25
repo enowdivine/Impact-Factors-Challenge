@@ -79,8 +79,6 @@ class StripeController {
 
     try {
       // Verify the webhook signature
-      const rawBody = JSON.stringify(req.body);
-      console.log(req.body);
       event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
     } catch (err: any) {
       console.error(`Webhook signature verification failed: ${err.message}`);

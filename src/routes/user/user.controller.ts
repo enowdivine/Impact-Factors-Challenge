@@ -572,7 +572,77 @@ class UserController {
     try {
       const data = await User.findOne({ _id: req.params.id });
       if (data) {
-        return res.status(200).json(data);
+        return res.status(200).json({
+          id: data._id,
+          role: data.role,
+          profilePicture: data.profilePicture,
+          images: data.images,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          username: data.username,
+          email: data.email,
+          emailVerified: data.emailVerified,
+          profilePrivacy: data.profilePrivacy,
+          isProfileCompleted: data.isProfileCompleted,
+          //
+          questionOne: data.questionOne,
+          answerOne: data.answerOne,
+          questionTwo: data.questionTwo,
+          answerTwo: data.answerTwo,
+          bio: data.bio,
+          //
+          location: data.location,
+          likedUsers: data.likedUsers,
+          premium: data.premium,
+          //
+          gender: data.gender,
+          interestedGender: data.interestedGender,
+          age: data.age,
+          countryOfOrigin: data.countryOfOrigin,
+          coordinates: data.coordinates,
+          currentLocation: data.currentLocation,
+          maritalStatus: data.maritalStatus,
+          numberOfChildren: data.numberOfChildren,
+          height: data.height,
+          //
+          physique: data.physique,
+          interests: data.interests,
+          practicedSports: data.practicedSports,
+          religion: data.religion,
+          importanceOfReligion: data.importanceOfReligion,
+          smoking: data.smoking,
+          //
+          educationLevel: data.educationLevel,
+          occupation: data.occupation,
+          languages: data.languages,
+          personality: data.personality,
+          importantInLife: data.importantInLife,
+          values: data.values,
+          //
+          wantMarriage: data.wantMarriage,
+          relationshipEssentials: data.relationshipEssentials,
+          wantChildren: data.wantChildren,
+          returnToCountry: data.returnToCountry,
+          culturalValuesImportance: data.culturalValuesImportance,
+          partnerFromOtherBackground: data.partnerFromOtherBackground,
+          partnerFromSameCountry: data.partnerFromSameCountry,
+          partnerInSameCountry: data.partnerInSameCountry,
+          //
+          shareHouseholdTasks: data.shareHouseholdTasks,
+          longTermCountries: data.longTermCountries,
+          //
+          partnerAge: data.partnerAge,
+          partnerEducationLevel: data.partnerEducationLevel,
+          partnerAttraction: data.partnerAttraction,
+          partnerPhysique: data.partnerPhysique,
+          partnerSmoking: data.partnerSmoking,
+          partnerHeight: data.partnerHeight,
+          //
+          status: data.status,
+          //
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt,
+        });
       } else {
         return res.status(404).json({
           message: "no data found",
@@ -906,8 +976,25 @@ class UserController {
   async likedMeUsers(req: Request, res: Response) {
     try {
       const userId = req.params.id; // the ID of the current user
+
+      // Default values for page and limit if not provided in the query
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+
+      // Calculate the starting index for the query based on page and limit
+      const skip = (page - 1) * limit;
+
       const data = await User.find({ likedUsers: { $in: [userId] } });
-      return res.status(200).json(data);
+
+      const totalUsers = data.length;
+      const paginatedUsers = data.slice(skip, skip + limit);
+
+      return res.status(200).json({
+        users: paginatedUsers,
+        currentPage: page,
+        totalPages: Math.ceil(totalUsers / limit),
+        totalUsers: totalUsers,
+      });
     } catch (error: any) {
       return res.status(500).json({
         message: error.message || "Error fetching data",
