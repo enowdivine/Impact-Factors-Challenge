@@ -38,8 +38,6 @@ const userSchema = new Schema(
     },
     premium: {
       isPremium: { type: Boolean, default: false },
-      plan: { type: String, default: "FREE" },
-      expiresIn: { type: Date },
       stripeCustomerId: { type: String },
     },
     //

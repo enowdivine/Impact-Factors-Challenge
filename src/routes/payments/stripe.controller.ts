@@ -164,6 +164,24 @@ class StripeController {
               `Subscription ${stripeSubscriptionId} created for customer ${stripeCustomerId}`
             );
           }
+
+          // Update the `isPremium` field in the User model
+          const isActive = subscription.status === "active";
+          const user = await User.findOne({
+            "premium.stripeCustomerId": stripeCustomerId,
+          });
+
+          if (user) {
+            await User.findByIdAndUpdate(user._id, {
+              "premium.isPremium": isActive,
+            });
+            console.log(
+              `User ${user._id} premium status updated to ${
+                isActive ? "true" : "false"
+              }`
+            );
+          }
+
           break;
         }
 
@@ -192,6 +210,17 @@ class StripeController {
             console.log(
               `Subscription ${subscription.stripeSubscriptionId} canceled due to payment failure.`
             );
+
+            // Also update the user's premium status
+            const user = await User.findById(subscription.userId);
+            if (user) {
+              await User.findByIdAndUpdate(user._id, {
+                "premium.isPremium": false,
+              });
+              console.log(
+                `User ${user._id} premium status set to false due to payment failure.`
+              );
+            }
           }
 
           break;
