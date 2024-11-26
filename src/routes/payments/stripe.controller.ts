@@ -62,17 +62,17 @@ class StripeController {
   async createSubscription(req: Request, res: Response) {
     const { customerId, priceId } = req.body;
     try {
-      const existingSubscriptions = await stripe.subscriptions.list({
-        customer: customerId,
-        status: "active", // Filter by active subscriptions
-      });
+      // const existingSubscriptions = await stripe.subscriptions.list({
+      //   customer: customerId,
+      //   status: "active", // Filter by active subscriptions
+      // });
 
-      if (existingSubscriptions.data.length > 0) {
-        return res.status(400).json({
-          message: "You already have an active subscription.",
-          subscriptions: existingSubscriptions.data,
-        });
-      }
+      // if (existingSubscriptions.data.length > 0) {
+      //   return res.status(400).json({
+      //     message: "You already have an active subscription.",
+      //     subscriptions: existingSubscriptions.data,
+      //   });
+      // }
 
       const subscription = await stripe.subscriptions.create({
         customer: customerId,
