@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Stripe from "stripe";
 import dotenv from "dotenv";
 import User from "../user/user.model";
+import Subscription from "../subscriptions/subscription.model";
 
 dotenv.config();
 
@@ -23,6 +24,21 @@ class StripeController {
   async createCustomer(req: Request, res: Response) {
     const { userId, name, email } = req.body;
     try {
+      const user = await User.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found." });
+      }
+
+      // Check if the user already has a Stripe customer ID
+      if (user.premium?.stripeCustomerId) {
+        console.log("Returning existing Stripe customer ID.");
+        const existingCustomer = await stripe.customers.retrieve(
+          user.premium.stripeCustomerId
+        );
+        return res.status(200).json({ customer: existingCustomer });
+      }
+
       const customer = await stripe.customers.create({
         email,
         name,
@@ -46,6 +62,18 @@ class StripeController {
   async createSubscription(req: Request, res: Response) {
     const { customerId, priceId } = req.body;
     try {
+      const existingSubscriptions = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "active", // Filter by active subscriptions
+      });
+
+      if (existingSubscriptions.data.length > 0) {
+        return res.status(400).json({
+          message: "You already have an active subscription.",
+          subscriptions: existingSubscriptions.data,
+        });
+      }
+
       const subscription = await stripe.subscriptions.create({
         customer: customerId,
         items: [{ price: priceId }],
@@ -91,27 +119,51 @@ class StripeController {
         case "customer.subscription.deleted": {
           const subscription = event.data.object as Stripe.Subscription;
           const stripeCustomerId = subscription.customer as string;
+          const stripeSubscriptionId = subscription.id;
 
-          const user = await User.findOne({
-            "premium.stripeCustomerId": stripeCustomerId,
+          // Find subscription in the database
+          const existingSubscription = await Subscription.findOne({
+            stripeSubscriptionId,
           });
 
-          if (user) {
-            const isActive = subscription.status === "active";
-            await User.findByIdAndUpdate(user._id, {
-              "premium.isPremium": isActive,
-              "premium.plan": isActive
-                ? subscription.items.data[0].price.id
-                : "FREE",
-              "premium.expiresIn": isActive
-                ? new Date(subscription.current_period_end * 1000)
-                : null,
-            });
-          }
+          const subscriptionData = {
+            stripeCustomerId,
+            stripeSubscriptionId,
+            plan: subscription.items.data[0].price.id,
+            status: subscription.status,
+            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+          };
 
-          console.log(
-            `Subscription status for customer ${stripeCustomerId} updated to ${subscription.status}`
-          );
+          if (existingSubscription) {
+            // Update the existing subscription
+            await Subscription.findByIdAndUpdate(
+              existingSubscription._id,
+              subscriptionData
+            );
+            console.log(
+              `Subscription ${stripeSubscriptionId} updated for customer ${stripeCustomerId}`
+            );
+          } else {
+            // Find the associated user by Stripe customer ID
+            const user = await User.findOne({
+              "premium.stripeCustomerId": stripeCustomerId,
+            });
+
+            if (!user) {
+              console.error(`User not found for customer ${stripeCustomerId}`);
+              return res.status(404).send("User not found");
+            }
+
+            // Create a new subscription record
+            await Subscription.create({
+              userId: user._id,
+              ...subscriptionData,
+            });
+
+            console.log(
+              `Subscription ${stripeSubscriptionId} created for customer ${stripeCustomerId}`
+            );
+          }
           break;
         }
 
@@ -127,22 +179,21 @@ class StripeController {
 
           console.error(`Payment failed for invoice ${invoice.id}`);
 
-          const user = await User.findOne({
-            "premium.stripeCustomerId": stripeCustomerId,
+          const subscription = await Subscription.findOne({
+            stripeCustomerId,
           });
 
-          if (user) {
-            // Deactivate the user's premium features if payment fails
-            await User.findByIdAndUpdate(user._id, {
-              "premium.isPremium": false,
-              "premium.plan": "FREE",
-              "premium.expiresIn": null,
+          if (subscription) {
+            // Update the subscription status to canceled in case of payment failure
+            await Subscription.findByIdAndUpdate(subscription._id, {
+              status: "canceled",
             });
 
             console.log(
-              `Deactivated premium features for user ${user._id} due to payment failure.`
+              `Subscription ${subscription.stripeSubscriptionId} canceled due to payment failure.`
             );
           }
+
           break;
         }
 
