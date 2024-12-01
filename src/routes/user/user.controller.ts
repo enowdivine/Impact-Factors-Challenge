@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import User from "./user.model";
+import UserMatch from "../algorithm/algm.model";
 import NotificationModel from "../notifications/notification.model";
 import bcrypt from "bcrypt";
 import _ from "lodash";
@@ -12,7 +13,7 @@ import { generateToken } from "../streamChat/stream.controller";
 // import { sendPushNotification } from "../../services/notification/notifiication";
 
 // ALGORITHM IMPORTS
-import { algorithmHandler } from "../algorithm/algorithm";
+import { computeMatchScores, updateMatchScores } from "../algorithm/algorithm";
 
 const verificationCodes = new Map();
 const generateVerificationCode = () =>
@@ -202,10 +203,6 @@ class UserController {
 
       if (user) {
         if (!user?.emailVerified) {
-          // return res.status(500).json({
-          //   message:
-          //     "Email not verified. Please verify your email to continue.",
-          // });
           // Generate the six-digit verification code
           const verificationCode = generateVerificationCode();
           verificationCodes.set(req.body.email, verificationCode);
@@ -322,6 +319,16 @@ class UserController {
                 user.email,
                 user.profilePicture.url
               );
+
+              // Trigger compute scores in the background
+              setImmediate(async () => {
+                try {
+                  await computeMatchScores(user._id.toString());
+                  console.log(`Scores recomputed for user: ${user._id}`);
+                } catch (error: any) {
+                  console.error("Error recomputing scores:", error.message);
+                }
+              });
 
               return res.status(200).json({
                 message: "Login successful",
@@ -655,6 +662,46 @@ class UserController {
     }
   }
 
+  // async users(req: Request, res: Response) {
+  //   try {
+  //     const userId = req.params.id; // the ID of the current user
+
+  //     // Default values for page and limit if not provided in the query
+  //     const page = parseInt(req.query.page as string) || 1;
+  //     const limit = parseInt(req.query.limit as string) || 10;
+
+  //     // Calculate the starting index for the query based on page and limit
+  //     const skip = (page - 1) * limit;
+
+  //     // Fetch the current user
+  //     const currentUser = await User.findById(userId).exec();
+  //     if (!currentUser) {
+  //       return res.status(404).json({ message: "User not found" });
+  //     }
+
+  //     // const data = await User.find({ likedUsers: { $in: [userId] } });
+  //     const data = await User.find({
+  //       status: "ACTIVE",
+  //     })
+  //       .skip(skip)
+  //       .limit(limit);
+
+  //     const totalUsers = data.length;
+  //     const paginatedUsers = data.slice(skip, skip + limit);
+
+  //     return res.status(200).json({
+  //       users: data,
+  //       currentPage: page,
+  //       totalPages: Math.ceil(totalUsers / limit),
+  //       totalUsers: totalUsers,
+  //     });
+  //   } catch (error: any) {
+  //     return res.status(500).json({
+  //       message: error.message || "Error fetching data",
+  //     });
+  //   }
+  // }
+
   async users(req: Request, res: Response) {
     try {
       const currentUserId = req.params.id;
@@ -666,27 +713,39 @@ class UserController {
       // Calculate the starting index for the query based on page and limit
       const skip = (page - 1) * limit;
 
-      // Step 1: Get all filtered users
-      let result = await algorithmHandler(currentUserId);
+      // Step 1: Fetch matches from the UserMatch collection
+      const matches = await UserMatch.find({ user1: currentUserId })
+        .sort({ score: -1 }) // Sort by score descending
+        .skip(skip) // Pagination: skip the first `skip` results
+        .limit(limit) // Pagination: limit to `limit` results
+        .populate("user2", "-password") // Populate user2's details but exclude sensitive fields like password
+        .exec();
 
-      if (result.success && result.users) {
-        // Step 2: Implement pagination on the filtered users
-        const totalUsers = result.users.length; // Total number of filtered users
-        const paginatedUsers = result.users.slice(skip, skip + limit); // Slice the array to get the paginated results
+      // Step 2: Get the total number of matches for pagination metadata
+      const totalMatches = await UserMatch.countDocuments({
+        user1: currentUserId,
+      });
 
-        // Step 3: Return the paginated users
+      // Step 3: Check if there are no matches
+      if (!matches || matches.length === 0) {
         return res.status(200).json({
-          users: paginatedUsers,
+          users: [],
           currentPage: page,
-          totalPages: Math.ceil(totalUsers / limit),
-          totalUsers: totalUsers,
-        });
-      } else {
-        return res.status(500).json({
-          message: result.message,
+          totalPages: 0,
+          totalUsers: 0,
+          message: "No matches found.",
         });
       }
+
+      // Step 4: Return the paginated matches
+      return res.status(200).json({
+        users: matches.map((match) => match.user2), // Extract user2 details from matches
+        currentPage: page,
+        totalPages: Math.ceil(totalMatches / limit),
+        totalUsers: totalMatches,
+      });
     } catch (error: any) {
+      console.error(error.message);
       return res.status(500).json({
         message: error.message || "Error fetching data",
       });
@@ -698,45 +757,50 @@ class UserController {
       // Get the user ID of the person making the request
       const requestingUserId = req.params.id;
 
-      // Step 1: Get all filtered users
-      const result = await algorithmHandler(requestingUserId);
+      // Fetch matches from the UserMatch collection
+      const matches = await UserMatch.find({ user1: requestingUserId })
+        .sort({ score: -1 }) // Sort by score descending to prioritize top matches
+        .limit(10) // Fetch the top 10 matches to allow some randomness in selection
+        .populate("user2", "-password") // Populate user2's details but exclude sensitive fields like password
+        .exec();
 
-      if (result && result.success && result.users) {
-        if (result.users.length === 0) {
-          return res.status(404).json({
-            message: "No users found",
-          });
-        }
-
-        // Get the current date as a string (e.g., '2023-09-20')
-        const currentDate = new Date().toISOString().split("T")[0];
-
-        // Use the current date to create a consistent seed for randomness
-        const seed = crypto
-          .createHash("sha256")
-          .update(currentDate)
-          .digest("hex");
-
-        // Convert the seed into a number to use for seeding random
-        const seedNumber = parseInt(seed.slice(0, 8), 16);
-
-        // Function to seed the random selection process
-        function seededRandom(seed: number) {
-          const x = Math.sin(seed++) * 10000;
-          return x - Math.floor(x);
-        }
-
-        // Shuffle users using the seeded randomness
-        const shuffledUsers = result.users
-          .map((user) => ({ user, sort: seededRandom(seedNumber) }))
-          .sort((a, b) => a.sort - b.sort)
-          .map(({ user }) => user);
-
-        // Select only the first two random users
-        const selectedUsers = shuffledUsers.slice(0, 2);
-
-        return res.status(200).json(selectedUsers);
+      if (!matches || matches.length === 0) {
+        return res.status(404).json({
+          message: "No matches found",
+        });
       }
+
+      // Get the current date as a string (e.g., '2023-09-20')
+      const currentDate = new Date().toISOString().split("T")[0];
+
+      // Use the current date to create a consistent seed for randomness
+      const seed = crypto
+        .createHash("sha256")
+        .update(currentDate)
+        .digest("hex");
+
+      // Convert the seed into a number to use for seeding random
+      const seedNumber = parseInt(seed.slice(0, 8), 16);
+
+      // Function to seed the random selection process
+      function seededRandom(seed: number) {
+        const x = Math.sin(seed++) * 10000;
+        return x - Math.floor(x);
+      }
+
+      // Shuffle the top matches using the seeded randomness
+      const shuffledMatches = matches
+        .map((match) => ({
+          user: match.user2, // Extract the matched user details
+          sort: seededRandom(seedNumber),
+        }))
+        .sort((a, b) => a.sort - b.sort)
+        .map(({ user }) => user);
+
+      // Select only the first two random users
+      const selectedUsers = shuffledMatches.slice(0, 2);
+
+      return res.status(200).json(selectedUsers);
     } catch (error: any) {
       return res.status(500).json({
         message: error.message || "Error fetching data",
@@ -984,7 +1048,19 @@ class UserController {
       // Calculate the starting index for the query based on page and limit
       const skip = (page - 1) * limit;
 
-      const data = await User.find({ likedUsers: { $in: [userId] } });
+      // Fetch the current user
+      const currentUser = await User.findById(userId).exec();
+      if (!currentUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // const data = await User.find({ likedUsers: { $in: [userId] } });
+      const data = await User.find({
+        likedUsers: { $in: [userId] }, // Users who liked the current user
+        _id: { $nin: currentUser.likedUsers }, // Exclude mutual matches
+      });
+      // .skip(skip)
+      // .limit(limit);
 
       const totalUsers = data.length;
       const paginatedUsers = data.slice(skip, skip + limit);
@@ -1435,6 +1511,20 @@ class UserController {
     );
     if (user.acknowledged) {
       const data = await User.findOne({ _id: req.params.id });
+      if (!data) {
+        return res.status(404).json({ message: "User not found after update" });
+      }
+
+      // Trigger compute scores in the background
+      setImmediate(async () => {
+        try {
+          await updateMatchScores(data._id.toString());
+          console.log(`Scores recomputed for user: ${data._id}`);
+        } catch (error: any) {
+          console.error("Error recomputing scores:", error.message);
+        }
+      });
+
       if (data) {
         res.status(200).json({
           message: "update successful",

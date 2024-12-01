@@ -1,16 +1,22 @@
 import mongoose from "mongoose";
 
-const userMatchSchema = new mongoose.Schema({
-  user1: { type: String, ref: "User", required: true },
-  user2: { type: String, ref: "User", required: true },
-  score: { type: Number, required: true },
-  user1Liked: { type: Boolean, default: false },
-  user2Liked: { type: Boolean, default: false },
-  isMutual: { type: Boolean, default: false },
-  timestamp: { type: Date, default: Date.now },
-});
+const userMatchSchema = new mongoose.Schema(
+  {
+    user1: { type: String, ref: "User", required: true },
+    user2: { type: String, ref: "User", required: true },
+    score: { type: Number, required: true },
+    user1Liked: { type: Boolean, default: false },
+    user2Liked: { type: Boolean, default: false },
+    isMutual: { type: Boolean, default: false },
+  },
+  {
+    timestamps: true,
+  }
+);
 
 // Indexing
+userMatchSchema.index({ user1: 1 });
+userMatchSchema.index({ user2: 1 });
 userMatchSchema.index({ user1: 1, user2: 1 }, { unique: true }); // Unique compound index for efficient lookups between two users
 userMatchSchema.index({ score: -1 }); // Index for sorting by score in descending order
 userMatchSchema.index({ timestamp: -1 }); // Index for queries based on the timestamp
