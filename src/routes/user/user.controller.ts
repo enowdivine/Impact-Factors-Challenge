@@ -2,7 +2,9 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import User from "./user.model";
 import UserMatch from "../algorithm/algm.model";
+import UserInteraction from "./user.interactionModel";
 import NotificationModel from "../notifications/notification.model";
+
 import bcrypt from "bcrypt";
 import _ from "lodash";
 import crypto from "crypto"; // Import crypto to seed randomness
@@ -73,81 +75,15 @@ class UserController {
             message: userSignup(req.body.firstName, verificationCode),
           });
 
+          const userObject = response.toObject();
+          const { _id, password: pw, ...rest } = userObject;
+          const userPayload = { id: _id, ...rest };
+
           return res.status(201).json({
             message: "user created",
             token: token,
             streamToken: streamResult.token,
-            user: {
-              id: response._id,
-              role: response.role,
-              profilePicture: response.profilePicture,
-              images: response.images,
-              firstName: response.firstName,
-              lastName: response.lastName,
-              username: response.username,
-              email: response.email,
-              emailVerified: response.emailVerified,
-              profilePrivacy: response.profilePrivacy,
-              isProfileCompleted: response.isProfileCompleted,
-              //
-              questionOne: response.questionOne,
-              answerOne: response.answerOne,
-              questionTwo: response.questionTwo,
-              answerTwo: response.answerTwo,
-              bio: response.bio,
-              //
-              location: response.location,
-              likedUsers: response.likedUsers,
-              premium: response.premium,
-              //
-              gender: response.gender,
-              interestedGender: response.interestedGender,
-              age: response.age,
-              countryOfOrigin: response.countryOfOrigin,
-              coordinates: response.coordinates,
-              currentLocation: response.currentLocation,
-              maritalStatus: response.maritalStatus,
-              numberOfChildren: response.numberOfChildren,
-              height: response.height,
-              //
-              physique: response.physique,
-              interests: response.interests,
-              practicedSports: response.practicedSports,
-              religion: response.religion,
-              importanceOfReligion: response.importanceOfReligion,
-              smoking: response.smoking,
-              //
-              educationLevel: response.educationLevel,
-              occupation: response.occupation,
-              languages: response.languages,
-              personality: response.personality,
-              importantInLife: response.importantInLife,
-              values: response.values,
-              //
-              wantMarriage: response.wantMarriage,
-              relationshipEssentials: response.relationshipEssentials,
-              wantChildren: response.wantChildren,
-              returnToCountry: response.returnToCountry,
-              culturalValuesImportance: response.culturalValuesImportance,
-              partnerFromOtherBackground: response.partnerFromOtherBackground,
-              partnerFromSameCountry: response.partnerFromSameCountry,
-              partnerInSameCountry: response.partnerInSameCountry,
-              //
-              shareHouseholdTasks: response.shareHouseholdTasks,
-              longTermCountries: response.longTermCountries,
-              //
-              partnerAge: response.partnerAge,
-              partnerEducationLevel: response.partnerEducationLevel,
-              partnerAttraction: response.partnerAttraction,
-              partnerPhysique: response.partnerPhysique,
-              partnerSmoking: response.partnerSmoking,
-              partnerHeight: response.partnerHeight,
-              //
-              status: response.status,
-              //
-              createdAt: response.createdAt,
-              updatedAt: response.updatedAt,
-            },
+            user: userPayload,
           });
         })
         .catch((err: any) => {
@@ -215,79 +151,13 @@ class UserController {
             message: userSignup(user.firstName, verificationCode),
           });
 
+          const userObject = user.toObject();
+          const { _id, password: pw, ...rest } = userObject;
+          const userPayload = { id: _id, ...rest };
+
           return res.status(200).json({
             message: "Success",
-            user: {
-              id: user._id,
-              role: user.role,
-              profilePicture: user.profilePicture,
-              images: user.images,
-              firstName: user.firstName,
-              lastName: user.lastName,
-              username: user.username,
-              email: user.email,
-              emailVerified: user.emailVerified,
-              profilePrivacy: user.profilePrivacy,
-              isProfileCompleted: user.isProfileCompleted,
-              //
-              questionOne: user.questionOne,
-              answerOne: user.answerOne,
-              questionTwo: user.questionTwo,
-              answerTwo: user.answerTwo,
-              bio: user.bio,
-              //
-              location: user.location,
-              likedUsers: user.likedUsers,
-              premium: user.premium,
-              //
-              gender: user.gender,
-              interestedGender: user.interestedGender,
-              age: user.age,
-              countryOfOrigin: user.countryOfOrigin,
-              coordinates: user.coordinates,
-              currentLocation: user.currentLocation,
-              maritalStatus: user.maritalStatus,
-              numberOfChildren: user.numberOfChildren,
-              height: user.height,
-              //
-              physique: user.physique,
-              interests: user.interests,
-              practicedSports: user.practicedSports,
-              religion: user.religion,
-              importanceOfReligion: user.importanceOfReligion,
-              smoking: user.smoking,
-              //
-              educationLevel: user.educationLevel,
-              occupation: user.occupation,
-              languages: user.languages,
-              personality: user.personality,
-              importantInLife: user.importantInLife,
-              values: user.values,
-              //
-              wantMarriage: user.wantMarriage,
-              relationshipEssentials: user.relationshipEssentials,
-              wantChildren: user.wantChildren,
-              returnToCountry: user.returnToCountry,
-              culturalValuesImportance: user.culturalValuesImportance,
-              partnerFromOtherBackground: user.partnerFromOtherBackground,
-              partnerFromSameCountry: user.partnerFromSameCountry,
-              partnerInSameCountry: user.partnerInSameCountry,
-              //
-              shareHouseholdTasks: user.shareHouseholdTasks,
-              longTermCountries: user.longTermCountries,
-              //
-              partnerAge: user.partnerAge,
-              partnerEducationLevel: user.partnerEducationLevel,
-              partnerAttraction: user.partnerAttraction,
-              partnerPhysique: user.partnerPhysique,
-              partnerSmoking: user.partnerSmoking,
-              partnerHeight: user.partnerHeight,
-              //
-              status: user.status,
-              //
-              createdAt: user.createdAt,
-              updatedAt: user.updatedAt,
-            },
+            user: userPayload,
           });
         }
 
@@ -330,81 +200,15 @@ class UserController {
                 }
               });
 
+              const userObject = user.toObject();
+              const { _id, password: pw, ...rest } = userObject;
+              const userPayload = { id: _id, ...rest };
+
               return res.status(200).json({
                 message: "Login successful",
                 token: token,
                 streamToken: streamResult.token,
-                user: {
-                  id: user._id,
-                  role: user.role,
-                  profilePicture: user.profilePicture,
-                  images: user.images,
-                  firstName: user.firstName,
-                  lastName: user.lastName,
-                  username: user.username,
-                  email: user.email,
-                  emailVerified: user.emailVerified,
-                  profilePrivacy: user.profilePrivacy,
-                  isProfileCompleted: user.isProfileCompleted,
-                  //
-                  questionOne: user.questionOne,
-                  answerOne: user.answerOne,
-                  questionTwo: user.questionTwo,
-                  answerTwo: user.answerTwo,
-                  bio: user.bio,
-                  //
-                  location: user.location,
-                  likedUsers: user.likedUsers,
-                  premium: user.premium,
-                  //
-                  gender: user.gender,
-                  interestedGender: user.interestedGender,
-                  age: user.age,
-                  countryOfOrigin: user.countryOfOrigin,
-                  coordinates: user.coordinates,
-                  currentLocation: user.currentLocation,
-                  maritalStatus: user.maritalStatus,
-                  numberOfChildren: user.numberOfChildren,
-                  height: user.height,
-                  //
-                  physique: user.physique,
-                  interests: user.interests,
-                  practicedSports: user.practicedSports,
-                  religion: user.religion,
-                  importanceOfReligion: user.importanceOfReligion,
-                  smoking: user.smoking,
-                  //
-                  educationLevel: user.educationLevel,
-                  occupation: user.occupation,
-                  languages: user.languages,
-                  personality: user.personality,
-                  importantInLife: user.importantInLife,
-                  values: user.values,
-                  //
-                  wantMarriage: user.wantMarriage,
-                  relationshipEssentials: user.relationshipEssentials,
-                  wantChildren: user.wantChildren,
-                  returnToCountry: user.returnToCountry,
-                  culturalValuesImportance: user.culturalValuesImportance,
-                  partnerFromOtherBackground: user.partnerFromOtherBackground,
-                  partnerFromSameCountry: user.partnerFromSameCountry,
-                  partnerInSameCountry: user.partnerInSameCountry,
-                  //
-                  shareHouseholdTasks: user.shareHouseholdTasks,
-                  longTermCountries: user.longTermCountries,
-                  //
-                  partnerAge: user.partnerAge,
-                  partnerEducationLevel: user.partnerEducationLevel,
-                  partnerAttraction: user.partnerAttraction,
-                  partnerPhysique: user.partnerPhysique,
-                  partnerSmoking: user.partnerSmoking,
-                  partnerHeight: user.partnerHeight,
-                  //
-                  status: user.status,
-                  //
-                  createdAt: user.createdAt,
-                  updatedAt: user.updatedAt,
-                },
+                user: userPayload,
               });
             }
           }
@@ -577,130 +381,32 @@ class UserController {
 
   async user(req: Request, res: Response) {
     try {
-      const data = await User.findOne({ _id: req.params.id });
-      if (data) {
-        return res.status(200).json({
-          id: data._id,
-          role: data.role,
-          profilePicture: data.profilePicture,
-          images: data.images,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          username: data.username,
-          email: data.email,
-          emailVerified: data.emailVerified,
-          profilePrivacy: data.profilePrivacy,
-          isProfileCompleted: data.isProfileCompleted,
-          //
-          questionOne: data.questionOne,
-          answerOne: data.answerOne,
-          questionTwo: data.questionTwo,
-          answerTwo: data.answerTwo,
-          bio: data.bio,
-          //
-          location: data.location,
-          likedUsers: data.likedUsers,
-          premium: data.premium,
-          //
-          gender: data.gender,
-          interestedGender: data.interestedGender,
-          age: data.age,
-          countryOfOrigin: data.countryOfOrigin,
-          coordinates: data.coordinates,
-          currentLocation: data.currentLocation,
-          maritalStatus: data.maritalStatus,
-          numberOfChildren: data.numberOfChildren,
-          height: data.height,
-          //
-          physique: data.physique,
-          interests: data.interests,
-          practicedSports: data.practicedSports,
-          religion: data.religion,
-          importanceOfReligion: data.importanceOfReligion,
-          smoking: data.smoking,
-          //
-          educationLevel: data.educationLevel,
-          occupation: data.occupation,
-          languages: data.languages,
-          personality: data.personality,
-          importantInLife: data.importantInLife,
-          values: data.values,
-          //
-          wantMarriage: data.wantMarriage,
-          relationshipEssentials: data.relationshipEssentials,
-          wantChildren: data.wantChildren,
-          returnToCountry: data.returnToCountry,
-          culturalValuesImportance: data.culturalValuesImportance,
-          partnerFromOtherBackground: data.partnerFromOtherBackground,
-          partnerFromSameCountry: data.partnerFromSameCountry,
-          partnerInSameCountry: data.partnerInSameCountry,
-          //
-          shareHouseholdTasks: data.shareHouseholdTasks,
-          longTermCountries: data.longTermCountries,
-          //
-          partnerAge: data.partnerAge,
-          partnerEducationLevel: data.partnerEducationLevel,
-          partnerAttraction: data.partnerAttraction,
-          partnerPhysique: data.partnerPhysique,
-          partnerSmoking: data.partnerSmoking,
-          partnerHeight: data.partnerHeight,
-          //
-          status: data.status,
-          //
-          createdAt: data.createdAt,
-          updatedAt: data.updatedAt,
-        });
-      } else {
+      // Fetch the user by ID, excluding sensitive fields like password
+      const data = await User.findOne({ _id: req.params.id })
+        .select("-password") // Exclude password
+        .lean(); // Return plain JavaScript object for better performance
+
+      if (!data) {
         return res.status(404).json({
-          message: "no data found",
+          message: "No user found",
         });
       }
+
+      // Destructure to replace `_id` with `id`
+      const { _id, ...rest } = data;
+      const userWithId = {
+        id: _id, // Add `id` field
+        ...rest, // Spread remaining properties
+      };
+
+      return res.status(200).json(userWithId);
     } catch (error: any) {
+      console.error("Error fetching user:", error);
       return res.status(500).json({
-        message: error.message || "error fetching data",
+        message: error.message || "Error fetching user data",
       });
     }
   }
-
-  // async users(req: Request, res: Response) {
-  //   try {
-  //     const userId = req.params.id; // the ID of the current user
-
-  //     // Default values for page and limit if not provided in the query
-  //     const page = parseInt(req.query.page as string) || 1;
-  //     const limit = parseInt(req.query.limit as string) || 10;
-
-  //     // Calculate the starting index for the query based on page and limit
-  //     const skip = (page - 1) * limit;
-
-  //     // Fetch the current user
-  //     const currentUser = await User.findById(userId).exec();
-  //     if (!currentUser) {
-  //       return res.status(404).json({ message: "User not found" });
-  //     }
-
-  //     // const data = await User.find({ likedUsers: { $in: [userId] } });
-  //     const data = await User.find({
-  //       status: "ACTIVE",
-  //     })
-  //       .skip(skip)
-  //       .limit(limit);
-
-  //     const totalUsers = data.length;
-  //     const paginatedUsers = data.slice(skip, skip + limit);
-
-  //     return res.status(200).json({
-  //       users: data,
-  //       currentPage: page,
-  //       totalPages: Math.ceil(totalUsers / limit),
-  //       totalUsers: totalUsers,
-  //     });
-  //   } catch (error: any) {
-  //     return res.status(500).json({
-  //       message: error.message || "Error fetching data",
-  //     });
-  //   }
-  // }
 
   async users(req: Request, res: Response) {
     try {
@@ -713,20 +419,33 @@ class UserController {
       // Calculate the starting index for the query based on page and limit
       const skip = (page - 1) * limit;
 
-      // Step 1: Fetch matches from the UserMatch collection
-      const matches = await UserMatch.find({ user1: currentUserId })
+      // Step 1: Fetch liked and disliked users from UserInteraction
+      const interactions = await UserInteraction.find({ user: currentUserId })
+        .select("targetUser type")
+        .lean();
+
+      const excludedUserIds = interactions.map((interaction) =>
+        interaction.targetUser.toString()
+      );
+
+      // Step 2: Fetch matches from the UserMatch collection, excluding liked/disliked users
+      const matches = await UserMatch.find({
+        user1: currentUserId,
+        user2: { $nin: excludedUserIds }, // Exclude users the current user has liked or disliked
+      })
         .sort({ score: -1 }) // Sort by score descending
         .skip(skip) // Pagination: skip the first `skip` results
         .limit(limit) // Pagination: limit to `limit` results
         .populate("user2", "-password") // Populate user2's details but exclude sensitive fields like password
         .exec();
 
-      // Step 2: Get the total number of matches for pagination metadata
+      // Step 3: Get the total number of matches for pagination metadata
       const totalMatches = await UserMatch.countDocuments({
         user1: currentUserId,
+        user2: { $nin: excludedUserIds }, // Exclude users the current user has liked or disliked
       });
 
-      // Step 3: Check if there are no matches
+      // Step 4: Check if there are no matches
       if (!matches || matches.length === 0) {
         return res.status(200).json({
           users: [],
@@ -737,7 +456,7 @@ class UserController {
         });
       }
 
-      // Step 4: Return the paginated matches
+      // Step 5: Return the paginated matches
       return res.status(200).json({
         users: matches.map((match) => match.user2), // Extract user2 details from matches
         currentPage: page,
@@ -757,8 +476,22 @@ class UserController {
       // Get the user ID of the person making the request
       const requestingUserId = req.params.id;
 
+      // Fetch users that the current user has liked or disliked
+      const excludedInteractions = await UserInteraction.find({
+        user: requestingUserId,
+        type: { $in: ["LIKE", "DISLIKE"] },
+      }).select("targetUser");
+
+      // Extract the excluded user IDs
+      const excludedUserIds = excludedInteractions.map(
+        (interaction) => interaction.targetUser
+      );
+
       // Fetch matches from the UserMatch collection
-      const matches = await UserMatch.find({ user1: requestingUserId })
+      const matches = await UserMatch.find({
+        user1: requestingUserId,
+        user2: { $nin: excludedUserIds }, // Exclude liked or disliked users
+      })
         .sort({ score: -1 }) // Sort by score descending to prioritize top matches
         .limit(10) // Fetch the top 10 matches to allow some randomness in selection
         .populate("user2", "-password") // Populate user2's details but exclude sensitive fields like password
@@ -810,8 +543,7 @@ class UserController {
 
   async toggleLikeUser(req: Request, res: Response) {
     try {
-      const { userId } = req.params; // ID of the user performing the like/unlike
-      const { likedUserId } = req.params; // ID of the user to be liked/unliked
+      const { userId, likedUserId } = req.params;
 
       if (!userId || !likedUserId) {
         return res
@@ -819,7 +551,7 @@ class UserController {
           .json({ message: "Both userId and likedUserId are required." });
       }
 
-      // Find the user who is performing the like/unlike
+      // Find the user performing the like action
       const user = await User.findById(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found." });
@@ -849,117 +581,100 @@ class UserController {
         });
       }
 
-      // Find the user who is being liked
-      const likedUser = await User.findById(likedUserId);
-      if (!likedUser) {
-        return res.status(404).json({ message: "Liked user not found." });
-      }
+      // Check if there is an existing interaction
+      const existingInteraction = await UserInteraction.findOne({
+        user: userId,
+        targetUser: likedUserId,
+      });
 
-      // Check if the likedUserId already exists in the likedUsers array
-      const isLiked = user.likedUsers.includes(likedUserId);
+      if (existingInteraction) {
+        if (existingInteraction.type === "LIKE") {
+          // If already liked, toggle to "unlike"
+          await UserInteraction.deleteOne({ _id: existingInteraction._id });
+          return res.status(200).json({
+            message: "User unliked successfully.",
+            likesToday: user.likesToday,
+          });
+        } else {
+          // If previously disliked, update to "LIKE"
+          existingInteraction.type = "LIKE";
+          await existingInteraction.save();
+        }
+      } else {
+        // No existing interaction, create a new like
+        const newInteraction = new UserInteraction({
+          user: userId,
+          targetUser: likedUserId,
+          type: "LIKE",
+        });
+        await newInteraction.save();
 
-      // Toggle logic: If already liked, remove from likedUsers. If not liked, add to likedUsers.
-      const update = isLiked
-        ? { $pull: { likedUsers: likedUserId } } // Remove likedUserId
-        : { $addToSet: { likedUsers: likedUserId } }; // Add likedUserId
-
-      // Update the user document
-      const updatedUser = await User.findByIdAndUpdate(userId, update, {
-        new: true,
-      }).select("likedUsers");
-
-      // If for some reason update failed, return error
-      if (!updatedUser) {
-        return res.status(500).json({ message: "Error updating like status." });
-      }
-
-      // If the action is a "like" (not an "unlike")
-      if (!isLiked) {
         // Increment the daily like count
         user.likesToday.count += 1;
         await user.save();
-
-        // Create a notification for the liked user
-        const likeNotification = new NotificationModel({
-          userId: likedUserId,
-          type: "Like",
-          message: `${user.firstName} liked your profile`,
-          icon: "heart",
-          backgroundColor: "#FF3D3D1C",
-          color: "#FF3425",
-        });
-        await likeNotification.save();
-
-        // Send a notification to the liked user
-        // if (likedUser.notificationToken) {
-        //   await sendPushNotification(likedUser.notificationToken, {
-        //     title: "You have a new like!",
-        //     body: `${user.firstName} liked you. Check it out!`,
-        //   });
-        // }
-
-        // Check if the liked user has also liked the original user
-        const isMatch = likedUser.likedUsers.includes(userId);
-        if (isMatch) {
-          // Create match notifications for both users
-          const matchNotification1 = new NotificationModel({
-            userId: userId,
-            type: "Matches",
-            message: `New match with ${likedUser.firstName}`,
-            icon: "podium",
-            backgroundColor: "#B8E7FE",
-            color: "#00C2FF",
-          });
-          await matchNotification1.save();
-
-          const matchNotification2 = new NotificationModel({
-            userId: likedUserId,
-            type: "Matches",
-            message: `New match with ${user.firstName}`,
-            icon: "podium",
-            backgroundColor: "#B8E7FE",
-            color: "#00C2FF",
-          });
-          await matchNotification2.save();
-
-          // It's a match! Send notifications to both users
-          // if (user.notificationToken) {
-          //   await sendPushNotification(user.notificationToken, {
-          //     title: "It's a match!",
-          //     body: `You and ${likedUser.firstName} have liked each other!`,
-          //   });
-          // }
-          // if (likedUser.notificationToken) {
-          //   await sendPushNotification(likedUser.notificationToken, {
-          //     title: "It's a match!",
-          //     body: `You and ${user.firstName} have liked each other!`,
-          //   });
-          // }
-
-          sendEmail({
-            to: user.email,
-            title: "It's a Match!",
-            subject: "You Have a New Match on Bliss Dating",
-            message: matchNotification(user.firstName, likedUser.firstName),
-          });
-          sendEmail({
-            to: likedUser.email,
-            title: "It's a Match!",
-            subject: "You Have a New Match on Bliss Dating",
-            message: matchNotification(likedUser.firstName, user.firstName),
-          });
-        }
       }
 
-      // Return the updated likedUsers list
+      // Check if the liked user has also liked the current user (mutual match)
+      const reciprocalInteraction = await UserInteraction.findOne({
+        user: likedUserId,
+        targetUser: userId,
+        type: "LIKE",
+      });
+
+      if (reciprocalInteraction) {
+        const likedUserDetails = await User.findById(likedUserId);
+        if (!likedUserDetails) {
+          return res.status(404).json({ message: "Liked user not found." });
+        }
+
+        // Notifications
+        const notificationForCurrentUser = new NotificationModel({
+          userId: userId,
+          type: "Matches",
+          message: `New match with ${likedUserDetails?.firstName}`,
+          icon: "podium",
+          backgroundColor: "#B8E7FE",
+          color: "#00C2FF",
+        });
+        await notificationForCurrentUser.save();
+
+        const notificationForLikedUser = new NotificationModel({
+          userId: likedUserId,
+          type: "Matches",
+          message: `New match with ${user?.firstName}`,
+          icon: "podium",
+          backgroundColor: "#B8E7FE",
+          color: "#00C2FF",
+        });
+        await notificationForLikedUser.save();
+
+        // It's a match! Send notifications to both users
+        sendEmail({
+          to: user.email,
+          title: "It's a Match!",
+          subject: "You Have a New Match on Bliss Dating",
+          message: matchNotification(
+            user.firstName,
+            likedUserDetails?.firstName as string
+          ),
+        });
+        sendEmail({
+          to: likedUserDetails?.email as string,
+          title: "It's a Match!",
+          subject: "You Have a New Match on Bliss Dating",
+          message: matchNotification(
+            likedUserDetails?.firstName as string,
+            user.firstName
+          ),
+        });
+      }
+
       return res.status(200).json({
-        message: isLiked
-          ? "User unliked successfully."
-          : "User liked successfully.",
-        likedUsers: updatedUser.likedUsers, // Return the updated likedUsers array
-        likesToday: updatedUser.likesToday,
+        message: "User liked successfully.",
+        likesToday: user.likesToday,
       });
     } catch (error: any) {
+      console.error("Error toggling like status:", error);
       return res.status(500).json({
         message: error.message || "Error toggling like/unlike status.",
       });
@@ -968,8 +683,7 @@ class UserController {
 
   async dislikeUser(req: Request, res: Response) {
     try {
-      const { userId } = req.params;
-      const { dislikedUserId } = req.params;
+      const { userId, dislikedUserId } = req.params;
 
       if (!userId || !dislikedUserId) {
         return res
@@ -977,103 +691,99 @@ class UserController {
           .json({ message: "Both userId and dislikedUserId are required." });
       }
 
-      // Find the user who is performing the dislike action
-      const user = await User.findById(userId);
-
-      if (!user) {
-        return res.status(404).json({ message: "User not found." });
-      }
-
-      // Check if the dislikedUserId already exists in the dislikedUsers array
-      const isDisliked = user.dislikedUsers.includes(dislikedUserId);
-
-      // Toggle logic: If already disliked, remove from dislikedUsers. If not disliked, add to dislikedUsers.
-      const update = isDisliked
-        ? { $pull: { dislikedUsers: dislikedUserId } } // Remove dislikedUserId
-        : { $addToSet: { dislikedUsers: dislikedUserId } }; // Add dislikedUserId
-
-      // Update the user document
-      const updatedUser = await User.findByIdAndUpdate(userId, update, {
-        new: true,
-      }).select("dislikedUsers");
-
-      // If for some reason the update failed, return an error
-      if (!updatedUser) {
-        return res
-          .status(500)
-          .json({ message: "Error updating dislike status." });
-      }
-
-      // Return the updated dislikedUsers list
-      return res.status(200).json({
-        message: isDisliked
-          ? "User removed from dislikes successfully."
-          : "User disliked successfully.",
-        dislikedUsers: updatedUser.dislikedUsers, // Return the updated dislikedUsers array
+      // Check if a dislike interaction already exists
+      const existingInteraction = await UserInteraction.findOne({
+        user: userId,
+        targetUser: dislikedUserId,
+        type: "DISLIKE",
       });
+
+      if (existingInteraction) {
+        // Remove the dislike interaction
+        await UserInteraction.deleteOne({
+          user: userId,
+          targetUser: dislikedUserId,
+          type: "DISLIKE",
+        });
+
+        return res.status(200).json({
+          message: "User removed from dislikes successfully.",
+        });
+      } else {
+        // Create a new dislike interaction
+        const newDislike = new UserInteraction({
+          user: userId,
+          targetUser: dislikedUserId,
+          type: "DISLIKE",
+        });
+
+        await newDislike.save();
+
+        return res.status(200).json({
+          message: "User disliked successfully.",
+        });
+      }
     } catch (error: any) {
+      console.error("Error toggling dislike status:", error);
       return res.status(500).json({
         message: error.message || "Error toggling dislike status.",
       });
     }
   }
 
-  async likedUsers(req: Request, res: Response) {
-    try {
-      const data = await User.find({ _id: req.params.id }).populate(
-        "likedUsers"
-      );
-      if (data) {
-        return res.status(200).json(data);
-      } else {
-        return res.status(404).json({
-          message: "no data found",
-        });
-      }
-    } catch (error: any) {
-      return res.status(500).json({
-        message: error.message || "error fetching data",
-      });
-    }
-  }
-
   async likedMeUsers(req: Request, res: Response) {
     try {
-      const userId = req.params.id; // the ID of the current user
+      const userId = req.params.id; // ID of the current user
 
-      // Default values for page and limit if not provided in the query
+      // Default values for pagination
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
-
-      // Calculate the starting index for the query based on page and limit
       const skip = (page - 1) * limit;
 
-      // Fetch the current user
-      const currentUser = await User.findById(userId).exec();
-      if (!currentUser) {
-        return res.status(404).json({ message: "User not found" });
-      }
+      // Fetch the current user's interactions (liked or disliked users)
+      const excludedInteractions = await UserInteraction.find({
+        user: userId,
+        type: { $in: ["LIKE", "DISLIKE"] },
+      }).select("targetUser");
 
-      // const data = await User.find({ likedUsers: { $in: [userId] } });
-      const data = await User.find({
-        likedUsers: { $in: [userId] }, // Users who liked the current user
-        _id: { $nin: currentUser.likedUsers }, // Exclude mutual matches
+      // Extract IDs of users the current user has liked or disliked
+      const excludedUserIds = excludedInteractions.map(
+        (interaction) => interaction.targetUser
+      );
+
+      // Find all interactions where the targetUser is the current user and type is "LIKE"
+      const likes = await UserInteraction.find({
+        targetUser: userId,
+        type: "LIKE",
+      })
+        .select("user") // Only select the user who liked
+        .skip(skip)
+        .limit(limit);
+
+      // Extract the user IDs from the interactions
+      const likedUserIds = likes.map((interaction) => interaction.user);
+
+      // Fetch the full user details for the liked users, excluding sensitive fields
+      const likedUsers = await User.find({
+        _id: { $in: likedUserIds, $nin: excludedUserIds },
+      }).select("-password");
+
+      // Fetch total count for pagination purposes
+      const totalUsers = await UserInteraction.countDocuments({
+        targetUser: userId,
+        type: "LIKE",
       });
-      // .skip(skip)
-      // .limit(limit);
-
-      const totalUsers = data.length;
-      const paginatedUsers = data.slice(skip, skip + limit);
 
       return res.status(200).json({
-        users: paginatedUsers,
+        users: likedUsers,
         currentPage: page,
         totalPages: Math.ceil(totalUsers / limit),
         totalUsers: totalUsers,
       });
     } catch (error: any) {
+      console.error("Error fetching likedMe users:", error);
       return res.status(500).json({
-        message: error.message || "Error fetching data",
+        message: error.message || "Error fetching likedMe users",
       });
     }
   }
@@ -1082,25 +792,41 @@ class UserController {
     try {
       const userId = req.params.id; // ID of the current user
 
-      // Find the current user to get the list of users they like
-      const currentUser = await User.findById(userId);
+      // Find users that the current user has liked
+      const likedByMe = await UserInteraction.find({
+        user: userId,
+        type: "LIKE",
+      }).select("targetUser");
 
-      if (!currentUser) {
-        return res.status(404).json({ message: "User not found" });
+      // Extract targetUser IDs from the interactions
+      const likedByMeIds = likedByMe.map(
+        (interaction) => interaction.targetUser
+      );
+
+      if (likedByMeIds.length === 0) {
+        return res.status(200).json([]); // No likes made by the user
       }
 
-      const likedUsersByMe = currentUser.likedUsers; // List of users liked by the current user
+      // Find users who have liked the current user and are also in likedByMeIds
+      const mutualLikes = await UserInteraction.find({
+        user: { $in: likedByMeIds },
+        targetUser: userId,
+        type: "LIKE",
+      }).select("user");
 
-      // Find users who like the current user and are also liked by the current user
-      const mutualLikes = await User.find({
-        _id: { $in: likedUsersByMe }, // Only consider users liked by the current user
-        likedUsers: { $in: [userId] }, // Who also like the current user
-      });
+      // Extract the IDs of users who mutually like each other
+      const mutualUserIds = mutualLikes.map((interaction) => interaction.user);
 
-      return res.status(200).json(mutualLikes);
+      // Fetch full user details for mutual liked users, excluding the password
+      const mutualLikedUsers = await User.find({
+        _id: { $in: mutualUserIds },
+      }).select("-password");
+
+      return res.status(200).json(mutualLikedUsers);
     } catch (error: any) {
+      console.error("Error fetching mutual likes:", error);
       return res.status(500).json({
-        message: error.message || "Error fetching data",
+        message: error.message || "Error fetching mutual likes",
       });
     }
   }
@@ -1129,79 +855,13 @@ class UserController {
       // Save the updated document
       await user.save();
 
+      const userObject = user.toObject();
+      const { _id, password: pw, ...rest } = userObject;
+      const userPayload = { id: _id, ...rest };
+
       return res.status(200).json({
         message: "Image added successfully",
-        user: {
-          id: user._id,
-          role: user.role,
-          profilePicture: user.profilePicture,
-          images: user.images,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          username: user.username,
-          email: user.email,
-          emailVerified: user.emailVerified,
-          profilePrivacy: user.profilePrivacy,
-          isProfileCompleted: user.isProfileCompleted,
-          //
-          questionOne: user.questionOne,
-          answerOne: user.answerOne,
-          questionTwo: user.questionTwo,
-          answerTwo: user.answerTwo,
-          bio: user.bio,
-          //
-          location: user.location,
-          likedUsers: user.likedUsers,
-          premium: user.premium,
-          //
-          gender: user.gender,
-          interestedGender: user.interestedGender,
-          age: user.age,
-          countryOfOrigin: user.countryOfOrigin,
-          coordinates: user.coordinates,
-          currentLocation: user.currentLocation,
-          maritalStatus: user.maritalStatus,
-          numberOfChildren: user.numberOfChildren,
-          height: user.height,
-          //
-          physique: user.physique,
-          interests: user.interests,
-          practicedSports: user.practicedSports,
-          religion: user.religion,
-          importanceOfReligion: user.importanceOfReligion,
-          smoking: user.smoking,
-          //
-          educationLevel: user.educationLevel,
-          occupation: user.occupation,
-          languages: user.languages,
-          personality: user.personality,
-          importantInLife: user.importantInLife,
-          values: user.values,
-          //
-          wantMarriage: user.wantMarriage,
-          relationshipEssentials: user.relationshipEssentials,
-          wantChildren: user.wantChildren,
-          returnToCountry: user.returnToCountry,
-          culturalValuesImportance: user.culturalValuesImportance,
-          partnerFromOtherBackground: user.partnerFromOtherBackground,
-          partnerFromSameCountry: user.partnerFromSameCountry,
-          partnerInSameCountry: user.partnerInSameCountry,
-          //
-          shareHouseholdTasks: user.shareHouseholdTasks,
-          longTermCountries: user.longTermCountries,
-          //
-          partnerAge: user.partnerAge,
-          partnerEducationLevel: user.partnerEducationLevel,
-          partnerAttraction: user.partnerAttraction,
-          partnerPhysique: user.partnerPhysique,
-          partnerSmoking: user.partnerSmoking,
-          partnerHeight: user.partnerHeight,
-          //
-          status: user.status,
-          //
-          createdAt: user.createdAt,
-          updatedAt: user.updatedAt,
-        },
+        user: userPayload,
       });
     } catch (error: any) {
       return res
@@ -1235,79 +895,13 @@ class UserController {
       // Save the updated document
       await user.save();
 
+      const userObject = user.toObject();
+      const { _id, password: pw, ...rest } = userObject;
+      const userPayload = { id: _id, ...rest };
+
       return res.status(200).json({
         message: "Image deleted successfully",
-        user: {
-          id: user._id,
-          role: user.role,
-          profilePicture: user.profilePicture,
-          images: user.images,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          username: user.username,
-          email: user.email,
-          emailVerified: user.emailVerified,
-          profilePrivacy: user.profilePrivacy,
-          isProfileCompleted: user.isProfileCompleted,
-          //
-          questionOne: user.questionOne,
-          answerOne: user.answerOne,
-          questionTwo: user.questionTwo,
-          answerTwo: user.answerTwo,
-          bio: user.bio,
-          //
-          location: user.location,
-          likedUsers: user.likedUsers,
-          premium: user.premium,
-          //
-          gender: user.gender,
-          interestedGender: user.interestedGender,
-          age: user.age,
-          countryOfOrigin: user.countryOfOrigin,
-          coordinates: user.coordinates,
-          currentLocation: user.currentLocation,
-          maritalStatus: user.maritalStatus,
-          numberOfChildren: user.numberOfChildren,
-          height: user.height,
-          //
-          physique: user.physique,
-          interests: user.interests,
-          practicedSports: user.practicedSports,
-          religion: user.religion,
-          importanceOfReligion: user.importanceOfReligion,
-          smoking: user.smoking,
-          //
-          educationLevel: user.educationLevel,
-          occupation: user.occupation,
-          languages: user.languages,
-          personality: user.personality,
-          importantInLife: user.importantInLife,
-          values: user.values,
-          //
-          wantMarriage: user.wantMarriage,
-          relationshipEssentials: user.relationshipEssentials,
-          wantChildren: user.wantChildren,
-          returnToCountry: user.returnToCountry,
-          culturalValuesImportance: user.culturalValuesImportance,
-          partnerFromOtherBackground: user.partnerFromOtherBackground,
-          partnerFromSameCountry: user.partnerFromSameCountry,
-          partnerInSameCountry: user.partnerInSameCountry,
-          //
-          shareHouseholdTasks: user.shareHouseholdTasks,
-          longTermCountries: user.longTermCountries,
-          //
-          partnerAge: user.partnerAge,
-          partnerEducationLevel: user.partnerEducationLevel,
-          partnerAttraction: user.partnerAttraction,
-          partnerPhysique: user.partnerPhysique,
-          partnerSmoking: user.partnerSmoking,
-          partnerHeight: user.partnerHeight,
-          //
-          status: user.status,
-          //
-          createdAt: user.createdAt,
-          updatedAt: user.updatedAt,
-        },
+        user: userPayload,
       });
     } catch (error: any) {
       return res
@@ -1344,79 +938,13 @@ class UserController {
       // Save the updated document
       await user.save();
 
+      const userObject = user.toObject();
+      const { _id, password: pw, ...rest } = userObject;
+      const userPayload = { id: _id, ...rest };
+
       return res.status(200).json({
         message: "Image updated successfully",
-        user: {
-          id: user._id,
-          role: user.role,
-          profilePicture: user.profilePicture,
-          images: user.images,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          username: user.username,
-          email: user.email,
-          emailVerified: user.emailVerified,
-          profilePrivacy: user.profilePrivacy,
-          isProfileCompleted: user.isProfileCompleted,
-          //
-          questionOne: user.questionOne,
-          answerOne: user.answerOne,
-          questionTwo: user.questionTwo,
-          answerTwo: user.answerTwo,
-          bio: user.bio,
-          //
-          location: user.location,
-          likedUsers: user.likedUsers,
-          premium: user.premium,
-          //
-          gender: user.gender,
-          interestedGender: user.interestedGender,
-          age: user.age,
-          countryOfOrigin: user.countryOfOrigin,
-          coordinates: user.coordinates,
-          currentLocation: user.currentLocation,
-          maritalStatus: user.maritalStatus,
-          numberOfChildren: user.numberOfChildren,
-          height: user.height,
-          //
-          physique: user.physique,
-          interests: user.interests,
-          practicedSports: user.practicedSports,
-          religion: user.religion,
-          importanceOfReligion: user.importanceOfReligion,
-          smoking: user.smoking,
-          //
-          educationLevel: user.educationLevel,
-          occupation: user.occupation,
-          languages: user.languages,
-          personality: user.personality,
-          importantInLife: user.importantInLife,
-          values: user.values,
-          //
-          wantMarriage: user.wantMarriage,
-          relationshipEssentials: user.relationshipEssentials,
-          wantChildren: user.wantChildren,
-          returnToCountry: user.returnToCountry,
-          culturalValuesImportance: user.culturalValuesImportance,
-          partnerFromOtherBackground: user.partnerFromOtherBackground,
-          partnerFromSameCountry: user.partnerFromSameCountry,
-          partnerInSameCountry: user.partnerInSameCountry,
-          //
-          shareHouseholdTasks: user.shareHouseholdTasks,
-          longTermCountries: user.longTermCountries,
-          //
-          partnerAge: user.partnerAge,
-          partnerEducationLevel: user.partnerEducationLevel,
-          partnerAttraction: user.partnerAttraction,
-          partnerPhysique: user.partnerPhysique,
-          partnerSmoking: user.partnerSmoking,
-          partnerHeight: user.partnerHeight,
-          //
-          status: user.status,
-          //
-          createdAt: user.createdAt,
-          updatedAt: user.updatedAt,
-        },
+        user: userPayload,
       });
     } catch (error: any) {
       return res
@@ -1526,79 +1054,13 @@ class UserController {
       });
 
       if (data) {
+        const userObject = data.toObject();
+        const { _id, password: pw, ...rest } = userObject;
+        const userPayload = { id: _id, ...rest };
+
         res.status(200).json({
           message: "update successful",
-          user: {
-            id: data._id,
-            role: data.role,
-            profilePicture: data.profilePicture,
-            images: data.images,
-            firstName: data.firstName,
-            lastName: data.lastName,
-            username: data.username,
-            email: data.email,
-            emailVerified: data.emailVerified,
-            profilePrivacy: data.profilePrivacy,
-            isProfileCompleted: data.isProfileCompleted,
-            //
-            questionOne: data.questionOne,
-            answerOne: data.answerOne,
-            questionTwo: data.questionTwo,
-            answerTwo: data.answerTwo,
-            bio: data.bio,
-            //
-            location: data.location,
-            likedUsers: data.likedUsers,
-            premium: data.premium,
-            //
-            gender: data.gender,
-            interestedGender: data.interestedGender,
-            age: data.age,
-            countryOfOrigin: data.countryOfOrigin,
-            coordinates: data.coordinates,
-            currentLocation: data.currentLocation,
-            maritalStatus: data.maritalStatus,
-            numberOfChildren: data.numberOfChildren,
-            height: data.height,
-            //
-            physique: data.physique,
-            interests: data.interests,
-            practicedSports: data.practicedSports,
-            religion: data.religion,
-            importanceOfReligion: data.importanceOfReligion,
-            smoking: data.smoking,
-            //
-            educationLevel: data.educationLevel,
-            occupation: data.occupation,
-            languages: data.languages,
-            personality: data.personality,
-            importantInLife: data.importantInLife,
-            values: data.values,
-            //
-            wantMarriage: data.wantMarriage,
-            relationshipEssentials: data.relationshipEssentials,
-            wantChildren: data.wantChildren,
-            returnToCountry: data.returnToCountry,
-            culturalValuesImportance: data.culturalValuesImportance,
-            partnerFromOtherBackground: data.partnerFromOtherBackground,
-            partnerFromSameCountry: data.partnerFromSameCountry,
-            partnerInSameCountry: data.partnerInSameCountry,
-            //
-            shareHouseholdTasks: data.shareHouseholdTasks,
-            longTermCountries: data.longTermCountries,
-            //
-            partnerAge: data.partnerAge,
-            partnerEducationLevel: data.partnerEducationLevel,
-            partnerAttraction: data.partnerAttraction,
-            partnerPhysique: data.partnerPhysique,
-            partnerSmoking: data.partnerSmoking,
-            partnerHeight: data.partnerHeight,
-            //
-            status: data.status,
-            //
-            createdAt: data.createdAt,
-            updatedAt: data.updatedAt,
-          },
+          user: userPayload,
         });
       }
     } else {

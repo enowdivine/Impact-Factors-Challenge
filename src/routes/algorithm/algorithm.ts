@@ -19,6 +19,7 @@ import {
 } from "./algm.data";
 import User from "../user/user.model";
 import UserMatch from "./algm.model";
+import UserInteraction from "../user/user.interactionModel";
 
 export const computeMatchScores = async (currentUserId: string) => {
   try {
@@ -38,6 +39,15 @@ export const computeMatchScores = async (currentUserId: string) => {
     } else {
       alreadyMatchedUserIds = []; // Fallback to an empty array
     }
+
+    // Fetch all liked and disliked users for the current user
+    const interactions = await UserInteraction.find({ user: currentUserId })
+      .select("targetUser type")
+      .lean();
+
+    const likedAndDislikedUserIds = interactions.map((interaction) =>
+      interaction.targetUser.toString()
+    );
 
     // Prepare filters
     const genderFilter = {
@@ -79,8 +89,7 @@ export const computeMatchScores = async (currentUserId: string) => {
         _id: {
           $ne: currentUserId,
           $nin: [
-            ...currentUser.likedUsers,
-            ...currentUser.dislikedUsers,
+            ...likedAndDislikedUserIds, // Exclude users the current user has liked or disliked
             ...alreadyMatchedUserIds, // Exclude already matched users
           ],
         },

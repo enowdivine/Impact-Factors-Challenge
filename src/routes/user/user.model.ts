@@ -30,8 +30,6 @@ const userSchema = new Schema(
     bio: { type: String },
     //
     location: { type: String },
-    likedUsers: [String],
-    dislikedUsers: [String],
     likesToday: {
       count: { type: Number, default: 0 },
       resetAt: { type: Date },
