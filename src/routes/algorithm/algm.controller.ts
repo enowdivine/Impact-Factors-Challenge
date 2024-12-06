@@ -11,15 +11,12 @@ import { generateRandomUser } from "./algm.generators";
 class AlgorithmController {
   async generateUsers(req: Request, res: Response) {
     try {
-      const users = [];
+      const users: any[] = [];
 
-      for (const countryName in countryDistribution) {
-        // Cast countryName to the correct type
-        const count =
-          countryDistribution[countryName as keyof typeof countryDistribution];
+      for (const [countryName, count] of Object.entries(countryDistribution)) {
         const country =
           countryData[countryName as keyof typeof countryData] ||
-          countryData["Switzerland"];
+          countryData["Switzerland"]; // Default to Switzerland if missing
 
         for (let i = 0; i < count; i++) {
           const user = await generateRandomUser(country);
@@ -27,18 +24,23 @@ class AlgorithmController {
         }
       }
 
+      // Ensure only 1000 users are generated
+      if (users.length > 1000) {
+        users.length = 1000; // Trim to exactly 1000
+      }
+
       try {
-        await User.insertMany(users);
+        await User.insertMany(users); // Bulk insert users into the database
         console.log("1000 users generated and saved to the database.");
-        return res.status(200).json({ users: users.length });
+        return res.status(200).json({ message: "1000 users generated" });
       } catch (error) {
-        console.error("Error saving users:", error);
+        console.error("Error saving users to the database:", error);
         return res
           .status(500)
           .json({ message: "Error saving users to the database" });
       }
     } catch (error: any) {
-      console.log("Error generatiing users:", error);
+      console.error("Error generating users:", error);
       return res.status(500).json({ message: "Error generating users" });
     }
   }

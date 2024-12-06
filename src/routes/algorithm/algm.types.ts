@@ -114,7 +114,7 @@ export const QUESTIONS = {
     "3 children",
     "More than 3 children",
   ],
-  height: { min: 120, max: 240 }, // In cm
+  height: { min: 80, max: 240 }, // In cm
   physique: ["Slim", "Muscular", "Average", "Overweight", "Athletic"],
   interests: [
     "Sports",
@@ -325,7 +325,7 @@ export const QUESTIONS = {
     "Flexible division based on needs",
   ],
   longTermCountry: "",
-  partnerAge: "",
+  partnerAge: { min: 18, max: 100 },
   partnerEducationLevel: [
     "Primary school",
     "Secondary school",

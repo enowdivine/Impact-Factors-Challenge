@@ -2,12 +2,8 @@ import mongoose from "mongoose";
 
 const userInteractionSchema = new mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // The user performing the action
-    targetUser: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    }, // The user being liked/disliked
+    user: { type: String, ref: "User", required: true }, // The user performing the action
+    targetUser: { type: String, ref: "User", required: true }, // The user being liked/disliked
     type: { type: String, enum: ["LIKE", "DISLIKE"], required: true }, // Interaction type
   },
   {

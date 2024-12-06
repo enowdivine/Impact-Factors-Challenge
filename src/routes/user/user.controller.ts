@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import User from "./user.model";
 import UserMatch from "../algorithm/algm.model";
 import UserInteraction from "./user.interactionModel";
+import UserDailyMatch from "./user.dailyMatchModel";
 import NotificationModel from "../notifications/notification.model";
 
 import bcrypt from "bcrypt";
@@ -473,65 +474,98 @@ class UserController {
 
   async twoBestMatches(req: Request, res: Response) {
     try {
-      // Get the user ID of the person making the request
       const requestingUserId = req.params.id;
+      const currentDate = new Date().toISOString().split("T")[0];
 
-      // Fetch users that the current user has liked or disliked
+      // Fetch or initialize the daily match document for the user
+      let dailyMatch = await UserDailyMatch.findOne({ user: requestingUserId });
+
+      if (dailyMatch?.date === currentDate) {
+        // If matches are already generated for today, filter out liked/disliked users
+        const excludedInteractions = await UserInteraction.find({
+          user: requestingUserId,
+          type: { $in: ["LIKE", "DISLIKE"] },
+        }).select("targetUser");
+
+        const excludedUserIds = excludedInteractions.map(
+          (interaction) => interaction.targetUser
+        );
+
+        // Remove liked/disliked users from today's matches
+        dailyMatch.matches = dailyMatch.matches.filter(
+          (matchId) => !excludedUserIds.includes(matchId.toString())
+        );
+
+        await dailyMatch.save();
+
+        if (dailyMatch.matches.length === 0) {
+          return res.status(200).json([]);
+        }
+
+        // Populate the matches and return them
+        const matches = await User.find({
+          _id: { $in: dailyMatch.matches },
+        }).select("-password");
+        return res.status(200).json(matches);
+      }
+
+      // Fetch new matches from UserMatch if no daily matches exist for today
       const excludedInteractions = await UserInteraction.find({
         user: requestingUserId,
         type: { $in: ["LIKE", "DISLIKE"] },
       }).select("targetUser");
 
-      // Extract the excluded user IDs
       const excludedUserIds = excludedInteractions.map(
         (interaction) => interaction.targetUser
       );
 
-      // Fetch matches from the UserMatch collection
       const matches = await UserMatch.find({
         user1: requestingUserId,
-        user2: { $nin: excludedUserIds }, // Exclude liked or disliked users
+        user2: { $nin: excludedUserIds },
       })
-        .sort({ score: -1 }) // Sort by score descending to prioritize top matches
-        .limit(10) // Fetch the top 10 matches to allow some randomness in selection
-        .populate("user2", "-password") // Populate user2's details but exclude sensitive fields like password
-        .exec();
+        .sort({ score: -1 })
+        .limit(10)
+        .populate("user2", "-password");
 
       if (!matches || matches.length === 0) {
-        return res.status(404).json({
-          message: "No matches found",
-        });
+        return res.status(200).json([]);
       }
 
-      // Get the current date as a string (e.g., '2023-09-20')
-      const currentDate = new Date().toISOString().split("T")[0];
-
-      // Use the current date to create a consistent seed for randomness
+      // Use seeded randomness for consistency
       const seed = crypto
         .createHash("sha256")
         .update(currentDate)
         .digest("hex");
-
-      // Convert the seed into a number to use for seeding random
       const seedNumber = parseInt(seed.slice(0, 8), 16);
 
-      // Function to seed the random selection process
       function seededRandom(seed: number) {
         const x = Math.sin(seed++) * 10000;
         return x - Math.floor(x);
       }
 
-      // Shuffle the top matches using the seeded randomness
       const shuffledMatches = matches
         .map((match) => ({
-          user: match.user2, // Extract the matched user details
+          user: match.user2,
           sort: seededRandom(seedNumber),
         }))
         .sort((a, b) => a.sort - b.sort)
         .map(({ user }) => user);
 
-      // Select only the first two random users
       const selectedUsers = shuffledMatches.slice(0, 2);
+
+      // Update the daily match document
+      if (dailyMatch) {
+        dailyMatch.date = currentDate;
+        dailyMatch.matches = selectedUsers.map((user: any) => user._id);
+      } else {
+        dailyMatch = await UserDailyMatch.create({
+          user: requestingUserId,
+          date: currentDate,
+          matches: selectedUsers.map((user: any) => user._id),
+        });
+      }
+
+      await dailyMatch.save();
 
       return res.status(200).json(selectedUsers);
     } catch (error: any) {

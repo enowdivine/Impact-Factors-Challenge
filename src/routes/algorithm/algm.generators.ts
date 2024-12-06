@@ -452,13 +452,12 @@ const generateRandomUser = async (country: Country) => {
     location: country.name,
     likedUsers: [],
     premium: {
-      isPremium: faker.datatype.boolean(),
-      plan: faker.helpers.arrayElement(["FREE", "BASIC", "PREMIUM"]),
-      expiresIn: faker.date.future(),
+      isPremium: false,
+      stripeCustomerId: "",
     },
     gender,
     interestedGender: faker.helpers.arrayElement(QUESTIONS.interestedGender),
-    age: faker.number.int({ min: QUESTIONS.age.min, max: QUESTIONS.age.max }),
+    age: faker.number.int({ min: 18, max: 70 }),
     countryOfOrigin: countryOfOrigin,
     coordinates: {
       type: "Point",
@@ -513,16 +512,10 @@ const generateRandomUser = async (country: Country) => {
       QUESTIONS.shareHouseholdTasks
     ),
     longTermCountries: [country, country], // Example of long-term countries
-    partnerAge: {
-      minValue: faker.number.int({
-        min: QUESTIONS.partnerHeight.min,
-        max: 170,
-      }),
-      maxValue: faker.number.int({
-        min: 171,
-        max: QUESTIONS.partnerHeight.max,
-      }),
-    },
+    partnerAge: faker.number.int({
+      min: 18,
+      max: 80,
+    }),
     partnerEducationLevel: faker.helpers.arrayElement(
       QUESTIONS.partnerEducationLevel
     ),
