@@ -41,9 +41,10 @@ export const computeMatchScores = async (currentUserId: string) => {
     }
 
     // Fetch all liked and disliked users for the current user
-    const interactions = await UserInteraction.find({ user: currentUserId })
-      .select("targetUser type")
-      .lean();
+    const interactions = await UserInteraction.find({
+      user: currentUserId,
+      type: { $in: ["LIKE", "DISLIKE"] },
+    });
 
     const likedAndDislikedUserIds = interactions.map((interaction) =>
       interaction.targetUser.toString()
