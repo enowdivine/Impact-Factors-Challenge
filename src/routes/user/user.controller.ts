@@ -429,10 +429,21 @@ class UserController {
         interaction.targetUser.toString()
       );
 
-      // Step 2: Fetch matches from the UserMatch collection, excluding liked/disliked users
+      // Step 2: Fetch daily matches for the current user
+      const today = new Date().toISOString().split("T")[0]; // Format: YYYY-MM-DD
+      const dailyMatch = await UserDailyMatch.findOne({
+        user: currentUserId,
+        date: today,
+      }).select("matches");
+      const dailyMatchIds = dailyMatch ? dailyMatch.matches : [];
+
+      // Combine excluded user IDs and daily match IDs
+      const allExcludedUserIds = [...excludedUserIds, ...dailyMatchIds];
+
+      // Step 3: Fetch matches from the UserMatch collection, excluding liked/disliked users
       const matches = await UserMatch.find({
         user1: currentUserId,
-        user2: { $nin: excludedUserIds }, // Exclude users the current user has liked or disliked
+        user2: { $nin: allExcludedUserIds }, // Exclude users the current user has liked or disliked
       })
         .sort({ score: -1 }) // Sort by score descending
         .skip(skip) // Pagination: skip the first `skip` results
@@ -443,7 +454,7 @@ class UserController {
       // Step 3: Get the total number of matches for pagination metadata
       const totalMatches = await UserMatch.countDocuments({
         user1: currentUserId,
-        user2: { $nin: excludedUserIds }, // Exclude users the current user has liked or disliked
+        user2: { $nin: allExcludedUserIds }, // Exclude users the current user has liked or disliked
       });
 
       // Step 4: Check if there are no matches
