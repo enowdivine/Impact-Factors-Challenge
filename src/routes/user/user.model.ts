@@ -90,7 +90,7 @@ const userSchema = new Schema(
     //
     partnerAge: {
       minValue: { type: Number, default: 18 },
-      maxValue: { type: Number, default: 35 },
+      maxValue: { type: Number, default: 100 },
     },
     partnerEducationLevel: { type: String },
     partnerAttraction: [String],

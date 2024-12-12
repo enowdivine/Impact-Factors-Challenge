@@ -24,31 +24,16 @@ import UserInteraction from "../user/user.interactionModel";
 export const computeMatchScores = async (currentUserId: string) => {
   try {
     const currentUser = await User.findById(currentUserId).exec();
-    if (!currentUser) {
-      throw new Error("Current user not found");
-    }
+    if (!currentUser) throw new Error("Current user not found");
 
-    // Get a list of already matched users
-    let alreadyMatchedUserIds: string[] = [];
-    const userMatches = await UserMatch.find({ user1: currentUserId })
-      .distinct("user2")
-      .exec();
-
-    if (userMatches.length > 0) {
-      alreadyMatchedUserIds = userMatches; // Use matched user IDs if available
-    } else {
-      alreadyMatchedUserIds = []; // Fallback to an empty array
-    }
-
-    // Fetch all liked and disliked users for the current user
-    const interactions = await UserInteraction.find({
-      user: currentUserId,
-      type: { $in: ["LIKE", "DISLIKE"] },
-    });
-
-    const likedAndDislikedUserIds = interactions.map((interaction) =>
-      interaction.targetUser.toString()
-    );
+    // Fetch liked/disliked users and already matched users
+    const [likedAndDislikedUserIds, alreadyMatchedUserIds] = await Promise.all([
+      UserInteraction.find({
+        user: currentUserId,
+        type: { $in: ["LIKE", "DISLIKE"] },
+      }).distinct("targetUser"),
+      UserMatch.find({ user1: currentUserId }).distinct("user2"),
+    ]);
 
     // Prepare filters
     const genderFilter = {
@@ -104,6 +89,20 @@ export const computeMatchScores = async (currentUserId: string) => {
       result = await User.aggregate([
         { $match: query },
         {
+          $project: {
+            // Include only relevant fields
+            _id: 1,
+            countryOfOrigin: "$countryOfOrigin.cca2", // Extract the country code
+            wantChildren: 1,
+            wantMarriage: 1,
+            educationLevel: 1,
+            height: 1,
+            returnToCountry: 1,
+            partnerSmoking: 1,
+            partnerPhysique: 1,
+          },
+        },
+        {
           $addFields: {
             score: {
               $add: [
@@ -114,16 +113,16 @@ export const computeMatchScores = async (currentUserId: string) => {
                       $cond: [
                         {
                           $eq: [
-                            "$countryOfOrigin",
-                            currentUser.countryOfOrigin,
+                            "$countryOfOrigin.cca2",
+                            currentUser.countryOfOrigin.cca2,
                           ],
                         },
                         partnerFromSameCountryData[
                           currentUser.partnerFromSameCountry as PartnerFromSameCountryKeys
-                        ]?.scoreIfMatch || 1,
+                        ].scoreIfMatch || 1,
                         partnerFromSameCountryData[
                           currentUser.partnerFromSameCountry as PartnerFromSameCountryKeys
-                        ]?.scoreIfDifferent || 1,
+                        ].scoreIfDifferent || 1,
                       ],
                     },
                     weights.partnerFromSameCountry,
@@ -134,7 +133,7 @@ export const computeMatchScores = async (currentUserId: string) => {
                   $multiply: [
                     wantChildrenData[
                       currentUser.wantChildren as WantChildrenKeys
-                    ]?.[
+                    ][
                       "$wantChildren" as WantChildrenKeys // Access the potential match's attribute
                     ] || 1,
                     weights.wantChildren,
@@ -145,7 +144,7 @@ export const computeMatchScores = async (currentUserId: string) => {
                   $multiply: [
                     wantMarriageData[
                       currentUser.wantMarriage as WantMarriageKeys
-                    ]?.[
+                    ][
                       "$wantMarriage" as WantMarriageKeys // Access the potential match's attribute
                     ] || 1,
                     weights.wantMarriage,
@@ -156,7 +155,7 @@ export const computeMatchScores = async (currentUserId: string) => {
                   $multiply: [
                     educationLevelData[
                       currentUser.educationLevel as EducationLevelKeys
-                    ]?.["$educationLevel" as EducationLevelKeys] || 1, // Access the potential match's attribute
+                    ]["$educationLevel" as EducationLevelKeys] || 1, // Access the potential match's attribute
                     weights.educationLevel,
                   ],
                 },
@@ -193,14 +192,14 @@ export const computeMatchScores = async (currentUserId: string) => {
                   $multiply: [
                     returnToCountryData[
                       currentUser.returnToCountry as ReturnToCountryKeys
-                    ]?.["$returnToCountry" as ReturnToCountryKeys] || 1, // Access the potential match's attribute
+                    ]["$returnToCountry" as ReturnToCountryKeys] || 1, // Access the potential match's attribute
                     weights.returnToCountry,
                   ],
                 },
                 // Priority 7: Smoking Compatibility
                 {
                   $multiply: [
-                    smokingData[currentUser.partnerSmoking as SmokingKeys]?.[
+                    smokingData[currentUser.partnerSmoking as SmokingKeys][
                       "$smoking" as SmokingKeys // Access the potential match's attribute
                     ] || 1,
                     weights.smokingPreference,
@@ -209,7 +208,7 @@ export const computeMatchScores = async (currentUserId: string) => {
                 // Priority 8: Physique Preference
                 {
                   $multiply: [
-                    physiqueData[currentUser.physique as PhysiqueKeys]?.[
+                    physiqueData[currentUser.physique as PhysiqueKeys][
                       "$physique" as PhysiqueKeys // Access the potential match's attribute
                     ] || 1,
                     weights.physiquePreference,
