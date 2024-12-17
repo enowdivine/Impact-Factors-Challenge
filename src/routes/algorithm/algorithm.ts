@@ -170,26 +170,36 @@ export const computeMatchScores = async (currentUserId: string) => {
       return;
     }
 
-    // Save the scores to UserMatch collection
-    const bulkOperations = result.map((user) => {
-      const user1Id = currentUserId;
-      const user2Id = user._id;
+    const chunkSize = 1000; // Define chunk size
+    let bulkOperations: any[] = [];
 
-      return {
-        updateOne: {
-          filter: { user1: user1Id, user2: user2Id },
-          update: {
-            user1: user1Id,
-            user2: user2Id,
-            score: user.score,
+    for (let i = 0; i < result.length; i += chunkSize) {
+      const chunk = result.slice(i, i + chunkSize);
+      // Save the scores to UserMatch collection
+      bulkOperations = chunk.map((user) => {
+        const user1Id = currentUserId;
+        const user2Id = user._id;
+
+        return {
+          updateOne: {
+            filter: { user1: user1Id, user2: user2Id },
+            update: {
+              user1: user1Id,
+              user2: user2Id,
+              score: user.score,
+            },
+            upsert: true,
           },
-          upsert: true,
-        },
-      };
-    });
+        };
+      });
 
-    if (bulkOperations.length > 0) {
-      await UserMatch.bulkWrite(bulkOperations);
+      // Execute bulkWrite for the current chunk
+      try {
+        await UserMatch.bulkWrite(bulkOperations);
+        console.log(`Processed chunk ${i / chunkSize + 1}`);
+      } catch (error) {
+        console.error(`Error processing chunk ${i / chunkSize + 1}:`, error);
+      }
     }
 
     console.log("Scores computed and saved successfully");
