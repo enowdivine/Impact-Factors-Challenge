@@ -59,25 +59,22 @@ export const computeMatchScores = async (currentUserId: string) => {
     const maxRadius = 700; // Max radius
     let result: any[] = [];
 
+    // Step 1: Dynamically expand search radius until users are found or max radius is reached
     while (radius <= maxRadius) {
-      const locationFilter =
-        currentUser.coordinates && currentUser.coordinates.type === "Point"
-          ? {
-              coordinates: {
-                $geoWithin: {
-                  $centerSphere: [userCoordinates.coordinates, radius / 6371],
-                },
+      const locationFilter = userCoordinates
+        ? {
+            coordinates: {
+              $geoWithin: {
+                $centerSphere: [userCoordinates.coordinates, radius / 6371],
               },
-            }
-          : {};
+            },
+          }
+        : {};
 
       const query = {
         _id: {
           $ne: currentUserId,
-          $nin: [
-            ...likedAndDislikedUserIds, // Exclude users the current user has liked or disliked
-            ...alreadyMatchedUserIds, // Exclude already matched users
-          ],
+          $nin: [...likedAndDislikedUserIds, ...alreadyMatchedUserIds],
         },
         ...genderFilter,
         ...ageFilter,
@@ -85,144 +82,87 @@ export const computeMatchScores = async (currentUserId: string) => {
         status: "ACTIVE",
       };
 
-      // Perform aggregation
-      result = await User.aggregate([
-        { $match: query },
-        {
-          $project: {
-            // Include only relevant fields
-            _id: 1,
-            countryOfOrigin: "$countryOfOrigin.cca2", // Extract the country code
-            wantChildren: 1,
-            wantMarriage: 1,
-            educationLevel: 1,
-            height: 1,
-            returnToCountry: 1,
-            partnerSmoking: 1,
-            partnerPhysique: 1,
-          },
-        },
-        {
-          $addFields: {
-            score: {
-              $add: [
-                // Priority 1: Country of Origin Preference
-                {
-                  $multiply: [
-                    {
-                      $cond: [
-                        {
-                          $eq: [
-                            "$countryOfOrigin.cca2",
-                            currentUser.countryOfOrigin.cca2,
-                          ],
-                        },
-                        partnerFromSameCountryData[
-                          currentUser.partnerFromSameCountry as PartnerFromSameCountryKeys
-                        ].scoreIfMatch || 1,
-                        partnerFromSameCountryData[
-                          currentUser.partnerFromSameCountry as PartnerFromSameCountryKeys
-                        ].scoreIfDifferent || 1,
-                      ],
-                    },
-                    weights.partnerFromSameCountry,
-                  ],
-                },
-                // Priority 2: Want Children
-                {
-                  $multiply: [
-                    wantChildrenData[
-                      currentUser.wantChildren as WantChildrenKeys
-                    ][
-                      "$wantChildren" as WantChildrenKeys // Access the potential match's attribute
-                    ] || 1,
-                    weights.wantChildren,
-                  ],
-                },
-                // Priority 3: Want Marriage
-                {
-                  $multiply: [
-                    wantMarriageData[
-                      currentUser.wantMarriage as WantMarriageKeys
-                    ][
-                      "$wantMarriage" as WantMarriageKeys // Access the potential match's attribute
-                    ] || 1,
-                    weights.wantMarriage,
-                  ],
-                },
-                // Priority 4: Education Level
-                {
-                  $multiply: [
-                    educationLevelData[
-                      currentUser.educationLevel as EducationLevelKeys
-                    ]["$educationLevel" as EducationLevelKeys] || 1, // Access the potential match's attribute
-                    weights.educationLevel,
-                  ],
-                },
-                // Priority 5: Height Preference
-                {
-                  $multiply: [
-                    {
-                      $cond: [
-                        {
-                          $and: [
-                            {
-                              $gte: [
-                                "$height.minValue",
-                                currentUser.partnerHeight?.minValue,
-                              ],
-                            },
-                            {
-                              $lte: [
-                                "$height.maxValue",
-                                currentUser.partnerHeight?.maxValue,
-                              ],
-                            },
-                          ],
-                        },
-                        heightPreferenceData.withinRange,
-                        heightPreferenceData.outsideRange,
-                      ],
-                    },
-                    weights.heightPreference,
-                  ],
-                },
-                // Priority 6: Return to Country
-                {
-                  $multiply: [
-                    returnToCountryData[
-                      currentUser.returnToCountry as ReturnToCountryKeys
-                    ]["$returnToCountry" as ReturnToCountryKeys] || 1, // Access the potential match's attribute
-                    weights.returnToCountry,
-                  ],
-                },
-                // Priority 7: Smoking Compatibility
-                {
-                  $multiply: [
-                    smokingData[currentUser.partnerSmoking as SmokingKeys][
-                      "$smoking" as SmokingKeys // Access the potential match's attribute
-                    ] || 1,
-                    weights.smokingPreference,
-                  ],
-                },
-                // Priority 8: Physique Preference
-                {
-                  $multiply: [
-                    physiqueData[currentUser.physique as PhysiqueKeys][
-                      "$physique" as PhysiqueKeys // Access the potential match's attribute
-                    ] || 1,
-                    weights.physiquePreference,
-                  ],
-                },
-              ],
-            },
-          },
-        },
-        { $sort: { score: -1 } },
-      ]);
+      // Fetch potential users for this radius
+      const potentialUsers = await User.find(query).lean();
 
-      if (result.length > 0) break; // Break if users are found
-      radius += 100; // Increment radius
+      // Step 2: Compute scores for each user manually
+      const scoredUsers = potentialUsers.map((potentialUser) => {
+        let score = 0;
+
+        // Priority 1: Country of Origin Preference
+        const countryScore =
+          potentialUser.countryOfOrigin?.cca2 ===
+          currentUser.countryOfOrigin?.cca2
+            ? partnerFromSameCountryData[
+                currentUser.partnerFromSameCountry as PartnerFromSameCountryKeys
+              ]?.scoreIfMatch || 1
+            : partnerFromSameCountryData[
+                currentUser.partnerFromSameCountry as PartnerFromSameCountryKeys
+              ]?.scoreIfDifferent || 1;
+
+        score += countryScore * weights.partnerFromSameCountry;
+
+        // Priority 2: Want Children
+        const wantChildrenScore =
+          wantChildrenData[currentUser.wantChildren as WantChildrenKeys]?.[
+            potentialUser.wantChildren as WantChildrenKeys
+          ] || 1;
+        score += wantChildrenScore * weights.wantChildren;
+
+        // Priority 3: Want Marriage
+        const wantMarriageScore =
+          wantMarriageData[currentUser.wantMarriage as WantMarriageKeys]?.[
+            potentialUser.wantMarriage as WantMarriageKeys
+          ] || 1;
+        score += wantMarriageScore * weights.wantMarriage;
+
+        // Priority 4: Education Level
+        const educationScore =
+          educationLevelData[
+            currentUser.educationLevel as EducationLevelKeys
+          ]?.[potentialUser.educationLevel as EducationLevelKeys] || 1;
+        score += educationScore * weights.educationLevel;
+
+        // Priority 5: Height Preference
+        const heightScore =
+          (potentialUser.height as number) >=
+            (currentUser.partnerHeight?.minValue as number) &&
+          (potentialUser.height as number) <=
+            (currentUser.partnerHeight?.maxValue as number)
+            ? heightPreferenceData.withinRange // Within the preferred range
+            : heightPreferenceData.outsideRange; // Outside the preferred range
+
+        score += heightScore * weights.heightPreference;
+
+        // Priority 6: Return to Country
+        const returnToCountryScore =
+          returnToCountryData[
+            currentUser.returnToCountry as ReturnToCountryKeys
+          ]?.[potentialUser.returnToCountry as ReturnToCountryKeys] || 1;
+        score += returnToCountryScore * weights.returnToCountry;
+
+        // Priority 7: Smoking Compatibility
+        const smokingScore =
+          smokingData[currentUser.partnerSmoking as SmokingKeys]?.[
+            potentialUser.smoking as SmokingKeys
+          ] || 1;
+        score += smokingScore * weights.smokingPreference;
+
+        // Priority 8: Physique Preference
+        const physiqueScore =
+          physiqueData[currentUser.physique as PhysiqueKeys]?.[
+            potentialUser.physique as PhysiqueKeys
+          ] || 1;
+        score += physiqueScore * weights.physiquePreference;
+
+        return { ...potentialUser, score }; // Return user data with computed score
+      });
+
+      // Add users with scores to the result array
+      result = scoredUsers.sort((a, b) => b.score - a.score);
+      if (result.length > 0) break; // Stop if matches are found
+
+      radius += 100; // Increase radius and retry
     }
 
     if (result.length === 0) {
