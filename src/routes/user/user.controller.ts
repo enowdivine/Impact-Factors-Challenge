@@ -471,8 +471,6 @@ class UserController {
       // Filter out entries where user2 is null
       const validMatches = matches.filter((match) => match.user2 !== null);
 
-      console.log(matches);
-
       // Step 3: Get the total number of matches for pagination metadata
       const totalMatches = await UserMatch.countDocuments({
         user1: currentUserId,
