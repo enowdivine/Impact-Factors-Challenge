@@ -21,6 +21,29 @@ import User from "../user/user.model";
 import UserMatch from "./algm.model";
 import UserInteraction from "../user/user.interactionModel";
 
+const haversineDistance = (
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+) => {
+  const R = 6371; // Earth's radius in kilometers
+  const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+
+  const dLat = toRadians(lat2 - lat1);
+  const dLon = toRadians(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRadians(lat1)) *
+      Math.cos(toRadians(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in kilometers
+};
+
 export const computeMatchScores = async (currentUserId: string) => {
   try {
     const currentUser = await User.findById(currentUserId).exec();
@@ -61,16 +84,6 @@ export const computeMatchScores = async (currentUserId: string) => {
 
     // Step 1: Dynamically expand search radius until users are found or max radius is reached
     while (radius <= maxRadius) {
-      const locationFilter = userCoordinates
-        ? {
-            coordinates: {
-              $geoWithin: {
-                $centerSphere: [userCoordinates.coordinates, radius / 6371],
-              },
-            },
-          }
-        : {};
-
       const query = {
         _id: {
           $ne: currentUserId,
@@ -78,15 +91,27 @@ export const computeMatchScores = async (currentUserId: string) => {
         },
         ...genderFilter,
         ...ageFilter,
-        ...locationFilter,
         status: "ACTIVE",
       };
 
       // Fetch potential users for this radius
       const potentialUsers = await User.find(query).lean();
 
+      // Filter users based on the Haversine formula
+      const filteredUsers = potentialUsers.filter((user: any) => {
+        const [currentLon, currentLat] = userCoordinates.coordinates;
+        const [userLon, userLat] = user.coordinates.coordinates;
+        const distance = haversineDistance(
+          currentLat,
+          currentLon,
+          userLat,
+          userLon
+        );
+        return distance <= radius;
+      });
+
       // Step 2: Compute scores for each user manually
-      const scoredUsers = potentialUsers.map((potentialUser) => {
+      const scoredUsers = filteredUsers.map((potentialUser) => {
         let score = 0;
 
         // Priority 1: Country of Origin Preference
