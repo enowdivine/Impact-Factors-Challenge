@@ -414,7 +414,6 @@ class UserController {
       const currentUserId = req.params.id;
       // Fetch the current user's age range preferences
       const currentUser = await User.findById(currentUserId);
-
       if (!currentUser || !currentUser.partnerAge) {
         return res.status(400).json({
           message: "User's age range preferences are not defined.",
@@ -454,8 +453,6 @@ class UserController {
         user2: { $nin: allExcludedUserIds }, // Exclude users the current user has liked or disliked
       })
         .sort({ score: -1 }) // Sort by score descending
-        .skip(skip) // Pagination: skip the first `skip` results
-        .limit(limit) // Pagination: limit to `limit` results
         .populate({
           path: "user2",
           select: "-password",
@@ -470,15 +467,17 @@ class UserController {
 
       // Filter out entries where user2 is null
       const validMatches = matches.filter((match) => match.user2 !== null);
+      const totalValidMatches = validMatches.length;
+      const paginatedMatches = validMatches.slice(skip, skip + limit);
 
       // Step 3: Get the total number of matches for pagination metadata
-      const totalMatches = await UserMatch.countDocuments({
-        user1: currentUserId,
-        user2: { $nin: allExcludedUserIds }, // Exclude users the current user has liked or disliked
-      });
+      // const totalMatches = await UserMatch.countDocuments({
+      //   user1: currentUserId,
+      //   user2: { $nin: allExcludedUserIds }, // Exclude users the current user has liked or disliked
+      // });
 
       // Step 4: Check if there are no matches
-      if (!validMatches || validMatches.length === 0) {
+      if (paginatedMatches.length === 0) {
         return res.status(200).json({
           users: [],
           currentPage: page,
@@ -490,10 +489,10 @@ class UserController {
 
       // Step 5: Return the paginated matches
       return res.status(200).json({
-        users: validMatches.map((match) => match.user2), // Extract user2 details from matches
+        users: paginatedMatches.map((match) => match.user2), // Extract user2 details from matches
         currentPage: page,
-        totalPages: Math.ceil(totalMatches / limit),
-        totalUsers: totalMatches,
+        totalPages: Math.ceil(totalValidMatches / limit),
+        totalUsers: totalValidMatches,
       });
     } catch (error: any) {
       console.error(error.message);
