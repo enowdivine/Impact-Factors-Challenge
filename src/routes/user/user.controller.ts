@@ -413,9 +413,7 @@ class UserController {
     try {
       const currentUserId = req.params.id;
       // Fetch the current user's age range preferences
-      const currentUser = await User.findById(currentUserId)
-        .select("partnerAge")
-        .lean();
+      const currentUser = await User.findById(currentUserId);
 
       if (!currentUser || !currentUser.partnerAge) {
         return res.status(400).json({
