@@ -468,6 +468,9 @@ class UserController {
         }) // Populate user2's details but exclude sensitive fields like password
         .exec();
 
+      // Filter out entries where user2 is null
+      const validMatches = matches.filter((match) => match.user2 !== null);
+
       console.log(matches);
 
       // Step 3: Get the total number of matches for pagination metadata
@@ -477,7 +480,7 @@ class UserController {
       });
 
       // Step 4: Check if there are no matches
-      if (!matches || matches.length === 0) {
+      if (!validMatches || validMatches.length === 0) {
         return res.status(200).json({
           users: [],
           currentPage: page,
@@ -489,7 +492,7 @@ class UserController {
 
       // Step 5: Return the paginated matches
       return res.status(200).json({
-        users: matches.map((match) => match.user2), // Extract user2 details from matches
+        users: validMatches.map((match) => match.user2), // Extract user2 details from matches
         currentPage: page,
         totalPages: Math.ceil(totalMatches / limit),
         totalUsers: totalMatches,
