@@ -468,6 +468,8 @@ class UserController {
         }) // Populate user2's details but exclude sensitive fields like password
         .exec();
 
+      console.log(matches);
+
       // Step 3: Get the total number of matches for pagination metadata
       const totalMatches = await UserMatch.countDocuments({
         user1: currentUserId,
