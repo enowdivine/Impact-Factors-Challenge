@@ -412,6 +412,16 @@ class UserController {
   async users(req: Request, res: Response) {
     try {
       const currentUserId = req.params.id;
+      // Fetch the current user's age range preferences
+      const currentUser = await User.findById(currentUserId)
+        .select("partnerAge")
+        .lean();
+
+      if (!currentUser || !currentUser.partnerAge) {
+        return res.status(400).json({
+          message: "User's age range preferences are not defined.",
+        });
+      }
 
       // Default values for page and limit if not provided in the query
       const page = parseInt(req.query.page as string) || 1;
@@ -448,7 +458,16 @@ class UserController {
         .sort({ score: -1 }) // Sort by score descending
         .skip(skip) // Pagination: skip the first `skip` results
         .limit(limit) // Pagination: limit to `limit` results
-        .populate("user2", "-password") // Populate user2's details but exclude sensitive fields like password
+        .populate({
+          path: "user2",
+          select: "-password",
+          match: {
+            age: {
+              $gte: currentUser.partnerAge.minValue,
+              $lte: currentUser.partnerAge.maxValue,
+            },
+          },
+        }) // Populate user2's details but exclude sensitive fields like password
         .exec();
 
       // Step 3: Get the total number of matches for pagination metadata
