@@ -80,7 +80,8 @@ export const computeMatchScores = async (currentUserId: string) => {
 
     let radius = 100; // Start radius
     const maxRadius = 700; // Max radius
-    let result: any[] = [];
+    let totalScoredUsers = 0; // Track the total number of users scored
+    let topMatches: any[] = []; // Track top matches
 
     // Step 1: Dynamically expand search radius until users are found or max radius is reached
     while (radius <= maxRadius) {
@@ -94,142 +95,154 @@ export const computeMatchScores = async (currentUserId: string) => {
         status: "ACTIVE",
       };
 
-      // Fetch potential users for this radius
-      const potentialUsers = await User.find(query).lean();
+      let offset = 0;
+      const batchSize = 1000;
 
-      // Filter users based on the Haversine formula
-      const filteredUsers = potentialUsers.filter((user: any) => {
-        const [currentLon, currentLat] = userCoordinates.coordinates;
-        const [userLon, userLat] = user.coordinates.coordinates;
-        const distance = haversineDistance(
-          currentLat,
-          currentLon,
-          userLat,
-          userLon
-        );
-        return distance <= radius;
-      });
+      while (true) {
+        // Fetch potential users for this radius
+        const potentialUsers = await User.find(query)
+          .skip(offset)
+          .limit(batchSize)
+          .lean();
+        if (!potentialUsers.length) break;
 
-      // Step 2: Compute scores for each user manually
-      const scoredUsers = filteredUsers.map((potentialUser) => {
-        let score = 0;
+        // Filter users based on the Haversine formula
+        const filteredUsers = potentialUsers.filter((user: any) => {
+          const [currentLon, currentLat] = userCoordinates.coordinates;
+          const [userLon, userLat] = user.coordinates.coordinates;
+          const distance = haversineDistance(
+            currentLat,
+            currentLon,
+            userLat,
+            userLon
+          );
+          return distance <= radius;
+        });
 
-        // Priority 1: Country of Origin Preference
-        const countryScore =
-          potentialUser.countryOfOrigin?.cca2 ===
-          currentUser.countryOfOrigin?.cca2
-            ? partnerFromSameCountryData[
-                currentUser.partnerFromSameCountry as PartnerFromSameCountryKeys
-              ]?.scoreIfMatch || 1
-            : partnerFromSameCountryData[
-                currentUser.partnerFromSameCountry as PartnerFromSameCountryKeys
-              ]?.scoreIfDifferent || 1;
+        // Step 2: Compute scores for each user manually
+        const scoredUsers = filteredUsers.map((potentialUser) => {
+          let score = 0;
 
-        score += countryScore * weights.partnerFromSameCountry;
+          // Priority 1: Country of Origin Preference
+          const countryScore =
+            potentialUser.countryOfOrigin?.cca2 ===
+            currentUser.countryOfOrigin?.cca2
+              ? partnerFromSameCountryData[
+                  currentUser.partnerFromSameCountry as PartnerFromSameCountryKeys
+                ]?.scoreIfMatch || 1
+              : partnerFromSameCountryData[
+                  currentUser.partnerFromSameCountry as PartnerFromSameCountryKeys
+                ]?.scoreIfDifferent || 1;
 
-        // Priority 2: Want Children
-        const wantChildrenScore =
-          wantChildrenData[currentUser.wantChildren as WantChildrenKeys]?.[
-            potentialUser.wantChildren as WantChildrenKeys
-          ] || 1;
-        score += wantChildrenScore * weights.wantChildren;
+          score += countryScore * weights.partnerFromSameCountry;
 
-        // Priority 3: Want Marriage
-        const wantMarriageScore =
-          wantMarriageData[currentUser.wantMarriage as WantMarriageKeys]?.[
-            potentialUser.wantMarriage as WantMarriageKeys
-          ] || 1;
-        score += wantMarriageScore * weights.wantMarriage;
+          // Priority 2: Want Children
+          const wantChildrenScore =
+            wantChildrenData[currentUser.wantChildren as WantChildrenKeys]?.[
+              potentialUser.wantChildren as WantChildrenKeys
+            ] || 1;
+          score += wantChildrenScore * weights.wantChildren;
 
-        // Priority 4: Education Level
-        const educationScore =
-          educationLevelData[
-            currentUser.educationLevel as EducationLevelKeys
-          ]?.[potentialUser.educationLevel as EducationLevelKeys] || 1;
-        score += educationScore * weights.educationLevel;
+          // Priority 3: Want Marriage
+          const wantMarriageScore =
+            wantMarriageData[currentUser.wantMarriage as WantMarriageKeys]?.[
+              potentialUser.wantMarriage as WantMarriageKeys
+            ] || 1;
+          score += wantMarriageScore * weights.wantMarriage;
 
-        // Priority 5: Height Preference
-        const heightScore =
-          (potentialUser.height as number) >=
-            (currentUser.partnerHeight?.minValue as number) &&
-          (potentialUser.height as number) <=
-            (currentUser.partnerHeight?.maxValue as number)
-            ? heightPreferenceData.withinRange // Within the preferred range
-            : heightPreferenceData.outsideRange; // Outside the preferred range
+          // Priority 4: Education Level
+          const educationScore =
+            educationLevelData[
+              currentUser.educationLevel as EducationLevelKeys
+            ]?.[potentialUser.educationLevel as EducationLevelKeys] || 1;
+          score += educationScore * weights.educationLevel;
 
-        score += heightScore * weights.heightPreference;
+          // Priority 5: Height Preference
+          const heightScore =
+            (potentialUser.height as number) >=
+              (currentUser.partnerHeight?.minValue as number) &&
+            (potentialUser.height as number) <=
+              (currentUser.partnerHeight?.maxValue as number)
+              ? heightPreferenceData.withinRange // Within the preferred range
+              : heightPreferenceData.outsideRange; // Outside the preferred range
 
-        // Priority 6: Return to Country
-        const returnToCountryScore =
-          returnToCountryData[
-            currentUser.returnToCountry as ReturnToCountryKeys
-          ]?.[potentialUser.returnToCountry as ReturnToCountryKeys] || 1;
-        score += returnToCountryScore * weights.returnToCountry;
+          score += heightScore * weights.heightPreference;
 
-        // Priority 7: Smoking Compatibility
-        const smokingScore =
-          smokingData[currentUser.partnerSmoking as SmokingKeys]?.[
-            potentialUser.smoking as SmokingKeys
-          ] || 1;
-        score += smokingScore * weights.smokingPreference;
+          // Priority 6: Return to Country
+          const returnToCountryScore =
+            returnToCountryData[
+              currentUser.returnToCountry as ReturnToCountryKeys
+            ]?.[potentialUser.returnToCountry as ReturnToCountryKeys] || 1;
+          score += returnToCountryScore * weights.returnToCountry;
 
-        // Priority 8: Physique Preference
-        const physiqueScore =
-          physiqueData[currentUser.physique as PhysiqueKeys]?.[
-            potentialUser.physique as PhysiqueKeys
-          ] || 1;
-        score += physiqueScore * weights.physiquePreference;
+          // Priority 7: Smoking Compatibility
+          const smokingScore =
+            smokingData[currentUser.partnerSmoking as SmokingKeys]?.[
+              potentialUser.smoking as SmokingKeys
+            ] || 1;
+          score += smokingScore * weights.smokingPreference;
 
-        return { ...potentialUser, score }; // Return user data with computed score
-      });
+          // Priority 8: Physique Preference
+          const physiqueScore =
+            physiqueData[currentUser.physique as PhysiqueKeys]?.[
+              potentialUser.physique as PhysiqueKeys
+            ] || 1;
+          score += physiqueScore * weights.physiquePreference;
 
-      // Add users with scores to the result array
-      result = scoredUsers.sort((a, b) => b.score - a.score);
-      if (result.length > 0) break; // Stop if matches are found
+          return { ...potentialUser, score }; // Return user data with computed score
+        });
 
+        // Update total scored users
+        totalScoredUsers += scoredUsers.length;
+
+        // Add top matches from this batch
+        topMatches = topMatches
+          .concat(scoredUsers)
+          .sort((a, b) => b.score - a.score);
+
+        // Save scores to the database in chunks
+        const chunkSize = 500;
+        for (let i = 0; i < scoredUsers.length; i += chunkSize) {
+          const chunk: any[] = scoredUsers
+            .slice(i, i + chunkSize)
+            .map((user) => ({
+              updateOne: {
+                filter: { user1: currentUserId, user2: user._id },
+                update: {
+                  user1: currentUserId,
+                  user2: user._id,
+                  score: user.score,
+                },
+                upsert: true,
+              },
+            }));
+          // Execute bulkWrite for the current chunk
+          try {
+            await UserMatch.bulkWrite(chunk);
+            console.log(`Processed chunk ${i / chunkSize + 1}`);
+          } catch (error) {
+            console.error(
+              `Error processing chunk ${i / chunkSize + 1}:`,
+              error
+            );
+          }
+        }
+
+        offset += batchSize;
+      }
+
+      if (totalScoredUsers > 0) break; // Stop if matches are found
       radius += 100; // Increase radius and retry
     }
 
-    if (result.length === 0) {
+    if (totalScoredUsers === 0) {
       console.log("No matches found");
-      return;
-    }
-
-    const chunkSize = 1000; // Define chunk size
-    let bulkOperations: any[] = [];
-
-    for (let i = 0; i < result.length; i += chunkSize) {
-      const chunk = result.slice(i, i + chunkSize);
-      // Save the scores to UserMatch collection
-      bulkOperations = chunk.map((user) => {
-        const user1Id = currentUserId;
-        const user2Id = user._id;
-
-        return {
-          updateOne: {
-            filter: { user1: user1Id, user2: user2Id },
-            update: {
-              user1: user1Id,
-              user2: user2Id,
-              score: user.score,
-            },
-            upsert: true,
-          },
-        };
-      });
-
-      // Execute bulkWrite for the current chunk
-      try {
-        await UserMatch.bulkWrite(bulkOperations);
-        console.log(`Processed chunk ${i / chunkSize + 1}`);
-      } catch (error) {
-        console.error(`Error processing chunk ${i / chunkSize + 1}:`, error);
-      }
+      return { success: false, message: "No matches found", matches: [] };
     }
 
     console.log("Scores computed and saved successfully");
 
-    return result; // Return computed scores
+    return topMatches; // Return computed scores
   } catch (error) {
     console.error("Error computing scores:", error);
     throw error;
