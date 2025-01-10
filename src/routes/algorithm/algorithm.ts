@@ -92,6 +92,11 @@ export const computeMatchScores = async (currentUserId: string) => {
         },
         ...genderFilter,
         ...ageFilter,
+        coordinates: {
+          $geoWithin: {
+            $centerSphere: [userCoordinates.coordinates, radius / 6371], // [longitude, latitude], radius in radians
+          },
+        },
         status: "ACTIVE",
       };
 
@@ -107,20 +112,20 @@ export const computeMatchScores = async (currentUserId: string) => {
         if (!potentialUsers.length) break;
 
         // Filter users based on the Haversine formula
-        const filteredUsers = potentialUsers.filter((user: any) => {
-          const [currentLon, currentLat] = userCoordinates.coordinates;
-          const [userLon, userLat] = user.coordinates.coordinates;
-          const distance = haversineDistance(
-            currentLat,
-            currentLon,
-            userLat,
-            userLon
-          );
-          return distance <= radius;
-        });
+        // const filteredUsers = potentialUsers.filter((user: any) => {
+        //   const [currentLon, currentLat] = userCoordinates.coordinates;
+        //   const [userLon, userLat] = user.coordinates.coordinates;
+        //   const distance = haversineDistance(
+        //     currentLat,
+        //     currentLon,
+        //     userLat,
+        //     userLon
+        //   );
+        //   return distance <= radius;
+        // });
 
         // Step 2: Compute scores for each user manually
-        const scoredUsers = filteredUsers.map((potentialUser) => {
+        const scoredUsers = potentialUsers.map((potentialUser) => {
           let score = 0;
 
           // Priority 1: Country of Origin Preference
