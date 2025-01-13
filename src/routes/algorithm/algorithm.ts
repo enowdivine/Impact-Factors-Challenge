@@ -81,7 +81,6 @@ export const computeMatchScores = async (currentUserId: string) => {
     let radius = 100; // Start radius
     const maxRadius = 700; // Max radius
     let totalScoredUsers = 0; // Track the total number of users scored
-    let topMatches: any[] = []; // Track top matches
 
     // Step 1: Dynamically expand search radius until users are found or max radius is reached
     while (radius <= maxRadius) {
@@ -101,7 +100,7 @@ export const computeMatchScores = async (currentUserId: string) => {
       };
 
       let offset = 0;
-      const batchSize = 1000;
+      const batchSize = 500;
 
       while (true) {
         // Fetch potential users for this radius
@@ -110,19 +109,6 @@ export const computeMatchScores = async (currentUserId: string) => {
           .limit(batchSize)
           .lean();
         if (!potentialUsers.length) break;
-
-        // Filter users based on the Haversine formula
-        // const filteredUsers = potentialUsers.filter((user: any) => {
-        //   const [currentLon, currentLat] = userCoordinates.coordinates;
-        //   const [userLon, userLat] = user.coordinates.coordinates;
-        //   const distance = haversineDistance(
-        //     currentLat,
-        //     currentLon,
-        //     userLat,
-        //     userLon
-        //   );
-        //   return distance <= radius;
-        // });
 
         // Step 2: Compute scores for each user manually
         const scoredUsers = potentialUsers.map((potentialUser) => {
@@ -200,37 +186,25 @@ export const computeMatchScores = async (currentUserId: string) => {
         // Update total scored users
         totalScoredUsers += scoredUsers.length;
 
-        // Add top matches from this batch
-        topMatches = topMatches
-          .concat(scoredUsers)
-          .sort((a, b) => b.score - a.score);
-
         // Save scores to the database in chunks
-        const chunkSize = 500;
-        for (let i = 0; i < scoredUsers.length; i += chunkSize) {
-          const chunk: any[] = scoredUsers
-            .slice(i, i + chunkSize)
-            .map((user) => ({
-              updateOne: {
-                filter: { user1: currentUserId, user2: user._id },
-                update: {
-                  user1: currentUserId,
-                  user2: user._id,
-                  score: user.score,
-                },
-                upsert: true,
-              },
-            }));
-          // Execute bulkWrite for the current chunk
-          try {
-            await UserMatch.bulkWrite(chunk);
-            console.log(`Processed chunk ${i / chunkSize + 1}`);
-          } catch (error) {
-            console.error(
-              `Error processing chunk ${i / chunkSize + 1}:`,
-              error
-            );
-          }
+        const chunk: any[] = scoredUsers.map((user) => ({
+          updateOne: {
+            filter: { user1: currentUserId, user2: user._id },
+            update: {
+              user1: currentUserId,
+              user2: user._id,
+              score: user.score,
+            },
+            upsert: true,
+          },
+        }));
+
+        // Execute bulkWrite for the current chunk
+        try {
+          await UserMatch.bulkWrite(chunk);
+          console.log(`Processed chunk ${batchSize}`);
+        } catch (error) {
+          console.error(`Error processing chunk ${batchSize}:`, error);
         }
 
         offset += batchSize;
@@ -247,7 +221,7 @@ export const computeMatchScores = async (currentUserId: string) => {
 
     console.log("Scores computed and saved successfully");
 
-    return topMatches; // Return computed scores
+    return; // Return computed scores
   } catch (error) {
     console.error("Error computing scores:", error);
     throw error;
