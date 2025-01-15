@@ -13,14 +13,21 @@ import crypto from "crypto"; // Import crypto to seed randomness
 import sendEmail from "../../services/email/email";
 import { userSignup, matchNotification } from "./templates/email";
 import { generateToken } from "../streamChat/stream.controller";
-// import { sendPushNotification } from "../../services/notification/notifiication";
-
-// ALGORITHM IMPORTS
 import { computeMatchScores, updateMatchScores } from "../algorithm/algorithm";
+import VerificationCode from "./user.verificationCodeModel";
 
-const verificationCodes = new Map();
 const generateVerificationCode = () =>
   Math.floor(100000 + Math.random() * 900000);
+
+const generateAndStoreCode = async (email: string) => {
+  const code = generateVerificationCode();
+  await VerificationCode.findOneAndUpdate(
+    { email },
+    { code, createdAt: new Date() },
+    { upsert: true }
+  );
+  return code;
+};
 
 async function getTwoBestMatches(userId: string): Promise<any[]> {
   const currentDate = new Date().toISOString().split("T")[0];
@@ -158,8 +165,7 @@ class UserController {
             response.profilePicture.url
           );
           // Generate the six-digit verification code
-          const verificationCode = generateVerificationCode();
-          verificationCodes.set(req.body.email, verificationCode);
+          const verificationCode = await generateAndStoreCode(req.body.email);
 
           // Send verification code via email
           sendEmail({
@@ -196,13 +202,17 @@ class UserController {
 
   async verifyEmail(req: Request, res: Response) {
     try {
-      const storedCode = verificationCodes.get(req.body.email); // Retrieve the stored code
-
+      const storedCode = await VerificationCode.findOne({
+        email: req.body.email,
+      });
       if (!storedCode) {
-        return res.status(400).json({ message: "Invalid verification code" });
+        // The code has likely expired or was never created
+        return res.status(400).json({
+          message: "Code expired or not found. Please request a new code.",
+        });
       }
 
-      if (parseInt(req.body.code) !== storedCode) {
+      if (storedCode.code !== req.body.code) {
         return res.status(400).json({ message: "Invalid verification code." });
       }
 
@@ -213,7 +223,8 @@ class UserController {
       );
 
       if (user) {
-        verificationCodes.delete(req.body.email);
+        // Delete the used verification code
+        await VerificationCode.deleteOne({ email: req.body.email });
         return res
           .status(200)
           .json({ message: "Email verified successfully!" });
@@ -234,8 +245,7 @@ class UserController {
       if (user) {
         if (!user?.emailVerified) {
           // Generate the six-digit verification code
-          const verificationCode = generateVerificationCode();
-          verificationCodes.set(req.body.email, verificationCode);
+          const verificationCode = await generateAndStoreCode(req.body.email);
 
           // Send verification code via email
           sendEmail({
@@ -330,8 +340,7 @@ class UserController {
         });
       } else {
         // Generate the six-digit verification code
-        const verificationCode = generateVerificationCode();
-        verificationCodes.set(req.body.email, verificationCode);
+        const verificationCode = await generateAndStoreCode(req.body.email);
 
         // Send verification code via email
         sendEmail({
@@ -361,8 +370,7 @@ class UserController {
         });
       } else {
         // Generate the six-digit verification code
-        const verificationCode = generateVerificationCode();
-        verificationCodes.set(req.body.email, verificationCode);
+        const verificationCode = await generateAndStoreCode(req.body.email);
 
         // Send verification code via email
         sendEmail({
