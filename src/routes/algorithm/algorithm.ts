@@ -210,7 +210,7 @@ export const computeMatchScores = async (currentUserId: string) => {
         offset += batchSize;
       }
 
-      if (totalScoredUsers > 25) break; // Stop if matches are found
+      if (totalScoredUsers > 0) break; // Stop if matches are found
       radius += 100; // Increase radius and retry
     }
 
