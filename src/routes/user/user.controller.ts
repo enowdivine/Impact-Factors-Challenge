@@ -144,6 +144,7 @@ class UserController {
         email: req.body.email.toLowerCase(),
         password: hash,
         coordinates: req.body.coordinates || defaultCoordinates,
+        emailVerified: true,
       });
       newUser
         .save()
@@ -165,15 +166,15 @@ class UserController {
             response.profilePicture.url
           );
           // Generate the six-digit verification code
-          const verificationCode = await generateAndStoreCode(req.body.email);
+          // const verificationCode = await generateAndStoreCode(req.body.email);
 
-          // Send verification code via email
-          sendEmail({
-            to: req.body.email,
-            title: "Welcome To Bliss Dating",
-            subject: "Verify Your Email",
-            message: userSignup(req.body.firstName, verificationCode),
-          });
+          // // Send verification code via email
+          // sendEmail({
+          //   to: req.body.email,
+          //   title: "Welcome To Bliss Dating",
+          //   subject: "Verify Your Email",
+          //   message: userSignup(req.body.firstName, verificationCode),
+          // });
 
           const userObject = response.toObject();
           const { _id, password: pw, ...rest } = userObject;
@@ -205,6 +206,8 @@ class UserController {
       const storedCode = await VerificationCode.findOne({
         email: req.body.email,
       });
+      console.log("storedCode", storedCode);
+      console.log("code body", req.body.code);
       if (!storedCode) {
         // The code has likely expired or was never created
         return res.status(400).json({
@@ -212,25 +215,23 @@ class UserController {
         });
       }
 
-      if (storedCode.code !== req.body.code) {
+      if (storedCode.code != req.body.code) {
         return res.status(400).json({ message: "Invalid verification code." });
       }
 
-      // Mark the user as verified
-      const user = await User.findOneAndUpdate(
-        { email: req.body.email },
-        { emailVerified: true }
-      );
+      // // Mark the user as verified
+      // const user = await User.findOneAndUpdate(
+      //   { email: req.body.email },
+      //   { emailVerified: true }
+      // );
 
-      if (user) {
-        // Delete the used verification code
-        await VerificationCode.deleteOne({ email: req.body.email });
-        return res
-          .status(200)
-          .json({ message: "Email verified successfully!" });
-      } else {
-        return res.status(404).json({ message: "User not found." });
-      }
+      // if (user) {
+      // Delete the used verification code
+      await VerificationCode.deleteOne({ email: req.body.email });
+      return res.status(200).json({ message: "Email verified successfully!" });
+      // } else {
+      //   return res.status(404).json({ message: "User not found." });
+      // }
     } catch (error: any) {
       return res.status(500).json({
         message: error.message || "error in user registration",
@@ -364,12 +365,13 @@ class UserController {
   async emailVerification(req: Request, res: Response) {
     try {
       const user = await User.findOne({ email: req.body.email });
-      if (!user) {
+      if (user) {
         res.status(409).json({
-          message: "User does not exist. Check your email address.",
+          message: "User with that email already exist",
         });
       } else {
         // Generate the six-digit verification code
+        console.log("request body", req.body);
         const verificationCode = await generateAndStoreCode(req.body.email);
 
         // Send verification code via email
@@ -377,11 +379,11 @@ class UserController {
           to: req.body.email,
           title: "Email verification code",
           subject: "Verify Your Email",
-          message: userSignup(user.firstName, verificationCode),
+          message: userSignup(req.body.firstName, verificationCode),
         });
 
         res.status(201).json({
-          message: "User created",
+          message: "Code generated",
         });
       }
     } catch (error: any) {
