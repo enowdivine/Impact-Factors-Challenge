@@ -1,4 +1,4 @@
-import mongoose, { STATES } from "mongoose";
+import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema(
@@ -104,7 +104,7 @@ const userSchema = new Schema(
     notificationToken: { type: String },
     status: {
       type: String,
-      enum: ["ACTIVE", "FROZEN"],
+      enum: ["ACTIVE", "FROZEN", "SUSPENDED", "DEACTIVATED"],
       required: true,
       default: "ACTIVE",
     },

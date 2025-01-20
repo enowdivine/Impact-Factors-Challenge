@@ -21,39 +21,16 @@ import User from "../user/user.model";
 import UserMatch from "./algm.model";
 import UserInteraction from "../user/user.interactionModel";
 
-const haversineDistance = (
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number
-) => {
-  const R = 6371; // Earth's radius in kilometers
-  const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
-
-  const dLat = toRadians(lat2 - lat1);
-  const dLon = toRadians(lon2 - lon1);
-
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRadians(lat1)) *
-      Math.cos(toRadians(lat2)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c; // Distance in kilometers
-};
-
 export const computeMatchScores = async (currentUserId: string) => {
   try {
     const currentUser = await User.findById(currentUserId).exec();
     if (!currentUser) throw new Error("Current user not found");
 
-    // Fetch liked/disliked users and already matched users
+    // Fetch liked/disliked/blocked users and already matched users
     const [likedAndDislikedUserIds, alreadyMatchedUserIds] = await Promise.all([
       UserInteraction.find({
         user: currentUserId,
-        type: { $in: ["LIKE", "DISLIKE"] },
+        type: { $in: ["LIKE", "DISLIKE", "BLOCK"] },
       }).distinct("targetUser"),
       UserMatch.find({ user1: currentUserId }).distinct("user2"),
     ]);

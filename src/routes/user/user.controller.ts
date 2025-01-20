@@ -39,7 +39,7 @@ async function getTwoBestMatches(userId: string): Promise<any[]> {
     // If matches are already generated for today, filter out liked/disliked users
     const excludedInteractions = await UserInteraction.find({
       user: userId,
-      type: { $in: ["LIKE", "DISLIKE"] },
+      type: { $in: ["LIKE", "DISLIKE", "BLOCK"] },
     }).select("targetUser");
 
     const excludedUserIds = excludedInteractions.map(
@@ -67,7 +67,7 @@ async function getTwoBestMatches(userId: string): Promise<any[]> {
   // Fetch new matches from UserMatch if no daily matches exist for today
   const excludedInteractions = await UserInteraction.find({
     user: userId,
-    type: { $in: ["LIKE", "DISLIKE"] },
+    type: { $in: ["LIKE", "DISLIKE", "BLOCK"] },
   }).select("targetUser");
 
   const excludedUserIds = excludedInteractions.map(
@@ -909,6 +909,67 @@ class UserController {
       console.error("Error fetching mutual likes:", error);
       return res.status(500).json({
         message: error.message || "Error fetching mutual likes",
+      });
+    }
+  }
+
+  async unMatchUser(req: Request, res: Response) {
+    try {
+      const { userId, targetUserId } = req.params;
+
+      // Remove the LIKE interactions between the two users
+      await UserInteraction.deleteMany({
+        $or: [
+          { user: userId, targetUser: targetUserId, type: "LIKE" },
+          { user: targetUserId, targetUser: userId, type: "LIKE" },
+        ],
+      });
+
+      return res.status(200).json({
+        message: "Unmatched successful.",
+      });
+    } catch (error: any) {
+      console.error("Error unmatching user:", error);
+      return res.status(500).json({
+        message: error.message || "Error unmatching user.",
+      });
+    }
+  }
+
+  async blockUser(req: Request, res: Response) {
+    try {
+      const { userId, targetUserId } = req.params;
+
+      // Add a BLOCK interaction from userId to targetUserId
+      await UserInteraction.updateOne(
+        { user: userId, targetUser: targetUserId },
+        { $set: { type: "BLOCK" } },
+        { upsert: true }
+      );
+
+      // Optionally, remove any LIKE or DISLIKE interactions between the users
+      await UserInteraction.deleteMany({
+        $or: [
+          {
+            user: userId,
+            targetUser: targetUserId,
+            type: { $in: ["LIKE", "DISLIKE"] },
+          },
+          {
+            user: targetUserId,
+            targetUser: userId,
+            type: { $in: ["LIKE", "DISLIKE"] },
+          },
+        ],
+      });
+
+      return res.status(200).json({
+        message: "User blocked successfully.",
+      });
+    } catch (error: any) {
+      console.error("Error blocking user:", error);
+      return res.status(500).json({
+        message: error.message || "Error blocking user.",
       });
     }
   }

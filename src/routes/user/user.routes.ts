@@ -1,6 +1,6 @@
 import express from "express";
 import User from "./user.controller";
-import userAuth from "../../middleware/auth/user";
+// import userAuth from "../../middleware/auth/user";
 
 const router = express.Router();
 const user = new User();
@@ -20,6 +20,9 @@ router.get("/:id/mutual-liked-users", user.mutualLikedUsers);
 
 router.put("/like/:userId/:likedUserId", user.toggleLikeUser);
 router.put("/dislike/:userId/:dislikedUserId", user.dislikeUser);
+
+router.put("/unmatch/:userId/:targetUserId", user.unMatchUser);
+router.put("/block/:userId/:blockedUserId", user.blockUser);
 
 router.put("/update/:id", user.update);
 router.put("/add-image/:id", user.addImage);
