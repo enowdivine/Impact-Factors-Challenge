@@ -940,14 +940,21 @@ class UserController {
     try {
       const { userId, targetUserId } = req.params;
 
-      // Add a BLOCK interaction from userId to targetUserId
+      // Step 1: Add a BLOCK interaction from userId to targetUserId
       await UserInteraction.updateOne(
         { user: userId, targetUser: targetUserId },
         { $set: { type: "BLOCK" } },
         { upsert: true }
       );
 
-      // Optionally, remove any LIKE or DISLIKE interactions between the users
+      // Step 2: Add a reciprocal BLOCK interaction (targetUser blocks userId)
+      await UserInteraction.updateOne(
+        { user: targetUserId, targetUser: userId },
+        { $set: { type: "BLOCK" } },
+        { upsert: true }
+      );
+
+      // Step 3: Optionally, remove any LIKE or DISLIKE interactions between the users
       await UserInteraction.deleteMany({
         $or: [
           {
@@ -963,8 +970,17 @@ class UserController {
         ],
       });
 
+      // Step 4: Handle existing matches
+      await UserMatch.findOneAndDelete({
+        $or: [
+          { user1: userId, user2: targetUserId },
+          { user1: targetUserId, user2: userId },
+        ],
+      });
+
       return res.status(200).json({
-        message: "User blocked successfully.",
+        message:
+          "User blocked successfully. Visibility and interactions have been restricted.",
       });
     } catch (error: any) {
       console.error("Error blocking user:", error);

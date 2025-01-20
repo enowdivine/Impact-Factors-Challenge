@@ -26,13 +26,28 @@ export const computeMatchScores = async (currentUserId: string) => {
     const currentUser = await User.findById(currentUserId).exec();
     if (!currentUser) throw new Error("Current user not found");
 
-    // Fetch liked/disliked/blocked users and already matched users
-    const [likedAndDislikedUserIds, alreadyMatchedUserIds] = await Promise.all([
+    // Fetch liked, disliked, blocked users, already matched users, and users who blocked the current user
+    const [
+      likedDislikedBlockedUserIds,
+      alreadyMatchedUserIds,
+      blockedByUserIds,
+    ] = await Promise.all([
       UserInteraction.find({
         user: currentUserId,
         type: { $in: ["LIKE", "DISLIKE", "BLOCK"] },
       }).distinct("targetUser"),
       UserMatch.find({ user1: currentUserId }).distinct("user2"),
+      UserInteraction.find({
+        targetUser: currentUserId,
+        type: "BLOCK",
+      }).distinct("user"),
+    ]);
+
+    // Combine all excluded user IDs
+    const excludedUserIds = new Set([
+      ...likedDislikedBlockedUserIds,
+      ...alreadyMatchedUserIds,
+      ...blockedByUserIds,
     ]);
 
     // Prepare filters
@@ -64,7 +79,7 @@ export const computeMatchScores = async (currentUserId: string) => {
       const query = {
         _id: {
           $ne: currentUserId,
-          $nin: [...likedAndDislikedUserIds, ...alreadyMatchedUserIds],
+          $nin: Array.from(excludedUserIds), // Exclude blocked users and those who block the current user
         },
         ...genderFilter,
         ...ageFilter,
