@@ -3,12 +3,6 @@ const Schema = mongoose.Schema;
 
 const userSchema = new Schema(
   {
-    role: {
-      type: String,
-      enum: ["ADMIN", "USER"],
-      required: true,
-      default: "USER",
-    },
     profilePicture: {
       type: Object,
       default: {},

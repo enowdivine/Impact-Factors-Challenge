@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import http from "http";
 import cors from "cors";
 // api imports
+import adminRoutes from "./routes/admin/admin.routes";
 import userRoutes from "./routes/user/user.routes";
 import algorithmRoutes from "./routes/algorithm/algm.routes";
 import notificationRoutes from "./routes/notifications/notification.routes";
@@ -43,6 +44,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+app.use(`/api/${process.env.API_VERSION}/admins`, adminRoutes);
 app.use(`/api/${process.env.API_VERSION}/users`, userRoutes);
 app.use(`/api/${process.env.API_VERSION}/algorithm`, algorithmRoutes);
 app.use(`/api/${process.env.API_VERSION}/notifications`, notificationRoutes);
