@@ -5,9 +5,12 @@ const router = express.Router();
 const report = new Report();
 
 router.post("/new-report", report.createReport);
-router.post("/reports", report.reports);
-router.post("/report/:id", report.report);
-router.post("/update-status/:id", report.updateStatus);
-router.post("/delete-report/:id", report.deleteReport);
+
+router.get("/", report.reports);
+router.get("/:id", report.report);
+
+router.put("/update-status/:id", report.updateStatus);
+
+router.delete("/delete-report/:id", report.deleteReport);
 
 export default router;
