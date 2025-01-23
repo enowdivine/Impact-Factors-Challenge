@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import Admin from "./admin.model";
+import User from "../user/user.model";
 
 class accountdminController {
   async register(req: Request, res: Response) {
@@ -266,6 +267,103 @@ class accountdminController {
       console.error("Error deleting admin:", error);
       return res.status(500).json({
         message: "An error occurred while deleting the admin",
+        error: error.message,
+      });
+    }
+  }
+
+  //
+
+  async listUsers(req: Request, res: Response) {
+    try {
+      const { page = 1, limit = 10 } = req.query;
+
+      // Convert page and limit to numbers
+      const pageNumber = parseInt(page as string, 10);
+      const limitNumber = parseInt(limit as string, 10);
+
+      // Fetch users with pagination
+      const users = await User.find()
+        .select("-password") // Exclude password field
+        .skip((pageNumber - 1) * limitNumber) // Skip records for previous pages
+        .limit(limitNumber); // Limit the number of records
+
+      // Get the total number of users
+      const totalUsers = await User.countDocuments();
+
+      return res.status(200).json({
+        message: "Users fetched successfully",
+        users,
+        pagination: {
+          totalUsers,
+          currentPage: pageNumber,
+          totalPages: Math.ceil(totalUsers / limitNumber),
+        },
+      });
+    } catch (error: any) {
+      console.error("Error fetching users:", error.message);
+      return res.status(500).json({
+        message: "An error occurred while fetching users",
+        error: error.message,
+      });
+    }
+  }
+
+  async getUser(req: Request, res: Response) {
+    try {
+      const { id } = req.params; // Extract the user ID from the request parameters
+
+      // Fetch the user by ID
+      const user = await User.findById(id).select("-password"); // Exclude the password field
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      return res.status(200).json(user);
+    } catch (error: any) {
+      console.error("Error fetching user:", error.message);
+      return res.status(500).json({
+        message: "An error occurred while fetching the user",
+        error: error.message,
+      });
+    }
+  }
+
+  async updateUserStatus(req: Request, res: Response) {
+    try {
+      const { id } = req.params; // Extract the user ID from request parameters
+      const { status } = req.body; // Extract the new status from the request body
+
+      // Validate the status
+      const validStatuses = ["ACTIVE", "FROZEN", "SUSPENDED", "DEACTIVATED"];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({
+          message: `Invalid status. Valid statuses are: ${validStatuses.join(
+            ", "
+          )}`,
+        });
+      }
+
+      // Find and update the user's status
+      const updatedUser = await User.findByIdAndUpdate(
+        id,
+        { status },
+        { new: true, runValidators: true } // Return the updated document and ensure schema validation
+      ).select("-password"); // Exclude password field
+
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      return res.status(200).json({
+        message: "User status updated successfully",
+        user: updatedUser,
+      });
+    } catch (error: any) {
+      console.error("Error updating user status:", error.message);
+      return res.status(500).json({
+        message: "An error occurred while updating the user's status",
         error: error.message,
       });
     }
