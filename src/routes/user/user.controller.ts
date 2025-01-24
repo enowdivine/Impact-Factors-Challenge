@@ -9,6 +9,7 @@ import NotificationModel from "../notifications/notification.model";
 import bcrypt from "bcrypt";
 import _ from "lodash";
 import crypto from "crypto"; // Import crypto to seed randomness
+import geolib from "geolib";
 
 import sendEmail from "../../services/email/email";
 import { userSignup, matchNotification } from "./templates/email";
@@ -206,8 +207,7 @@ class UserController {
       const storedCode = await VerificationCode.findOne({
         email: req.body.email,
       });
-      console.log("storedCode", storedCode);
-      console.log("code body", req.body.code);
+
       if (!storedCode) {
         // The code has likely expired or was never created
         return res.status(400).json({
@@ -220,18 +220,20 @@ class UserController {
       }
 
       // // Mark the user as verified
-      // const user = await User.findOneAndUpdate(
-      //   { email: req.body.email },
-      //   { emailVerified: true }
-      // );
+      const user = await User.findOneAndUpdate(
+        { email: req.body.email },
+        { emailVerified: true }
+      );
 
-      // if (user) {
-      // Delete the used verification code
-      await VerificationCode.deleteOne({ email: req.body.email });
-      return res.status(200).json({ message: "Email verified successfully!" });
-      // } else {
-      //   return res.status(404).json({ message: "User not found." });
-      // }
+      if (user) {
+        // Delete the used verification code
+        await VerificationCode.deleteOne({ email: req.body.email });
+        return res
+          .status(200)
+          .json({ message: "Email verified successfully!" });
+      } else {
+        return res.status(404).json({ message: "User not found." });
+      }
     } catch (error: any) {
       return res.status(500).json({
         message: error.message || "error in user registration",
@@ -244,6 +246,19 @@ class UserController {
       const user = await User.findOne({ email: req.body.email.toLowerCase() });
 
       if (user) {
+        // Check user status
+        if (user.status !== "ACTIVE") {
+          let message = "Account is currently not active.";
+          if (user.status === "FROZEN") {
+            message = "Your account is frozen. Please contact support.";
+          } else if (user.status === "SUSPENDED") {
+            message = "Your account has been suspended.";
+          } else if (user.status === "DEACTIVATED") {
+            message = "Your account has been deactivated.";
+          }
+          return res.status(403).json({ message, status: user.status });
+        }
+
         if (!user?.emailVerified) {
           // Generate the six-digit verification code
           const verificationCode = await generateAndStoreCode(req.body.email);
@@ -515,7 +530,7 @@ class UserController {
   async users(req: Request, res: Response) {
     try {
       const currentUserId = req.params.id;
-      await getTwoBestMatches(currentUserId);
+
       // Fetch the current user's age range preferences
       const currentUser = await User.findById(currentUserId);
       if (!currentUser || !currentUser.partnerAge) {
@@ -523,6 +538,8 @@ class UserController {
           message: "User's age range preferences are not defined.",
         });
       }
+
+      await getTwoBestMatches(currentUserId);
 
       // Default values for page and limit if not provided in the query
       const page = parseInt(req.query.page as string) || 1;
@@ -569,6 +586,17 @@ class UserController {
         }) // Populate user2's details but exclude sensitive fields like password
         .exec();
 
+      if (matches.length <= 10) {
+        // Trigger compute scores in the background
+        setImmediate(async () => {
+          try {
+            await computeMatchScores(currentUserId);
+            console.log(`Scores recomputed for user: ${currentUserId}`);
+          } catch (error: any) {
+            console.error("Error recomputing scores:", error.message);
+          }
+        });
+      }
       // Filter out entries where user2 is null
       const validMatches = matches.filter((match) => match.user2 !== null);
       const totalValidMatches = validMatches.length;
@@ -1113,116 +1141,196 @@ class UserController {
   }
 
   async update(req: Request, res: Response) {
-    const user = await User.updateOne(
-      {
-        _id: req.params.id,
+    const currentUserId = req.params.id;
+    const newData = {
+      profilePicture: req.body.profilePicture,
+      images: req.body.images,
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      username: req.body.username,
+      email: req.body.email,
+      profilePrivacy: req.body.profilePrivacy,
+      isProfileCompleted: req.body.isProfileCompleted,
+      //
+      questionOne: req.body.questionOne,
+      answerOne: req.body.answerOne,
+      questionTwo: req.body.questionTwo,
+      answerTwo: req.body.answerTwo,
+      bio: req.body.bio,
+      //
+      location: req.body.location,
+      likedUsers: req.body.likedUsers,
+      premium: {
+        isPremium: req.body.premium?.isPremium,
+        plan: req.body.premium?.plan,
+        expiresIn: req.body.premium?.expiresIn,
       },
-      {
-        $set: {
-          profilePicture: req.body.profilePicture,
-          images: req.body.images,
-          firstName: req.body.firstName,
-          lastName: req.body.lastName,
-          username: req.body.username,
-          email: req.body.email,
-          profilePrivacy: req.body.profilePrivacy,
-          isProfileCompleted: req.body.isProfileCompleted,
-          //
-          questionOne: req.body.questionOne,
-          answerOne: req.body.answerOne,
-          questionTwo: req.body.questionTwo,
-          answerTwo: req.body.answerTwo,
-          bio: req.body.bio,
-          //
-          location: req.body.location,
-          likedUsers: req.body.likedUsers,
-          premium: {
-            isPremium: req.body.premium?.isPremium,
-            plan: req.body.premium?.plan,
-            expiresIn: req.body.premium?.expiresIn,
-          },
-          //
-          gender: req.body.gender,
-          interestedGender: req.body.interestedGender,
-          age: req.body.age,
-          countryOfOrigin: req.body.countryOfOrigin,
-          coordinates: req.body.coordinates,
-          currentLocation: req.body.currentLocation,
-          maritalStatus: req.body.maritalStatus,
-          numberOfChildren: req.body.numberOfChildren,
-          height: req.body.height,
-          //
-          physique: req.body.physique,
-          interests: req.body.interests,
-          practicedSports: req.body.practicedSports,
-          religion: req.body.religion,
-          importanceOfReligion: req.body.importanceOfReligion,
-          smoking: req.body.smoking,
-          //
-          educationLevel: req.body.educationLevel,
-          occupation: req.body.occupation,
-          languages: req.body.languages,
-          personality: req.body.personality,
-          importantInLife: req.body.importantInLife,
-          values: req.body.values,
-          //
-          wantMarriage: req.body.wantMarriage,
-          relationshipEssentials: req.body.relationshipEssentials,
-          wantChildren: req.body.wantChildren,
-          returnToCountry: req.body.returnToCountry,
-          culturalValuesImportance: req.body.culturalValuesImportance,
-          partnerFromOtherBackground: req.body.partnerFromOtherBackground,
-          partnerFromSameCountry: req.body.partnerFromSameCountry,
-          partnerInSameCountry: req.body.partnerInSameCountry,
-          //
-          shareHouseholdTasks: req.body.shareHouseholdTasks,
-          longTermCountries: req.body.longTermCountries,
-          //
-          partnerAge: {
-            minValue: req.body.partnerAge?.minValue,
-            maxValue: req.body.partnerAge?.maxValue,
-          },
-          partnerEducationLevel: req.body.partnerEducationLevel,
-          partnerAttraction: req.body.partnerAttraction,
-          partnerPhysique: req.body.partnerPhysique,
-          partnerSmoking: req.body.partnerSmoking,
-          partnerHeight: {
-            minValue: req.body.partnerHeight?.minValue,
-            maxValue: req.body.partnerHeight?.maxValue,
-          },
-        },
+      //
+      gender: req.body.gender,
+      interestedGender: req.body.interestedGender,
+      age: req.body.age,
+      countryOfOrigin: req.body.countryOfOrigin,
+      coordinates: req.body.coordinates,
+      currentLocation: req.body.currentLocation,
+      maritalStatus: req.body.maritalStatus,
+      numberOfChildren: req.body.numberOfChildren,
+      height: req.body.height,
+      //
+      physique: req.body.physique,
+      interests: req.body.interests,
+      practicedSports: req.body.practicedSports,
+      religion: req.body.religion,
+      importanceOfReligion: req.body.importanceOfReligion,
+      smoking: req.body.smoking,
+      //
+      educationLevel: req.body.educationLevel,
+      occupation: req.body.occupation,
+      languages: req.body.languages,
+      personality: req.body.personality,
+      importantInLife: req.body.importantInLife,
+      values: req.body.values,
+      //
+      wantMarriage: req.body.wantMarriage,
+      relationshipEssentials: req.body.relationshipEssentials,
+      wantChildren: req.body.wantChildren,
+      returnToCountry: req.body.returnToCountry,
+      culturalValuesImportance: req.body.culturalValuesImportance,
+      partnerFromOtherBackground: req.body.partnerFromOtherBackground,
+      partnerFromSameCountry: req.body.partnerFromSameCountry,
+      partnerInSameCountry: req.body.partnerInSameCountry,
+      //
+      shareHouseholdTasks: req.body.shareHouseholdTasks,
+      longTermCountries: req.body.longTermCountries,
+      //
+      partnerAge: {
+        minValue: req.body.partnerAge?.minValue,
+        maxValue: req.body.partnerAge?.maxValue,
+      },
+      partnerEducationLevel: req.body.partnerEducationLevel,
+      partnerAttraction: req.body.partnerAttraction,
+      partnerPhysique: req.body.partnerPhysique,
+      partnerSmoking: req.body.partnerSmoking,
+      partnerHeight: {
+        minValue: req.body.partnerHeight?.minValue,
+        maxValue: req.body.partnerHeight?.maxValue,
+      },
+    };
+
+    try {
+      const existingUser = await User.findById(currentUserId);
+      if (!existingUser) {
+        return res.status(404).json({ message: "User not found" });
       }
-    );
-    if (user.acknowledged) {
-      const data = await User.findOne({ _id: req.params.id });
-      if (!data) {
+
+      // Update the user and get the updated document
+      const updatedUser = await User.findOneAndUpdate(
+        { _id: currentUserId },
+        { $set: newData },
+        { new: true, runValidators: true } // Ensures returned doc is updated and validates changes
+      );
+
+      if (!updatedUser) {
         return res.status(404).json({ message: "User not found after update" });
       }
 
       // Trigger compute scores in the background
       setImmediate(async () => {
         try {
-          await updateMatchScores(data._id.toString());
-          console.log(`Scores recomputed for user: ${data._id}`);
+          await updateMatchScores(updatedUser._id.toString());
+          console.log(`Scores recomputed for user: ${updatedUser._id}`);
         } catch (error: any) {
           console.error("Error recomputing scores:", error.message);
         }
       });
 
-      if (data) {
-        const userObject = data.toObject();
-        const { _id, password: pw, ...rest } = userObject;
-        const userPayload = { id: _id, ...rest };
+      // Remove sensitive data before sending response
+      const { _id, password, ...userDetails } = updatedUser.toObject();
+      res.status(200).json({
+        message: "Update successful",
+        user: { id: _id, ...userDetails },
+      });
+    } catch (error: any) {
+      console.error("Error during user update:", error.message);
+      res.status(500).json({ message: error.message || "Error updating user" });
+    }
+  }
 
-        res.status(200).json({
-          message: "update successful",
-          user: userPayload,
+  async updateCoordinates(req: Request, res: Response) {
+    const currentUserId = req.params.id;
+    const newData = req.body;
+
+    try {
+      const existingUser = await User.findById(currentUserId);
+      if (!existingUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const userCoordinates = existingUser.coordinates as {
+        type: "Point";
+        coordinates: [number, number];
+      };
+
+      // Check if only coordinates are sent or if they are sent with other fields
+      const isCoordinatesExist = newData.coordinates !== undefined;
+
+      let shouldRecompute = false;
+
+      if (isCoordinatesExist) {
+        // If only coordinates are provided, check the distance change
+        if (existingUser.coordinates && newData.coordinates) {
+          const distance =
+            geolib.getDistance(
+              {
+                latitude: userCoordinates.coordinates[1],
+                longitude: userCoordinates.coordinates[0],
+              },
+              {
+                latitude: newData.coordinates.coordinates[1],
+                longitude: newData.coordinates.coordinates[0],
+              }
+            ) / 1000; // Convert to kilometers
+
+          if (distance >= 20) {
+            shouldRecompute = true;
+          }
+        }
+      }
+
+      // Update the user in the database
+      const updateResult = await User.updateOne(
+        { _id: currentUserId },
+        { $set: newData }
+      );
+      if (!updateResult.acknowledged) {
+        return res.status(400).json({ message: "Update failed" });
+      }
+
+      const updatedUser = await User.findById(currentUserId);
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found after update" });
+      }
+
+      if (shouldRecompute) {
+        setImmediate(async () => {
+          try {
+            await updateMatchScores(currentUserId);
+            console.log(`Scores recomputed for user: ${currentUserId}`);
+          } catch (error: any) {
+            console.error("Error recomputing scores:", error.message);
+          }
         });
       }
-    } else {
-      res.status(404).json({
-        message: "user not found",
+
+      const { _id, password, ...userDetails } = updatedUser.toObject();
+      return res.status(200).json({
+        message: "Update successful",
+        user: { id: _id, ...userDetails },
       });
+    } catch (error: any) {
+      console.error("Error during user update:", error.message);
+      return res
+        .status(500)
+        .json({ message: error.message || "Error updating user coordinates" });
     }
   }
 

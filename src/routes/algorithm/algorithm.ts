@@ -220,26 +220,74 @@ export const computeMatchScores = async (currentUserId: string) => {
   }
 };
 
-export const updateMatchScores = async (currentUserId: string) => {
-  try {
-    // 1. Compute scores for the current user relative to others
-    await computeMatchScores(currentUserId);
+const computeIndividualScore = (user1: any, user2: any) => {
+  let score = 0;
 
-    // 2. Find all users for whom this user is in range
-    const affectedUsers = await fetchUsersForRecalculation(currentUserId);
+  // Calculate scores for each criterion
+  // Priority 1: Country of Origin Preference
+  const countryScore =
+    user2.countryOfOrigin?.cca2 === user1.countryOfOrigin?.cca2
+      ? partnerFromSameCountryData[
+          user1.partnerFromSameCountry as PartnerFromSameCountryKeys
+        ]?.scoreIfMatch || 1
+      : partnerFromSameCountryData[
+          user1.partnerFromSameCountry as PartnerFromSameCountryKeys
+        ]?.scoreIfDifferent || 1;
 
-    // 3. Recompute scores for affected users relative to the current user
-    await Promise.all(
-      affectedUsers.map(async (userId) => {
-        await computeMatchScores(userId.toString());
-      })
-    );
+  score += countryScore * weights.partnerFromSameCountry;
 
-    return { success: true, message: "Scores updated successfully" };
-  } catch (error: any) {
-    console.error("Error in algorithmHandler:", error);
-    return { success: false, message: error.message };
-  }
+  // Priority 2: Want Children
+  const wantChildrenScore =
+    wantChildrenData[user1.wantChildren as WantChildrenKeys]?.[
+      user2.wantChildren as WantChildrenKeys
+    ] || 1;
+  score += wantChildrenScore * weights.wantChildren;
+
+  // Priority 3: Want Marriage
+  const wantMarriageScore =
+    wantMarriageData[user1.wantMarriage as WantMarriageKeys]?.[
+      user2.wantMarriage as WantMarriageKeys
+    ] || 1;
+  score += wantMarriageScore * weights.wantMarriage;
+
+  // Priority 4: Education Level
+  const educationScore =
+    educationLevelData[user1.educationLevel as EducationLevelKeys]?.[
+      user2.educationLevel as EducationLevelKeys
+    ] || 1;
+  score += educationScore * weights.educationLevel;
+
+  // Priority 5: Height Preference
+  const heightScore =
+    (user2.height as number) >= (user1.partnerHeight?.minValue as number) &&
+    (user2.height as number) <= (user1.partnerHeight?.maxValue as number)
+      ? heightPreferenceData.withinRange // Within the preferred range
+      : heightPreferenceData.outsideRange; // Outside the preferred range
+
+  score += heightScore * weights.heightPreference;
+
+  // Priority 6: Return to Country
+  const returnToCountryScore =
+    returnToCountryData[user1.returnToCountry as ReturnToCountryKeys]?.[
+      user2.returnToCountry as ReturnToCountryKeys
+    ] || 1;
+  score += returnToCountryScore * weights.returnToCountry;
+
+  // Priority 7: Smoking Compatibility
+  const smokingScore =
+    smokingData[user1.partnerSmoking as SmokingKeys]?.[
+      user2.smoking as SmokingKeys
+    ] || 1;
+  score += smokingScore * weights.smokingPreference;
+
+  // Priority 8: Physique Preference
+  const physiqueScore =
+    physiqueData[user1.physique as PhysiqueKeys]?.[
+      user2.physique as PhysiqueKeys
+    ] || 1;
+  score += physiqueScore * weights.physiquePreference;
+
+  return score;
 };
 
 const fetchUsersForRecalculation = async (currentUserId: string) => {
@@ -247,4 +295,45 @@ const fetchUsersForRecalculation = async (currentUserId: string) => {
   return await UserMatch.find({ user2: currentUserId })
     .distinct("user1")
     .exec();
+};
+
+export const updateMatchScores = async (currentUserId: string) => {
+  try {
+    const updatedUser = await User.findById(currentUserId).exec();
+    if (!updatedUser) throw new Error("Current user not found");
+
+    // 1. Compute scores for the current user relative to others
+    await computeMatchScores(currentUserId);
+
+    // 2. Find all users for whom this user is in range
+    const affectedUsers = await fetchUsersForRecalculation(currentUserId);
+
+    // 3. Recompute scores for affected users relative to the current user
+    const updates = [];
+    for (const affectedUser of affectedUsers) {
+      if (!affectedUser) continue; // Ensure the user object is valid
+
+      // Compute the score between the updated user and the affected user
+      const score = computeIndividualScore(updatedUser, affectedUser);
+
+      // Update the score in the database
+      updates.push({
+        updateOne: {
+          filter: { user1: currentUserId, user2: affectedUser._id }, // Use the _id from the user object
+          update: { score: score },
+          upsert: true,
+        },
+      });
+    }
+
+    // Execute all updates in bulk
+    if (updates.length > 0) {
+      await UserMatch.bulkWrite(updates);
+    }
+
+    return { success: true, message: "Scores updated successfully" };
+  } catch (error) {
+    console.error("Error in updateMatchScores:", error);
+    return { success: false, message: error };
+  }
 };

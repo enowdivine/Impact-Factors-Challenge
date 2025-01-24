@@ -28,6 +28,7 @@ router.put("/update/:id", user.update);
 router.put("/add-image/:id", user.addImage);
 router.put("/update-image/:id", user.updateImage);
 router.put("/update-password/:id", user.updatePassword);
+router.put("/update-coordinates/:id", user.updateCoordinates);
 
 router.put("/delete-image/:id", user.deleteImage);
 router.delete("/delete/:id", user.deleteUser);
