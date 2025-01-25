@@ -1215,6 +1215,8 @@ class UserController {
         minValue: req.body.partnerHeight?.minValue,
         maxValue: req.body.partnerHeight?.maxValue,
       },
+      //
+      status: req.body.status,
     };
 
     try {
