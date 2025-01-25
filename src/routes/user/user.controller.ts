@@ -329,6 +329,7 @@ class UserController {
                 token: token,
                 streamToken: streamResult.token,
                 user: userPayload,
+                status: user.status,
               });
             }
           }
