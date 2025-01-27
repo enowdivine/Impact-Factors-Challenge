@@ -16,6 +16,7 @@ import { userSignup, matchNotification } from "./templates/email";
 import { generateToken } from "../streamChat/stream.controller";
 import { computeMatchScores, updateMatchScores } from "../algorithm/algorithm";
 import VerificationCode from "./user.verificationCodeModel";
+import { differenceInMonths } from "../../helpers/utils";
 
 const generateVerificationCode = () =>
   Math.floor(100000 + Math.random() * 900000);
@@ -310,15 +311,25 @@ class UserController {
                 user.profilePicture.url
               );
 
-              // Trigger compute scores in the background
-              setImmediate(async () => {
-                try {
-                  await computeMatchScores(user._id.toString());
-                  console.log(`Scores recomputed for user: ${user._id}`);
-                } catch (error: any) {
-                  console.error("Error recomputing scores:", error.message);
-                }
-              });
+              // Check if last login was more than a month ago
+              const lastLogin = user.lastLogin || new Date(0); // Default to epoch if no login date is present
+              const now = new Date();
+
+              if (differenceInMonths(now, lastLogin) > 1) {
+                // Trigger compute scores in the background
+                setImmediate(async () => {
+                  try {
+                    await computeMatchScores(user._id.toString());
+                    console.log(`Scores recomputed for user: ${user._id}`);
+                  } catch (error: any) {
+                    console.error("Error recomputing scores:", error.message);
+                  }
+                });
+              }
+
+              // Update the last login timestamp
+              user.lastLogin = new Date();
+              await user.save();
 
               const userObject = user.toObject();
               const { _id, password: pw, ...rest } = userObject;
@@ -1293,7 +1304,7 @@ class UserController {
               }
             ) / 1000; // Convert to kilometers
 
-          if (distance >= 20) {
+          if (distance >= Number(process.env.THRESHOLD_DISTANCE)) {
             shouldRecompute = true;
           }
         }

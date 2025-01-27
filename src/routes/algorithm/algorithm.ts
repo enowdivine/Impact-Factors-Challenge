@@ -20,6 +20,7 @@ import {
 import User from "../user/user.model";
 import UserMatch from "./algm.model";
 import UserInteraction from "../user/user.interactionModel";
+import { Document, Types } from "mongoose";
 
 export const computeMatchScores = async (currentUserId: string) => {
   try {
@@ -297,6 +298,36 @@ const fetchUsersForRecalculation = async (currentUserId: string) => {
     .exec();
 };
 
+// Helper function to process a batch
+const processBatch = async (
+  batch: any[],
+  updatedUser: any,
+  currentUserId: string
+) => {
+  const updates = [];
+
+  for (const affectedUser of batch) {
+    if (!affectedUser) continue; // Ensure the user object is valid
+
+    // Compute the score between the updated user and the affected user
+    const score = computeIndividualScore(updatedUser, affectedUser);
+
+    // Prepare the update operation
+    updates.push({
+      updateOne: {
+        filter: { user1: currentUserId, user2: affectedUser._id },
+        update: { score: score },
+        upsert: true,
+      },
+    });
+  }
+
+  // Execute the batch updates in bulk
+  if (updates.length > 0) {
+    await UserMatch.bulkWrite(updates);
+  }
+};
+
 export const updateMatchScores = async (currentUserId: string) => {
   try {
     const updatedUser = await User.findById(currentUserId).exec();
@@ -308,28 +339,20 @@ export const updateMatchScores = async (currentUserId: string) => {
     // 2. Find all users for whom this user is in range
     const affectedUsers = await fetchUsersForRecalculation(currentUserId);
 
-    // 3. Recompute scores for affected users relative to the current user
-    const updates = [];
-    for (const affectedUser of affectedUsers) {
-      if (!affectedUser) continue; // Ensure the user object is valid
+    // 3. Define batch size and process in parallel
+    const batchSize = 500;
 
-      // Compute the score between the updated user and the affected user
-      const score = computeIndividualScore(updatedUser, affectedUser);
+    // Create batch promises
+    const batchPromises = [];
+    for (let i = 0; i < affectedUsers.length; i += batchSize) {
+      const batch = affectedUsers.slice(i, i + batchSize);
 
-      // Update the score in the database
-      updates.push({
-        updateOne: {
-          filter: { user1: currentUserId, user2: affectedUser._id }, // Use the _id from the user object
-          update: { score: score },
-          upsert: true,
-        },
-      });
+      // Add a batch processing promise
+      batchPromises.push(processBatch(batch, updatedUser, currentUserId));
     }
 
-    // Execute all updates in bulk
-    if (updates.length > 0) {
-      await UserMatch.bulkWrite(updates);
-    }
+    // Execute all batch promises in parallel
+    await Promise.all(batchPromises);
 
     return { success: true, message: "Scores updated successfully" };
   } catch (error) {

@@ -102,6 +102,7 @@ const userSchema = new Schema(
       required: true,
       default: "ACTIVE",
     },
+    lastLogin: { type: Date, default: null },
   },
   {
     timestamps: true,
