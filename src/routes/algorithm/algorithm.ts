@@ -84,11 +84,11 @@ export const computeMatchScores = async (currentUserId: string) => {
         },
         ...genderFilter,
         ...ageFilter,
-        coordinates: {
-          $geoWithin: {
-            $centerSphere: [userCoordinates.coordinates, radius / 6371], // [longitude, latitude], radius in radians
-          },
-        },
+        // coordinates: {
+        //   $geoWithin: {
+        //     $centerSphere: [userCoordinates.coordinates, radius / 6371], // [longitude, latitude], radius in radians
+        //   },
+        // },
         status: "ACTIVE",
       };
 
