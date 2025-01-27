@@ -12,6 +12,7 @@ import notificationRoutes from "./routes/notifications/notification.routes";
 import paymentRoutes from "./routes/payments/stripe.routes";
 import subscriptionRoutes from "./routes/subscriptions/subscription.routes";
 import reportRoutes from "./routes/userReports/report.routes";
+import supportRoutes from "./routes/support/report.routes";
 
 import StripeController from "./routes/payments/stripe.controller";
 const stripe = new StripeController();
@@ -51,6 +52,7 @@ app.use(`/api/${process.env.API_VERSION}/notifications`, notificationRoutes);
 app.use(`/api/${process.env.API_VERSION}/stripe`, paymentRoutes);
 app.use(`/api/${process.env.API_VERSION}/subscriptions`, subscriptionRoutes);
 app.use(`/api/${process.env.API_VERSION}/reports`, reportRoutes);
+app.use(`/api/${process.env.API_VERSION}/supports`, supportRoutes);
 
 app.get("/", (req: Request, res: Response) => {
   res.send(`Bliss Server 🚀 `);
