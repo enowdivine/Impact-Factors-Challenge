@@ -7,14 +7,6 @@ class ReportController {
     try {
       const { currentUser, targetUser, reasons } = req.body;
 
-      // Validate request body
-      if (!currentUser || !targetUser || !reasons) {
-        return res.status(400).json({
-          message:
-            "Missing required fields: currentUser, targetUser, or reasons",
-        });
-      }
-
       // Create a new report
       const newReport = new Report({
         currentUser,

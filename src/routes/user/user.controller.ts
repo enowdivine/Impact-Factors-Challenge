@@ -379,7 +379,7 @@ class UserController {
         });
 
         res.status(201).json({
-          message: "User created",
+          message: "success",
         });
       }
     } catch (error: any) {
