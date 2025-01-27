@@ -9,7 +9,6 @@ const reportSchema = new Schema(
     status: {
       type: String,
       enum: ["PENDING", "IN_REVIEW", "RESOLVED"],
-      required: true,
       default: "PENDING",
     },
   },
