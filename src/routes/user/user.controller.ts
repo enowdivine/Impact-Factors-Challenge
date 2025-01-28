@@ -8,7 +8,6 @@ import NotificationModel from "../notifications/notification.model";
 
 import bcrypt from "bcrypt";
 import _ from "lodash";
-import crypto from "crypto"; // Import crypto to seed randomness
 import geolib from "geolib";
 
 import sendEmail from "../../services/email/email";
@@ -16,10 +15,11 @@ import { userSignup, matchNotification } from "./templates/email";
 import { generateToken } from "../streamChat/stream.controller";
 import { computeMatchScores, updateMatchScores } from "../algorithm/algorithm";
 import VerificationCode from "./user.verificationCodeModel";
-import { differenceInMonths } from "../../helpers/utils";
-
-const generateVerificationCode = () =>
-  Math.floor(100000 + Math.random() * 900000);
+import {
+  differenceInMonths,
+  generateVerificationCode,
+} from "../../helpers/utils";
+import { getTwoBestMatches } from "./user.helperFunctions";
 
 const generateAndStoreCode = async (email: string) => {
   const code = generateVerificationCode();
@@ -30,99 +30,6 @@ const generateAndStoreCode = async (email: string) => {
   );
   return code;
 };
-
-async function getTwoBestMatches(userId: string): Promise<any[]> {
-  const currentDate = new Date().toISOString().split("T")[0];
-
-  // Fetch or initialize the daily match document for the user
-  let dailyMatch = await UserDailyMatch.findOne({ user: userId });
-
-  if (dailyMatch?.date === currentDate) {
-    // If matches are already generated for today, filter out liked/disliked users
-    const excludedInteractions = await UserInteraction.find({
-      user: userId,
-      type: { $in: ["LIKE", "DISLIKE", "BLOCK"] },
-    }).select("targetUser");
-
-    const excludedUserIds = excludedInteractions.map(
-      (interaction) => interaction.targetUser
-    );
-
-    // Remove liked/disliked users from today's matches
-    dailyMatch.matches = dailyMatch.matches.filter(
-      (matchId) => !excludedUserIds.includes(matchId.toString())
-    );
-
-    await dailyMatch.save();
-
-    if (dailyMatch.matches.length === 0) {
-      return [];
-    }
-
-    // Populate the matches and return them
-    const matches = await User.find({
-      _id: { $in: dailyMatch.matches },
-    }).select("-password");
-    return matches;
-  }
-
-  // Fetch new matches from UserMatch if no daily matches exist for today
-  const excludedInteractions = await UserInteraction.find({
-    user: userId,
-    type: { $in: ["LIKE", "DISLIKE", "BLOCK"] },
-  }).select("targetUser");
-
-  const excludedUserIds = excludedInteractions.map(
-    (interaction) => interaction.targetUser
-  );
-
-  const matches = await UserMatch.find({
-    user1: userId,
-    user2: { $nin: excludedUserIds },
-  })
-    .sort({ score: -1 })
-    .limit(10)
-    .populate("user2", "-password");
-
-  if (!matches || matches.length === 0) {
-    return [];
-  }
-
-  // Use seeded randomness for consistency
-  const seed = crypto.createHash("sha256").update(currentDate).digest("hex");
-  const seedNumber = parseInt(seed.slice(0, 8), 16);
-
-  function seededRandom(seed: number) {
-    const x = Math.sin(seed++) * 10000;
-    return x - Math.floor(x);
-  }
-
-  const shuffledMatches = matches
-    .map((match) => ({
-      user: match.user2,
-      sort: seededRandom(seedNumber),
-    }))
-    .sort((a, b) => a.sort - b.sort)
-    .map(({ user }) => user);
-
-  const selectedUsers = shuffledMatches.slice(0, 2);
-
-  // Update the daily match document
-  if (dailyMatch) {
-    dailyMatch.date = currentDate;
-    dailyMatch.matches = selectedUsers.map((user: any) => user._id);
-  } else {
-    dailyMatch = await UserDailyMatch.create({
-      user: userId,
-      date: currentDate,
-      matches: selectedUsers.map((user: any) => user._id),
-    });
-  }
-
-  await dailyMatch.save();
-
-  return selectedUsers;
-}
 
 class UserController {
   async register(req: Request, res: Response) {
@@ -1123,47 +1030,29 @@ class UserController {
   }
 
   async blockUser(req: Request, res: Response) {
+    const { userId, targetUserId } = req.params;
+
     try {
-      const { userId, targetUserId } = req.params;
-
-      // Step 1: Add a BLOCK interaction from userId to targetUserId
-      await UserInteraction.updateOne(
-        { user: userId, targetUser: targetUserId },
-        { $set: { type: "BLOCK" } },
-        { upsert: true }
+      // Step 1: Update all existing interactions between the two users to "BLOCK"
+      await UserInteraction.updateMany(
+        {
+          $or: [
+            { user: userId, targetUser: targetUserId },
+            { user: targetUserId, targetUser: userId },
+          ],
+        },
+        { $set: { type: "BLOCK" } } // Change all interactions to "BLOCK"
       );
 
-      // Step 2: Add a reciprocal BLOCK interaction (targetUser blocks userId)
-      await UserInteraction.updateOne(
-        { user: targetUserId, targetUser: userId },
-        { $set: { type: "BLOCK" } },
-        { upsert: true }
-      );
-
-      // Step 3: Optionally, remove any LIKE or DISLIKE interactions between the users
-      await UserInteraction.deleteMany({
-        $or: [
-          {
-            user: userId,
-            targetUser: targetUserId,
-            type: { $in: ["LIKE", "DISLIKE"] },
-          },
-          {
-            user: targetUserId,
-            targetUser: userId,
-            type: { $in: ["LIKE", "DISLIKE"] },
-          },
-        ],
-      });
-
-      // Step 4: Handle existing matches
-      await UserMatch.findOneAndDelete({
+      // Step 2: Remove any existing match records between the two users
+      await UserMatch.deleteMany({
         $or: [
           { user1: userId, user2: targetUserId },
           { user1: targetUserId, user2: userId },
         ],
       });
 
+      // Step 3: Return success response
       return res.status(200).json({
         message:
           "User blocked successfully. Visibility and interactions have been restricted.",
