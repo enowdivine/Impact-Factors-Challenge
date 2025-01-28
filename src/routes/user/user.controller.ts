@@ -208,7 +208,8 @@ class UserController {
       const storedCode = await VerificationCode.findOne({
         email: req.body.email,
       });
-
+      console.log("storedCode", storedCode);
+      console.log("code body", req.body.code);
       if (!storedCode) {
         // The code has likely expired or was never created
         return res.status(400).json({
@@ -221,26 +222,171 @@ class UserController {
       }
 
       // // Mark the user as verified
-      const user = await User.findOneAndUpdate(
-        { email: req.body.email },
-        { emailVerified: true }
-      );
+      // const user = await User.findOneAndUpdate(
+      //   { email: req.body.email },
+      //   { emailVerified: true }
+      // );
 
-      if (user) {
-        // Delete the used verification code
-        await VerificationCode.deleteOne({ email: req.body.email });
-        return res
-          .status(200)
-          .json({ message: "Email verified successfully!" });
-      } else {
-        return res.status(404).json({ message: "User not found." });
-      }
+      // if (user) {
+      // Delete the used verification code
+      await VerificationCode.deleteOne({ email: req.body.email });
+      return res.status(200).json({ message: "Email verified successfully!" });
+      // } else {
+      //   return res.status(404).json({ message: "User not found." });
+      // }
     } catch (error: any) {
       return res.status(500).json({
         message: error.message || "error in user registration",
       });
     }
   }
+
+  async emailVerification(req: Request, res: Response) {
+    try {
+      const user = await User.findOne({ email: req.body.email });
+      if (user) {
+        res.status(409).json({
+          message: "User with that email already exist",
+        });
+      } else {
+        // Generate the six-digit verification code
+        console.log("request body", req.body);
+        const verificationCode = await generateAndStoreCode(req.body.email);
+
+        // Send verification code via email
+        sendEmail({
+          to: req.body.email,
+          title: "Email verification code",
+          subject: "Verify Your Email",
+          message: userSignup(req.body.firstName, verificationCode),
+        });
+
+        res.status(201).json({
+          message: "Code generated",
+        });
+      }
+    } catch (error: any) {
+      res.status(500).json({
+        message: error.message || "Error in generating code",
+      });
+    }
+  }
+  // async register(req: Request, res: Response) {
+  //   try {
+  //     const user = await User.findOne({ email: req.body.email });
+  //     if (user) {
+  //       return res.status(409).json({
+  //         message: "User with that email already exist",
+  //       });
+  //     }
+
+  //     const hash = await bcrypt.hash(req.body.password, 10);
+  //     const defaultCoordinates = {
+  //       type: "Point",
+  //       coordinates: [0, 0], // Default longitude and latitude
+  //     };
+  //     const newUser = new User({
+  //       firstName: req.body.firstName,
+  //       lastName: req.body.lastName,
+  //       username: req.body.username,
+  //       email: req.body.email.toLowerCase(),
+  //       password: hash,
+  //       coordinates: req.body.coordinates || defaultCoordinates,
+  //       emailVerified: true,
+  //     });
+  //     newUser
+  //       .save()
+  //       .then(async (response) => {
+  //         const token: string = jwt.sign(
+  //           {
+  //             id: response._id,
+  //             firstName: response.firstName,
+  //             lastName: response.lastName,
+  //             email: response.email,
+  //           },
+  //           process.env.JWT_SECRET as string
+  //         );
+  //         const streamResult = await generateToken(
+  //           response._id.toString(),
+  //           response.firstName,
+  //           response.lastName,
+  //           response.email,
+  //           response.profilePicture.url
+  //         );
+  //         // Generate the six-digit verification code
+  //         // const verificationCode = await generateAndStoreCode(req.body.email);
+
+  //         // // Send verification code via email
+  //         // sendEmail({
+  //         //   to: req.body.email,
+  //         //   title: "Welcome To Bliss Dating",
+  //         //   subject: "Verify Your Email",
+  //         //   message: userSignup(req.body.firstName, verificationCode),
+  //         // });
+
+  //         const userObject = response.toObject();
+  //         const { _id, password: pw, ...rest } = userObject;
+  //         const userPayload = { id: _id, ...rest };
+
+  //         return res.status(201).json({
+  //           message: "user created",
+  //           token: token,
+  //           streamToken: streamResult.token,
+  //           user: userPayload,
+  //         });
+  //       })
+  //       .catch((err: any) => {
+  //         console.log(err);
+  //         return res.status(500).json({
+  //           message: err.message || "Error creating user",
+  //           error: err,
+  //         });
+  //       });
+  //   } catch (error: any) {
+  //     return res.status(500).json({
+  //       message: error.message || "Error in user registration",
+  //     });
+  //   }
+  // }
+
+  // async verifyEmail(req: Request, res: Response) {
+  //   try {
+  //     const storedCode = await VerificationCode.findOne({
+  //       email: req.body.email,
+  //     });
+
+  //     if (!storedCode) {
+  //       // The code has likely expired or was never created
+  //       return res.status(400).json({
+  //         message: "Code expired or not found. Please request a new code.",
+  //       });
+  //     }
+
+  //     if (storedCode.code != req.body.code) {
+  //       return res.status(400).json({ message: "Invalid verification code." });
+  //     }
+
+  //     // // Mark the user as verified
+  //     const user = await User.findOneAndUpdate(
+  //       { email: req.body.email },
+  //       { emailVerified: true }
+  //     );
+
+  //     if (user) {
+  //       // Delete the used verification code
+  //       await VerificationCode.deleteOne({ email: req.body.email });
+  //       return res
+  //         .status(200)
+  //         .json({ message: "Email verified successfully!" });
+  //     } else {
+  //       return res.status(404).json({ message: "User not found." });
+  //     }
+  //   } catch (error: any) {
+  //     return res.status(500).json({
+  //       message: error.message || "error in user registration",
+  //     });
+  //   }
+  // }
 
   async login(req: Request, res: Response) {
     try {
@@ -389,36 +535,36 @@ class UserController {
     }
   }
 
-  async emailVerification(req: Request, res: Response) {
-    try {
-      const user = await User.findOne({ email: req.body.email });
-      if (user) {
-        res.status(409).json({
-          message: "User with that email already exist",
-        });
-      } else {
-        // Generate the six-digit verification code
-        console.log("request body", req.body);
-        const verificationCode = await generateAndStoreCode(req.body.email);
+  // async emailVerification(req: Request, res: Response) {
+  //   try {
+  //     const user = await User.findOne({ email: req.body.email });
+  //     if (user) {
+  //       res.status(409).json({
+  //         message: "User with that email already exist",
+  //       });
+  //     } else {
+  //       // Generate the six-digit verification code
+  //       console.log("request body", req.body);
+  //       const verificationCode = await generateAndStoreCode(req.body.email);
 
-        // Send verification code via email
-        sendEmail({
-          to: req.body.email,
-          title: "Email verification code",
-          subject: "Verify Your Email",
-          message: userSignup(req.body.firstName, verificationCode),
-        });
+  //       // Send verification code via email
+  //       sendEmail({
+  //         to: req.body.email,
+  //         title: "Email verification code",
+  //         subject: "Verify Your Email",
+  //         message: userSignup(req.body.firstName, verificationCode),
+  //       });
 
-        res.status(201).json({
-          message: "Code generated",
-        });
-      }
-    } catch (error: any) {
-      res.status(500).json({
-        message: error.message || "Error in generating code",
-      });
-    }
-  }
+  //       res.status(201).json({
+  //         message: "Code generated",
+  //       });
+  //     }
+  //   } catch (error: any) {
+  //     res.status(500).json({
+  //       message: error.message || "Error in generating code",
+  //     });
+  //   }
+  // }
 
   async newPassword(req: Request, res: Response) {
     try {
