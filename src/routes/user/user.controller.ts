@@ -1054,10 +1054,10 @@ class UserController {
 
       // Step 3: Return success response
       return res.status(200).json({
-        message:
-          "User blocked successfully. Visibility and interactions have been restricted.",
         userId: userId,
         targetUserId: targetUserId,
+        message:
+          "User blocked successfully. Visibility and interactions have been restricted.",
       });
     } catch (error: any) {
       console.error("Error blocking user:", error);
