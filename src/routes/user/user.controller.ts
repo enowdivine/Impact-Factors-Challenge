@@ -1054,8 +1054,6 @@ class UserController {
 
       // Step 3: Return success response
       return res.status(200).json({
-        userId: userId,
-        blockedUserId: blockedUserId,
         message:
           "User blocked successfully. Visibility and interactions have been restricted.",
       });
