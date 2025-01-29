@@ -121,7 +121,7 @@ class StripeController {
       });
 
       if (subscriptions.data.length === 0) {
-        return res.status(400).json({
+        return res.status(200).json({
           message: "No active subscriptions found.",
           customerId: customerId,
         });
