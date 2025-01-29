@@ -60,7 +60,7 @@ class StripeController {
   }
 
   async createSubscription(req: Request, res: Response) {
-    const { customerId, priceId } = req.body;
+    const { userId, customerId, priceId } = req.body;
     try {
       const existingSubscriptions = await stripe.subscriptions.list({
         customer: customerId,
@@ -80,6 +80,21 @@ class StripeController {
         payment_behavior: "default_incomplete",
         payment_settings: { save_default_payment_method: "on_subscription" },
         expand: ["latest_invoice.payment_intent"],
+      });
+
+      // ✅ Immediately save the subscription in the database
+      await Subscription.create({
+        userId: userId,
+        stripeCustomerId: customerId,
+        stripeSubscriptionId: subscription.id,
+        plan: priceId,
+        status: subscription.status,
+        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      });
+
+      // ✅ Also mark user as premium
+      await User.findByIdAndUpdate(userId, {
+        "premium.isPremium": true,
       });
 
       if (subscription.latest_invoice) {
@@ -121,10 +136,6 @@ class StripeController {
       });
 
       if (subscriptions.data.length === 0) {
-        await User.findByIdAndUpdate(userId, {
-          "premium.isPremium": false,
-        });
-
         return res.status(400).json({
           message: "No active subscriptions found.",
           customerId: customerId,
@@ -143,11 +154,6 @@ class StripeController {
         { stripeSubscriptionId: subscriptionId },
         { status: "canceled" }
       );
-
-      // Update the user's premium status
-      await User.findByIdAndUpdate(userId, {
-        "premium.isPremium": false,
-      });
 
       return res.status(200).json({
         message:
