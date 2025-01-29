@@ -82,20 +82,20 @@ class StripeController {
         expand: ["latest_invoice.payment_intent"],
       });
 
-      // ✅ Immediately save the subscription in the database
-      await Subscription.create({
-        userId: userId,
-        stripeCustomerId: customerId,
-        stripeSubscriptionId: subscription.id,
-        plan: priceId,
-        status: subscription.status,
-        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-      });
+      // // ✅ Immediately save the subscription in the database
+      // await Subscription.create({
+      //   userId: userId,
+      //   stripeCustomerId: customerId,
+      //   stripeSubscriptionId: subscription.id,
+      //   plan: priceId,
+      //   status: subscription.status,
+      //   currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      // });
 
-      // ✅ Also mark user as premium
-      await User.findByIdAndUpdate(userId, {
-        "premium.isPremium": true,
-      });
+      // // ✅ Also mark user as premium
+      // await User.findByIdAndUpdate(userId, {
+      //   "premium.isPremium": true,
+      // });
 
       if (subscription.latest_invoice) {
         const latest_invoice = subscription.latest_invoice as Stripe.Invoice;
