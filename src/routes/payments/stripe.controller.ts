@@ -123,7 +123,7 @@ class StripeController {
       if (subscriptions.data.length === 0) {
         return res
           .status(400)
-          .json({ message: "No active subscriptions found." });
+          .json({ message: "No active subscriptions found.", customerId });
       }
 
       const subscriptionId = subscriptions.data[0].id;
