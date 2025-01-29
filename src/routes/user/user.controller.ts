@@ -1030,15 +1030,15 @@ class UserController {
   }
 
   async blockUser(req: Request, res: Response) {
-    const { userId, targetUserId } = req.params;
+    const { userId, blockedUserId } = req.params;
 
     try {
       // Step 1: Update all existing interactions between the two users to "BLOCK"
       await UserInteraction.updateMany(
         {
           $or: [
-            { user: userId, targetUser: targetUserId },
-            { user: targetUserId, targetUser: userId },
+            { user: userId, targetUser: blockedUserId },
+            { user: blockedUserId, targetUser: userId },
           ],
         },
         { $set: { type: "BLOCK" } } // Change all interactions to "BLOCK"
@@ -1047,15 +1047,15 @@ class UserController {
       // Step 2: Remove any existing match records between the two users
       await UserMatch.deleteMany({
         $or: [
-          { user1: userId, user2: targetUserId },
-          { user1: targetUserId, user2: userId },
+          { user1: userId, user2: blockedUserId },
+          { user1: blockedUserId, user2: userId },
         ],
       });
 
       // Step 3: Return success response
       return res.status(200).json({
         userId: userId,
-        targetUserId: targetUserId,
+        blockedUserId: blockedUserId,
         message:
           "User blocked successfully. Visibility and interactions have been restricted.",
       });
