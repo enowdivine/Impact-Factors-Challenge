@@ -99,6 +99,61 @@ class StripeController {
     }
   }
 
+  async cancelSubscription(req: Request, res: Response) {
+    try {
+      const { userId } = req.body;
+
+      // Fetch the user from the database
+      const user = await User.findById(userId);
+
+      if (!user || !user.premium?.stripeCustomerId) {
+        return res
+          .status(404)
+          .json({ error: "User or Stripe customer not found." });
+      }
+
+      const customerId = user.premium.stripeCustomerId;
+
+      // Retrieve active subscriptions for the customer
+      const subscriptions = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "active",
+      });
+
+      if (subscriptions.data.length === 0) {
+        return res
+          .status(400)
+          .json({ message: "No active subscriptions found." });
+      }
+
+      const subscriptionId = subscriptions.data[0].id;
+
+      // Cancel the subscription
+      await stripe.subscriptions.update(subscriptionId, {
+        cancel_at_period_end: true, // Cancels at the end of the billing cycle
+      });
+
+      // Update the subscription status in the database
+      await Subscription.findOneAndUpdate(
+        { stripeSubscriptionId: subscriptionId },
+        { status: "canceled" }
+      );
+
+      // Update the user's premium status
+      await User.findByIdAndUpdate(userId, {
+        "premium.isPremium": false,
+      });
+
+      return res.status(200).json({
+        message:
+          "Subscription cancellation scheduled. You will retain access until the end of the billing period.",
+      });
+    } catch (error: any) {
+      console.error("Error canceling subscription:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
   async handleWebhook(req: Request, res: Response) {
     const sig = req.headers["stripe-signature"] as string;
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET as string;

@@ -18,6 +18,7 @@ interface Country {
 
 // Distribution map for user generation
 export const countryDistribution = {
+  Cameroon: 500,
   France: 250,
   Belgium: 125,
   Canada: 125,
@@ -267,6 +268,17 @@ export const westAfricanCountries: Country[] = [
 
 // Country data with real latitude and longitude
 export const countryData: { [key: string]: Country } = {
+  Cameroon: {
+    cca2: "CM",
+    currency: "XAF",
+    callingCode: "237",
+    flag: "🇨🇲",
+    name: "Cameroon",
+    region: "Africa",
+    subregion: "Central Africa",
+    latitude: 3.848,
+    longitude: 11.5021,
+  },
   France: {
     cca2: "FR",
     currency: "EUR",
