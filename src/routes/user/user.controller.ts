@@ -8,7 +8,6 @@ import NotificationModel from "../notifications/notification.model";
 
 import bcrypt from "bcrypt";
 import _ from "lodash";
-import geolib from "geolib";
 
 import sendEmail from "../../services/email/email";
 import { userSignup, matchNotification } from "./templates/email";
@@ -20,6 +19,7 @@ import {
   generateVerificationCode,
 } from "../../helpers/utils";
 import { getTwoBestMatches } from "./user.helperFunctions";
+import { haversineDistanceCalculator } from "../../helpers/utils";
 
 const generateAndStoreCode = async (email: string) => {
   const code = generateVerificationCode();
@@ -124,7 +124,7 @@ class UserController {
         });
       }
 
-      if (storedCode.code != req.body.code) {
+      if (Number(storedCode.code) !== Number(req.body.code)) {
         return res.status(400).json({ message: "Invalid verification code." });
       }
 
@@ -151,9 +151,9 @@ class UserController {
   async emailVerification(req: Request, res: Response) {
     try {
       const user = await User.findOne({ email: req.body.email });
-      if (user) {
+      if (!user) {
         res.status(409).json({
-          message: "User with that email already exist",
+          message: "User does not exist. Check your email address.",
         });
       } else {
         // Generate the six-digit verification code
@@ -1327,17 +1327,12 @@ class UserController {
       if (isCoordinatesExist) {
         // If only coordinates are provided, check the distance change
         if (existingUser.coordinates && newData.coordinates) {
-          const distance =
-            geolib.getDistance(
-              {
-                latitude: userCoordinates.coordinates[1],
-                longitude: userCoordinates.coordinates[0],
-              },
-              {
-                latitude: newData.coordinates.coordinates[1],
-                longitude: newData.coordinates.coordinates[0],
-              }
-            ) / 1000; // Convert to kilometers
+          const distance = haversineDistanceCalculator(
+            userCoordinates.coordinates[1],
+            userCoordinates.coordinates[0],
+            newData.coordinates.coordinates[1],
+            newData.coordinates.coordinates[0]
+          );
 
           if (distance >= Number(process.env.THRESHOLD_DISTANCE)) {
             shouldRecompute = true;

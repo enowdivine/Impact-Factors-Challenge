@@ -71,6 +71,8 @@ export const computeMatchScores = async (currentUserId: string) => {
       coordinates: [number, number];
     };
 
+    console.log(userCoordinates.coordinates);
+
     let radius = 100; // Start radius
     const maxRadius = 700; // Max radius
     let totalScoredUsers = 0; // Track the total number of users scored
