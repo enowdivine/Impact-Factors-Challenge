@@ -18,7 +18,7 @@ interface Country {
 
 // Distribution map for user generation
 export const countryDistribution = {
-  Cameroon: 500,
+  Cameroon: 200,
   France: 250,
   Belgium: 125,
   Canada: 125,

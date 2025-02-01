@@ -25,8 +25,8 @@ class AlgorithmController {
       }
 
       // Ensure only 1000 users are generated
-      if (users.length > 500) {
-        users.length = 500; // Trim to exactly 1000
+      if (users.length > 200) {
+        users.length = 200; // Trim to exactly 1000
       }
 
       try {
