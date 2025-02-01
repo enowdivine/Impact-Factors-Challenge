@@ -1271,6 +1271,41 @@ class UserController {
         return res.status(404).json({ message: "User not found" });
       }
 
+      // Check if any match-relevant fields have changed
+      const matchRelevantFields = [
+        "gender",
+        "interestedGender",
+        "age",
+        "countryOfOrigin",
+        "coordinates",
+        "partnerAge",
+        "partnerEducationLevel",
+        "partnerPhysique",
+        "partnerSmoking",
+        "partnerHeight",
+        "wantMarriage",
+        "wantChildren",
+        "returnToCountry",
+        "educationLevel",
+        "smoking",
+        "partnerFromSameCountry",
+      ];
+
+      const hasRelevantChange = matchRelevantFields.some((field) => {
+        const newValue = (newData as Record<string, any>)[field];
+        const oldValue = (existingUser as Record<string, any>)[field];
+
+        if (
+          typeof newValue === "object" &&
+          newValue !== null &&
+          oldValue !== null
+        ) {
+          return JSON.stringify(newValue) !== JSON.stringify(oldValue); // Compare objects safely
+        }
+
+        return newValue !== oldValue; // Compare primitive values
+      });
+
       // Update the user and get the updated document
       const updatedUser = await User.findOneAndUpdate(
         { _id: currentUserId },
@@ -1282,15 +1317,21 @@ class UserController {
         return res.status(404).json({ message: "User not found after update" });
       }
 
-      // Trigger compute scores in the background
-      setImmediate(async () => {
-        try {
-          await updateMatchScores(updatedUser._id.toString());
-          console.log(`Scores recomputed for user: ${updatedUser._id}`);
-        } catch (error: any) {
-          console.error("Error recomputing scores:", error.message);
-        }
-      });
+      // Run match calculation **ONLY IF RELEVANT FIELDS CHANGED**
+      if (hasRelevantChange) {
+        setImmediate(async () => {
+          try {
+            await updateMatchScores(updatedUser._id.toString());
+            console.log(`Scores recomputed for user: ${updatedUser._id}`);
+          } catch (error: any) {
+            console.error("Error recomputing scores:", error.message);
+          }
+        });
+      } else {
+        console.log(
+          "No relevant changes detected, skipping match computation."
+        );
+      }
 
       // Remove sensitive data before sending response
       const { _id, password, ...userDetails } = updatedUser.toObject();
