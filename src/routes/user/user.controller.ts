@@ -148,12 +148,12 @@ class UserController {
     }
   }
 
-  async emailVerification(req: Request, res: Response) {
+async emailVerification(req: Request, res: Response) {
     try {
       const user = await User.findOne({ email: req.body.email });
-      if (!user) {
+      if (user) {
         res.status(409).json({
-          message: "User does not exist. Check your email address.",
+          message: "User with that email already exist",
         });
       } else {
         // Generate the six-digit verification code
