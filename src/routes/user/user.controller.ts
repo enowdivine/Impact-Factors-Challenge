@@ -1204,87 +1204,29 @@ class UserController {
 
   async update(req: Request, res: Response) {
     const currentUserId = req.params.id;
-    const newData = {
-      profilePicture: req.body.profilePicture,
-      images: req.body.images,
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
-      username: req.body.username,
-      email: req.body.email.toLowerCase(),
-      profilePrivacy: req.body.profilePrivacy,
-      isProfileCompleted: req.body.isProfileCompleted,
-      //
-      questionOne: req.body.questionOne,
-      answerOne: req.body.answerOne,
-      questionTwo: req.body.questionTwo,
-      answerTwo: req.body.answerTwo,
-      bio: req.body.bio,
-      //
-      location: req.body.location,
-      likedUsers: req.body.likedUsers,
-      premium: {
-        isPremium: req.body.premium?.isPremium,
-        plan: req.body.premium?.plan,
-        expiresIn: req.body.premium?.expiresIn,
-      },
-      //
-      gender: req.body.gender,
-      interestedGender: req.body.interestedGender,
-      age: req.body.age,
-      countryOfOrigin: req.body.countryOfOrigin,
-      coordinates: req.body.coordinates,
-      currentLocation: req.body.currentLocation,
-      maritalStatus: req.body.maritalStatus,
-      numberOfChildren: req.body.numberOfChildren,
-      height: req.body.height,
-      //
-      physique: req.body.physique,
-      interests: req.body.interests,
-      practicedSports: req.body.practicedSports,
-      religion: req.body.religion,
-      importanceOfReligion: req.body.importanceOfReligion,
-      smoking: req.body.smoking,
-      //
-      educationLevel: req.body.educationLevel,
-      occupation: req.body.occupation,
-      languages: req.body.languages,
-      personality: req.body.personality,
-      importantInLife: req.body.importantInLife,
-      values: req.body.values,
-      //
-      wantMarriage: req.body.wantMarriage,
-      relationshipEssentials: req.body.relationshipEssentials,
-      wantChildren: req.body.wantChildren,
-      returnToCountry: req.body.returnToCountry,
-      culturalValuesImportance: req.body.culturalValuesImportance,
-      partnerFromOtherBackground: req.body.partnerFromOtherBackground,
-      partnerFromSameCountry: req.body.partnerFromSameCountry,
-      partnerInSameCountry: req.body.partnerInSameCountry,
-      //
-      shareHouseholdTasks: req.body.shareHouseholdTasks,
-      longTermCountries: req.body.longTermCountries,
-      //
-      partnerAge: {
-        minValue: req.body.partnerAge?.minValue,
-        maxValue: req.body.partnerAge?.maxValue,
-      },
-      partnerEducationLevel: req.body.partnerEducationLevel,
-      partnerAttraction: req.body.partnerAttraction,
-      partnerPhysique: req.body.partnerPhysique,
-      partnerSmoking: req.body.partnerSmoking,
-      partnerHeight: {
-        minValue: req.body.partnerHeight?.minValue,
-        maxValue: req.body.partnerHeight?.maxValue,
-      },
-      //
-      status: req.body.status,
-    };
+    let newEmail = req.body.email?.toLowerCase().trim();
 
     try {
       const existingUser = await User.findById(currentUserId);
       if (!existingUser) {
         return res.status(404).json({ message: "User not found" });
       }
+
+      // Check if the email is changing and if it already exists
+      if (newEmail && newEmail !== existingUser.email) {
+        const emailExists = await User.findOne({ email: newEmail });
+        if (emailExists) {
+          return res
+            .status(409)
+            .json({ message: "Email already in use by another user" });
+        }
+      }
+
+      // Define the updated data
+      const newData = {
+        ...req.body,
+        email: newEmail, // Ensure the email is always saved in lowercase
+      };
 
       // Check if any match-relevant fields have changed
       const matchRelevantFields = [
