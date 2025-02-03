@@ -105,8 +105,10 @@ export default function email(emailTitle: string, emailContent: string) {
         }
 
         .social-media-icons img {
-            width: 60px;
-            height: 60px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-left: 5px;
         }
 
         .footer-text {
