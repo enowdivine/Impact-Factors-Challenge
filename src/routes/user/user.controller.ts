@@ -141,7 +141,9 @@ class UserController {
 
       // if (user) {
       // Delete the used verification code
-      await VerificationCode.deleteOne({ email: req.body.email.toLowerCase() });
+      await VerificationCode.deleteMany({
+        email: req.body.email.toLowerCase(),
+      });
       return res.status(200).json({ message: "Email verified successfully!" });
       // } else {
       //   return res.status(404).json({ message: "User not found." });
