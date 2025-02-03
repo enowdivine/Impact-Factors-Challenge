@@ -158,7 +158,7 @@ class UserController {
       const user = await User.findOne({ email: req.body.email.toLowerCase() });
       if (!user) {
         res.status(409).json({
-          message: "User does not exist. Check your email address.",
+          message: "User with that email does not exist",
         });
       } else {
         // Generate the six-digit verification code
@@ -644,8 +644,8 @@ class UserController {
       // Combine excluded user IDs and daily match IDs
       const allExcludedUserIds = [...excludedUserIds, ...dailyMatchIds];
 
-      // Step 3: Fetch matches from the UserMatch collection, excluding liked/disliked users
-      const matches = await UserMatch.find({
+      // Step 3: Fetch scored users from the UserMatch collection, excluding liked/disliked users
+      const scoredUsers = await UserMatch.find({
         user1: currentUserId,
         user2: { $nin: allExcludedUserIds }, // Exclude users the current user has liked or disliked
       })
@@ -662,7 +662,7 @@ class UserController {
         }) // Populate user2's details but exclude sensitive fields like password
         .exec();
 
-      if (matches.length <= 10) {
+      if (scoredUsers.length <= 10) {
         // Trigger compute scores in the background
         setImmediate(async () => {
           try {
@@ -674,18 +674,20 @@ class UserController {
         });
       }
       // Filter out entries where user2 is null
-      const validMatches = matches.filter((match) => match.user2 !== null);
-      const totalValidMatches = validMatches.length;
-      const paginatedMatches = validMatches.slice(skip, skip + limit);
+      const validScoredUsers = scoredUsers.filter(
+        (scoredUser) => scoredUser.user2 !== null
+      );
+      const totalValidScoredUsers = validScoredUsers.length;
+      const paginatedScoredUsers = validScoredUsers.slice(skip, skip + limit);
 
-      // Step 3: Get the total number of matches for pagination metadata
+      // Step 3: Get the total number of scored users for pagination metadata
       // const totalMatches = await UserMatch.countDocuments({
       //   user1: currentUserId,
       //   user2: { $nin: allExcludedUserIds }, // Exclude users the current user has liked or disliked
       // });
 
-      // Step 4: Check if there are no matches
-      if (paginatedMatches.length === 0) {
+      // Step 4: Check if there are no scored users
+      if (paginatedScoredUsers.length === 0) {
         return res.status(200).json({
           users: [],
           currentPage: page,
@@ -697,10 +699,10 @@ class UserController {
 
       // Step 5: Return the paginated matches
       return res.status(200).json({
-        users: paginatedMatches.map((match) => match.user2), // Extract user2 details from matches
+        users: paginatedScoredUsers.map((match) => match.user2), // Extract user2 details from matches
         currentPage: page,
-        totalPages: Math.ceil(totalValidMatches / limit),
-        totalUsers: totalValidMatches,
+        totalPages: Math.ceil(totalValidScoredUsers / limit),
+        totalUsers: totalValidScoredUsers,
       });
     } catch (error: any) {
       console.error("Error fetching users", error.message);
