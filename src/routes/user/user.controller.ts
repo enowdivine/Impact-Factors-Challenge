@@ -34,7 +34,7 @@ const generateAndStoreCode = async (email: string) => {
 class UserController {
   async register(req: Request, res: Response) {
     try {
-      const user = await User.findOne({ email: req.body.email });
+      const user = await User.findOne({ email: req.body.email.toLowerCase() });
       if (user) {
         return res.status(409).json({
           message: "User with that email already exist",
@@ -75,11 +75,11 @@ class UserController {
             response.profilePicture.url
           );
           // Generate the six-digit verification code
-          // const verificationCode = await generateAndStoreCode(req.body.email);
+          // const verificationCode = await generateAndStoreCode(req.body.email.toLowerCase());
 
           // // Send verification code via email
           // sendEmail({
-          //   to: req.body.email,
+          //   to: req.body.email.toLowerCase(),
           //   title: "Welcome To Bliss Dating",
           //   subject: "Verify Your Email",
           //   message: userSignup(req.body.firstName, verificationCode),
@@ -113,10 +113,12 @@ class UserController {
   async verifyEmail(req: Request, res: Response) {
     try {
       const storedCode = await VerificationCode.findOne({
-        email: req.body.email,
-      });
+        email: req.body.email.toLowerCase(),
+      }).sort({ createdAt: -1 }); // Get the most recent code;
+
       console.log("storedCode", storedCode);
       console.log("code body", req.body.code);
+
       if (!storedCode) {
         // The code has likely expired or was never created
         return res.status(400).json({
@@ -124,19 +126,22 @@ class UserController {
         });
       }
 
-      if (Number(storedCode.code) !== Number(req.body.code)) {
+      if (
+        parseInt(storedCode?.code?.toString() || "0", 10) !==
+        parseInt(req.body.code.toString(), 10)
+      ) {
         return res.status(400).json({ message: "Invalid verification code." });
       }
 
       // // Mark the user as verified
       // const user = await User.findOneAndUpdate(
-      //   { email: req.body.email },
+      //   { email: req.body.email.toLowerCase() },
       //   { emailVerified: true }
       // );
 
       // if (user) {
       // Delete the used verification code
-      await VerificationCode.deleteOne({ email: req.body.email });
+      await VerificationCode.deleteOne({ email: req.body.email.toLowerCase() });
       return res.status(200).json({ message: "Email verified successfully!" });
       // } else {
       //   return res.status(404).json({ message: "User not found." });
@@ -150,7 +155,7 @@ class UserController {
 
   async emailVerification(req: Request, res: Response) {
     try {
-      const user = await User.findOne({ email: req.body.email });
+      const user = await User.findOne({ email: req.body.email.toLowerCase() });
       if (!user) {
         res.status(409).json({
           message: "User does not exist. Check your email address.",
@@ -158,11 +163,13 @@ class UserController {
       } else {
         // Generate the six-digit verification code
         console.log("request body", req.body);
-        const verificationCode = await generateAndStoreCode(req.body.email);
+        const verificationCode = await generateAndStoreCode(
+          req.body.email.toLowerCase()
+        );
 
         // Send verification code via email
         sendEmail({
-          to: req.body.email,
+          to: req.body.email.toLowerCase(),
           title: "Email verification code",
           subject: "Verify Your Email",
           message: userSignup(req.body.firstName, verificationCode),
@@ -180,7 +187,7 @@ class UserController {
   }
   // async register(req: Request, res: Response) {
   //   try {
-  //     const user = await User.findOne({ email: req.body.email });
+  //     const user = await User.findOne({ email: req.body.email.toLowerCase() });
   //     if (user) {
   //       return res.status(409).json({
   //         message: "User with that email already exist",
@@ -221,11 +228,11 @@ class UserController {
   //           response.profilePicture.url
   //         );
   //         // Generate the six-digit verification code
-  //         // const verificationCode = await generateAndStoreCode(req.body.email);
+  //         // const verificationCode = await generateAndStoreCode(req.body.email.toLowerCase());
 
   //         // // Send verification code via email
   //         // sendEmail({
-  //         //   to: req.body.email,
+  //         //   to: req.body.email.toLowerCase(),
   //         //   title: "Welcome To Bliss Dating",
   //         //   subject: "Verify Your Email",
   //         //   message: userSignup(req.body.firstName, verificationCode),
@@ -259,7 +266,7 @@ class UserController {
   // async verifyEmail(req: Request, res: Response) {
   //   try {
   //     const storedCode = await VerificationCode.findOne({
-  //       email: req.body.email,
+  //       email: req.body.email.toLowerCase(),
   //     });
 
   //     if (!storedCode) {
@@ -275,13 +282,13 @@ class UserController {
 
   //     // // Mark the user as verified
   //     const user = await User.findOneAndUpdate(
-  //       { email: req.body.email },
+  //       { email: req.body.email.toLowerCase() },
   //       { emailVerified: true }
   //     );
 
   //     if (user) {
   //       // Delete the used verification code
-  //       await VerificationCode.deleteOne({ email: req.body.email });
+  //       await VerificationCode.deleteOne({ email: req.body.email.toLowerCase() });
   //       return res
   //         .status(200)
   //         .json({ message: "Email verified successfully!" });
@@ -315,11 +322,13 @@ class UserController {
 
         if (!user?.emailVerified) {
           // Generate the six-digit verification code
-          const verificationCode = await generateAndStoreCode(req.body.email);
+          const verificationCode = await generateAndStoreCode(
+            req.body.email.toLowerCase()
+          );
 
           // Send verification code via email
           sendEmail({
-            to: req.body.email,
+            to: req.body.email.toLowerCase(),
             title: "Email verification code",
             subject: "Verify Your Email",
             message: userSignup(user.firstName, verificationCode),
@@ -414,18 +423,20 @@ class UserController {
 
   async forgotPassword(req: Request, res: Response) {
     try {
-      const user = await User.findOne({ email: req.body.email });
+      const user = await User.findOne({ email: req.body.email.toLowerCase() });
       if (!user) {
         return res.status(409).json({
           message: "User does not exist. Check your email address.",
         });
       } else {
         // Generate the six-digit verification code
-        const verificationCode = await generateAndStoreCode(req.body.email);
+        const verificationCode = await generateAndStoreCode(
+          req.body.email.toLowerCase()
+        );
 
         // Send verification code via email
         sendEmail({
-          to: req.body.email,
+          to: req.body.email.toLowerCase(),
           title: "Email verification code",
           subject: "Verify Your Email",
           message: userSignup(user.firstName, verificationCode),
@@ -444,7 +455,7 @@ class UserController {
 
   // async emailVerification(req: Request, res: Response) {
   //   try {
-  //     const user = await User.findOne({ email: req.body.email });
+  //     const user = await User.findOne({ email: req.body.email.toLowerCase() });
   //     if (user) {
   //       res.status(409).json({
   //         message: "User with that email already exist",
@@ -452,11 +463,11 @@ class UserController {
   //     } else {
   //       // Generate the six-digit verification code
   //       console.log("request body", req.body);
-  //       const verificationCode = await generateAndStoreCode(req.body.email);
+  //       const verificationCode = await generateAndStoreCode(req.body.email.toLowerCase());
 
   //       // Send verification code via email
   //       sendEmail({
-  //         to: req.body.email,
+  //         to: req.body.email.toLowerCase(),
   //         title: "Email verification code",
   //         subject: "Verify Your Email",
   //         message: userSignup(req.body.firstName, verificationCode),
@@ -475,7 +486,7 @@ class UserController {
 
   async newPassword(req: Request, res: Response) {
     try {
-      let user = await User.findOne({ email: req.body.email });
+      let user = await User.findOne({ email: req.body.email.toLowerCase() });
       if (user) {
         const { newPassword } = req.body;
         bcrypt.hash(newPassword, 10, async (error: any, hash: any) => {
@@ -618,9 +629,9 @@ class UserController {
         .select("targetUser type")
         .lean();
 
-      const excludedUserIds = interactions.map((interaction) =>
-        interaction.targetUser.toString()
-      );
+      const excludedUserIds = interactions
+        .filter((interaction) => interaction.targetUser) // Remove null/undefined values
+        .map((interaction) => interaction.targetUser.toString());
 
       // Step 2: Fetch daily matches for the current user
       const today = new Date().toISOString().split("T")[0]; // Format: YYYY-MM-DD
@@ -692,7 +703,7 @@ class UserController {
         totalUsers: totalValidMatches,
       });
     } catch (error: any) {
-      console.error(error.message);
+      console.error("Error fetching users", error.message);
       return res.status(500).json({
         message: error.message || "Error fetching data",
       });
@@ -1195,7 +1206,7 @@ class UserController {
       firstName: req.body.firstName,
       lastName: req.body.lastName,
       username: req.body.username,
-      email: req.body.email,
+      email: req.body.email.toLowerCase(),
       profilePrivacy: req.body.profilePrivacy,
       isProfileCompleted: req.body.isProfileCompleted,
       //

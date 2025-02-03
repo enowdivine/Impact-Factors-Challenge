@@ -76,7 +76,9 @@ async function getExcludedUserIds(userId: string): Promise<string[]> {
     type: { $in: ["LIKE", "DISLIKE", "BLOCK"] },
   }).select("targetUser");
 
-  return interactions.map((interaction) => interaction.targetUser.toString());
+  return interactions
+    .filter((interaction) => interaction.targetUser) // Remove null/undefined values
+    .map((interaction) => interaction.targetUser.toString());
 }
 
 // Helper function to populate user matches
