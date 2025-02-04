@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import User from "./user.model";
-import UserMatch from "../algorithm/algm.model";
+import ScoredUsers from "../algorithm/algm.model";
 import UserInteraction from "./user.interactionModel";
 import UserDailyMatch from "./user.dailyMatchModel";
 import NotificationModel from "../notifications/notification.model";
@@ -646,8 +646,8 @@ class UserController {
       // Combine excluded user IDs and daily match IDs
       const allExcludedUserIds = [...excludedUserIds, ...dailyMatchIds];
 
-      // Step 3: Fetch scored users from the UserMatch collection, excluding liked/disliked users
-      const scoredUsers = await UserMatch.find({
+      // Step 3: Fetch scored users from the ScoredUsers collection, excluding liked/disliked users
+      const scoredUsers = await ScoredUsers.find({
         user1: currentUserId,
         user2: { $nin: allExcludedUserIds }, // Exclude users the current user has liked or disliked
       })
@@ -664,7 +664,7 @@ class UserController {
         }) // Populate user2's details but exclude sensitive fields like password
         .exec();
 
-      if (scoredUsers.length <= 10) {
+      if (scoredUsers.length <= 20) {
         // Trigger compute scores in the background
         setImmediate(async () => {
           try {
@@ -683,7 +683,7 @@ class UserController {
       const paginatedScoredUsers = validScoredUsers.slice(skip, skip + limit);
 
       // Step 3: Get the total number of scored users for pagination metadata
-      // const totalMatches = await UserMatch.countDocuments({
+      // const totalMatches = await ScoredUsers.countDocuments({
       //   user1: currentUserId,
       //   user2: { $nin: allExcludedUserIds }, // Exclude users the current user has liked or disliked
       // });
@@ -1060,7 +1060,7 @@ class UserController {
       );
 
       // Step 2: Remove any existing match records between the two users
-      await UserMatch.deleteMany({
+      await ScoredUsers.deleteMany({
         $or: [
           { user1: userId, user2: blockedUserId },
           { user1: blockedUserId, user2: userId },
@@ -1231,10 +1231,10 @@ class UserController {
       // Check if any match-relevant fields have changed
       const matchRelevantFields = [
         "gender",
+        "coordinates",
         "interestedGender",
         "age",
         "countryOfOrigin",
-        "coordinates",
         "partnerAge",
         "partnerEducationLevel",
         "partnerPhysique",

@@ -1,5 +1,5 @@
 import User from "./user.model";
-import UserMatch from "../algorithm/algm.model";
+import ScoredUsers from "../algorithm/algm.model";
 import UserInteraction from "./user.interactionModel";
 import UserDailyMatch from "./user.dailyMatchModel";
 import crypto from "crypto";
@@ -32,7 +32,7 @@ export async function getTwoBestMatches(userId: string): Promise<any[]> {
   // Step 3: Fetch new matches if no valid daily matches exist
   const excludedUserIds = await getExcludedUserIds(userId);
 
-  const matches = await UserMatch.find({
+  const matches = await ScoredUsers.find({
     user1: userId,
     user2: { $nin: excludedUserIds },
   })

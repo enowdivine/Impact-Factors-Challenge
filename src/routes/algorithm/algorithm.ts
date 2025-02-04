@@ -18,9 +18,8 @@ import {
   PhysiqueKeys,
 } from "./algm.data";
 import User from "../user/user.model";
-import UserMatch from "./algm.model";
+import ScoredUsers from "./algm.model";
 import UserInteraction from "../user/user.interactionModel";
-import { Document, Types } from "mongoose";
 
 export const computeMatchScores = async (currentUserId: string) => {
   try {
@@ -37,7 +36,7 @@ export const computeMatchScores = async (currentUserId: string) => {
         user: currentUserId,
         type: { $in: ["LIKE", "DISLIKE", "BLOCK"] },
       }).distinct("targetUser"),
-      UserMatch.find({ user1: currentUserId }).distinct("user2"),
+      ScoredUsers.find({ user1: currentUserId }).distinct("user2"),
       UserInteraction.find({
         targetUser: currentUserId,
         type: "BLOCK",
@@ -196,7 +195,7 @@ export const computeMatchScores = async (currentUserId: string) => {
 
         // Execute bulkWrite for the current chunk
         try {
-          await UserMatch.bulkWrite(chunk);
+          await ScoredUsers.bulkWrite(chunk);
           console.log(`Processed chunk ${batchSize}`);
         } catch (error) {
           console.error(`Error processing chunk ${batchSize}:`, error);
@@ -295,7 +294,7 @@ const computeIndividualScore = (user1: any, user2: any) => {
 
 const fetchUsersForRecalculation = async (currentUserId: string) => {
   // Find all users who have the current user in their range
-  return await UserMatch.find({ user2: currentUserId })
+  return await ScoredUsers.find({ user2: currentUserId })
     .distinct("user1")
     .exec();
 };
@@ -326,7 +325,7 @@ const processBatch = async (
 
   // Execute the batch updates in bulk
   if (updates.length > 0) {
-    await UserMatch.bulkWrite(updates);
+    await ScoredUsers.bulkWrite(updates);
   }
 };
 
