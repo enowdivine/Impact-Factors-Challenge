@@ -91,8 +91,8 @@ const userSchema = new Schema(
     partnerPhysique: { type: String },
     partnerSmoking: { type: String },
     partnerHeight: {
-      minValue: { type: Number, default: 100 },
-      maxValue: { type: Number, default: 170 },
+      minValue: { type: Number, default: 0 },
+      maxValue: { type: Number, default: 250 },
     },
     //
     notificationToken: { type: String },
