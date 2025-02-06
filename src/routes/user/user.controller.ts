@@ -680,7 +680,10 @@ class UserController {
         (scoredUser) => scoredUser.user2 !== null
       );
       const totalValidScoredUsers = validScoredUsers.length;
-      const paginatedScoredUsers = validScoredUsers.slice(skip, skip + limit);
+      const paginatedScoredUsers = validScoredUsers.slice(
+        skip,
+        Math.min(skip + limit, totalValidScoredUsers)
+      );
 
       // Step 3: Get the total number of scored users for pagination metadata
       // const totalMatches = await ScoredUsers.countDocuments({
