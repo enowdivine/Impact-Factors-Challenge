@@ -981,6 +981,32 @@ class UserController {
     }
   }
 
+  async likedMeUsersCount(req: Request, res: Response) {
+    try {
+      const userId = req.params.id; // ID of the current user
+
+      // Fetch users the current user has already interacted with (liked or disliked)
+      const excludedUserIds = await UserInteraction.distinct("targetUser", {
+        user: userId,
+        type: { $in: ["LIKE", "DISLIKE"] },
+      });
+
+      // Count users who liked the current user, excluding those the user has already interacted with
+      const totalUsers = await UserInteraction.countDocuments({
+        targetUser: userId,
+        type: "LIKE",
+        user: { $nin: excludedUserIds }, // Exclude users the current user liked/disliked
+      });
+
+      return res.status(200).json({ totalLikes: totalUsers });
+    } catch (error: any) {
+      console.error("Error fetching likedMe users count:", error);
+      return res
+        .status(500)
+        .json({ message: "Error fetching likedMe users count" });
+    }
+  }
+
   async mutualLikedUsers(req: Request, res: Response) {
     try {
       const userId = req.params.id; // ID of the current user
