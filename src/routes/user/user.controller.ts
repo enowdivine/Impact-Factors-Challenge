@@ -884,6 +884,36 @@ class UserController {
           .json({ message: "Both userId and dislikedUserId are required." });
       }
 
+      // Find the user performing the dislike action
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found." });
+      }
+
+      // Check if the user is premium
+      const isPremium = user.premium?.isPremium;
+
+      // Reset the daily likes if the day has changed
+      const now = new Date();
+      if (
+        !user.likesToday?.resetAt || // No reset date defined
+        now > new Date(user.likesToday.resetAt) // Reset if past reset date
+      ) {
+        user.likesToday = {
+          count: 0,
+          resetAt: new Date(now.setHours(23, 59, 59, 999)), // End of the day
+        };
+        await user.save(); // Save the reset
+      }
+
+      // Enforce the like limit for non-premium users
+      if (!isPremium && user.likesToday.count >= 20) {
+        return res.status(403).json({
+          message:
+            "You have reached your daily like/dislike limit. Upgrade to premium for unlimited likes.",
+        });
+      }
+
       // Check if a dislike interaction already exists
       const existingInteraction = await UserInteraction.findOne({
         user: userId,
