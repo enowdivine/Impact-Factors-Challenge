@@ -32,11 +32,26 @@ class StripeController {
 
       // Check if the user already has a Stripe customer ID
       if (user.premium?.stripeCustomerId) {
-        console.log("Returning existing Stripe customer ID.");
-        const existingCustomer = await stripe.customers.retrieve(
-          user.premium.stripeCustomerId
-        );
-        return res.status(200).json({ customer: existingCustomer });
+        try {
+          // Try retrieving the existing Stripe customer
+          console.log("Checking existing Stripe customer ID.");
+          const existingCustomer = await stripe.customers.retrieve(
+            user.premium.stripeCustomerId
+          );
+
+          if (existingCustomer && !existingCustomer.deleted) {
+            return res.status(200).json({ customer: existingCustomer });
+          } else {
+            console.warn(
+              "Existing Stripe customer not found or deleted, creating a new one..."
+            );
+          }
+        } catch (retrievalError: any) {
+          console.error(
+            "Error retrieving Stripe customer, creating a new one:",
+            retrievalError.message
+          );
+        }
       }
 
       const customer = await stripe.customers.create({
