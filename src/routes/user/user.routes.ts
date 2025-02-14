@@ -12,6 +12,8 @@ router.post("/login", user.login);
 router.post("/forgot-password", user.forgotPassword);
 router.post("/new-password", user.newPassword);
 
+router.get("/unsubscribe", user.unsubscribe);
+
 router.get("/:id", user.user);
 router.get("/:id/list", user.users);
 router.get("/:id/likes-me", user.likedMeUsers);
@@ -33,5 +35,7 @@ router.put("/update-coordinates/:id", user.updateCoordinates);
 
 router.put("/delete-image/:id", user.deleteImage);
 router.delete("/delete/:id", user.deleteUser);
+
+router.post("/test-email", user.testEmail);
 
 export default router;

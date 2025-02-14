@@ -841,25 +841,35 @@ class UserController {
         });
         await notificationForLikedUser.save();
 
-        // It's a match! Send notifications to both users
-        sendEmail({
-          to: user.email,
-          title: "It's a Match!",
-          subject: "You Have a New Match on Bliss Dating",
-          message: matchNotification(
-            user.firstName,
-            likedUserDetails?.firstName as string
-          ),
-        });
-        sendEmail({
-          to: likedUserDetails?.email as string,
-          title: "It's a Match!",
-          subject: "You Have a New Match on Bliss Dating",
-          message: matchNotification(
-            likedUserDetails?.firstName as string,
-            user.firstName
-          ),
-        });
+        const emailRecipients = [
+          user.emailNotification
+            ? {
+                to: user.email,
+                title: "It's a Match!",
+                subject: "You Have a New Match on Bliss Dating",
+                message: matchNotification(
+                  user.firstName,
+                  likedUserDetails?.firstName as string
+                ),
+              }
+            : null,
+          likedUserDetails.emailNotification
+            ? {
+                to: likedUserDetails.email as string,
+                title: "It's a Match!",
+                subject: "You Have a New Match on Bliss Dating",
+                message: matchNotification(
+                  likedUserDetails.firstName as string,
+                  user.firstName
+                ),
+              }
+            : null,
+        ].filter((emailData) => emailData !== null); // Type-safe filtering
+
+        // Send all emails in parallel
+        await Promise.all(
+          emailRecipients.map((emailData) => sendEmail(emailData))
+        );
       }
 
       return res.status(200).json({
@@ -1451,6 +1461,66 @@ class UserController {
       return res.status(500).json({
         message: error.message || "error deleting account",
       });
+    }
+  }
+
+  async testEmail(req: Request, res: Response) {
+    try {
+      sendEmail({
+        to: "sirdivine16@gmail.com",
+        title: "Email verification code",
+        subject: "Verify Your Email",
+        message: userSignup("Mike", 1234),
+      });
+
+      res.status(201).json({
+        message: "Code generated",
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        message: error.message || "Error in generating code",
+      });
+    }
+  }
+
+  async unsubscribe(req: Request, res: Response) {
+    try {
+      const { token } = req.query;
+
+      if (!token) {
+        return res.status(400).json({ message: "Invalid request." });
+      }
+
+      // Decode the token to get the user's email
+      const decoded = jwt.verify(
+        token as string,
+        process.env.JWT_SECRET as string
+      ) as { email: string };
+
+      // Find and update the user to disable email notifications
+      const user = await User.findOneAndUpdate(
+        { email: decoded.email },
+        { emailNotification: false },
+        { new: true }
+      );
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found." });
+      }
+
+      return res.status(200).send(`
+      <html>
+        <body style="text-align:center; font-family: Arial, sans-serif;">
+          <h2>You have successfully unsubscribed</h2>
+          <p>You will no longer receive email notifications from Bliss Dating.</p>
+        </body>
+      </html>
+    `);
+    } catch (error: any) {
+      console.error("Unsubscribe error:", error);
+      return res
+        .status(500)
+        .json({ message: "Failed to process unsubscription." });
     }
   }
 }

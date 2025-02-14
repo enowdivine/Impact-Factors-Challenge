@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import email from "./templates/template";
+import jwt from "jsonwebtoken";
 
 dotenv.config();
 
@@ -12,12 +13,20 @@ interface Option {
   message: string;
 }
 
-export default function mailer(option: Option): void {
-  const html: string = email(option.title, option.message);
+// Generate a secure unsubscribe link
+const generateUnsubscribeLink = (email: string): string => {
+  const token = jwt.sign({ email }, process.env.JWT_SECRET as string, {
+    expiresIn: "7d", // Token expires in 7 days
+  });
+  return `${process.env.SERVER_URL}/api/v1/users/unsubscribe?token=${token}`;
+};
+
+export default function sendEmail(option: Option): void {
+  const unsubscribeLink = generateUnsubscribeLink(option.to);
+
+  const html: string = email(option.title, option.message, unsubscribeLink);
+
   const transporter: any = nodemailer.createTransport({
-    // host: process.env.EMAIL_HOST,
-    // port: process.env.EMAIL_PORT,
-    // secure: true, // Use SSL
     service: process.env.EMAIL_SERVICE,
     auth: {
       user: process.env.EMAIL_USER,
@@ -29,7 +38,6 @@ export default function mailer(option: Option): void {
   } as any);
   const mailOptions: any = {
     sender: "Bliss",
-    // from: option.from || `Bliss <noreply@bliss.com>`,
     from: option.from || `Bliss <blissdating.contact@gmail.com>`,
     to: option.to,
     // bcc: "blissdating.contact@gmail.com",

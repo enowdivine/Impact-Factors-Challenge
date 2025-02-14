@@ -1,6 +1,10 @@
-export default function email(emailTitle: string, emailContent: string) {
+export default function email(
+  emailTitle: string,
+  emailContent: string,
+  unsubscribeLink: string
+) {
   return `
- <html lang="en">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8" />
@@ -132,7 +136,7 @@ export default function email(emailTitle: string, emailContent: string) {
         .footer-description {
             text-align: center;
             color: #171725;
-            font-size: 20px;
+            font-size: 16px;
             font-family: Lunema;
             font-weight: 400;
             word-wrap: break-word;
@@ -274,10 +278,15 @@ export default function email(emailTitle: string, emailContent: string) {
                     </div>
                 </div>
                 <div class="footer-text">
-                    <div class="footer-description">Copyright &copy; 2024 | <a href="#" target="_blank">Visit
-                            Website</a></div>
-                    <div class="footer-text-bold">Bliss Dating</div>
-                    <!-- <div class="footer-description">Campus Camer by AECO</div> -->
+                    <!-- <div class="footer-description">Copyright &copy; 2024 | <a href="#" target="_blank">Visit
+                            Website</a></div> -->
+                    <!-- <div>
+                        To stop receiving any marketing emails, unsubscribe here.
+                    </div>
+                    <div class="footer-text-bold">Bliss Dating</div> -->
+                    <div class="footer-description">To stop receiving any match emails, <a href=${unsubscribeLink}
+                            target="_blank">unsubscribe
+                            here</a>.</div>
                 </div>
             </div>
         </div>

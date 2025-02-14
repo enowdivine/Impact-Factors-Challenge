@@ -96,6 +96,7 @@ const userSchema = new Schema(
     },
     //
     notificationToken: { type: String },
+    emailNotification: { type: Boolean, default: true },
     status: {
       type: String,
       enum: ["ACTIVE", "FROZEN", "SUSPENDED", "DEACTIVATED"],

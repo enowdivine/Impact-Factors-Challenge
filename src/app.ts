@@ -14,6 +14,8 @@ import subscriptionRoutes from "./routes/subscriptions/subscription.routes";
 import reportRoutes from "./routes/userReports/report.routes";
 import supportRoutes from "./routes/support/report.routes";
 
+import sendEmail from "./services/email/email";
+
 import StripeController from "./routes/payments/stripe.controller";
 const stripe = new StripeController();
 
