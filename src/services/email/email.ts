@@ -32,8 +32,7 @@ export default function mailer(option: Option): void {
     // from: option.from || `Bliss <noreply@bliss.com>`,
     from: option.from || `Bliss <blissdating.contact@gmail.com>`,
     to: option.to,
-    // bcc: "info@bliss.com",
-    bcc: "blissdating.contact@gmail.com",
+    // bcc: "blissdating.contact@gmail.com",
     subject: option.subject,
     html: html,
   };
