@@ -32,6 +32,40 @@ const generateAndStoreCode = async (email: string) => {
 };
 
 class UserController {
+  async generateStreamToken(req: Request, res: Response) {
+    try {
+      // Ensure email is provided
+      const email = req.body.email?.toLowerCase();
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      // Find user by email
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Generate token
+      const streamResult = await generateToken(
+        user._id.toString(),
+        user.firstName,
+        user.lastName,
+        user.email,
+        user.profilePicture?.url
+      );
+
+      return res.status(201).json({
+        message: "Token created",
+        streamToken: streamResult.token,
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        message: error.message || "Error in token creation process",
+      });
+    }
+  }
+
   async register(req: Request, res: Response) {
     try {
       const user = await User.findOne({ email: req.body.email.toLowerCase() });
@@ -1167,6 +1201,11 @@ class UserController {
           .json({ message: "You can only add up to 5 images" });
       }
 
+      // Prevent adding empty images
+      if (!url || !key || url.trim() === "" || key.trim() === "") {
+        return res.status(400).json({ message: "Invalid image data" });
+      }
+
       // Add the new image to the images array
       user.images.push({ url, key });
 
@@ -1185,6 +1224,63 @@ class UserController {
       return res
         .status(500)
         .json({ message: error.message || "Error adding image" });
+    }
+  }
+
+  async updateImage(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { profilePicture, images } = req.body;
+
+      // Find the user
+      const user = await User.findById(id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Update profile picture if provided
+      if (profilePicture && profilePicture.url && profilePicture.key) {
+        user.profilePicture = profilePicture;
+      }
+
+      // Update images array if provided
+      if (Array.isArray(images)) {
+        user.images = images; // Replace old images with the new array
+      }
+
+      // Save user and ensure it's fully completed before proceeding
+      user
+        .save()
+        .then(async () => {
+          // Fetch latest user data to confirm images are updated
+          return User.findById(id).lean();
+        })
+        .then((updatedUser) => {
+          if (!updatedUser) {
+            throw new Error("User not found after update.");
+          }
+
+          const { _id, password: pw, ...rest } = updatedUser;
+          const userPayload = { id: _id, ...rest };
+
+          console.log("Updated images after deletion:", userPayload.images);
+
+          return res.status(200).json({
+            message: "Images updated successfully",
+            user: userPayload,
+          });
+        })
+        .catch((error) => {
+          console.error("Error updating images:", error);
+          return res.status(500).json({
+            message: error.message || "Error updating images",
+          });
+        });
+    } catch (error: any) {
+      console.error("Error updating images:", error);
+      return res
+        .status(500)
+        .json({ message: error.message || "Error updating images" });
     }
   }
 
@@ -1225,49 +1321,6 @@ class UserController {
       return res
         .status(500)
         .json({ message: error.message || "Error deleting image" });
-    }
-  }
-
-  async updateImage(req: Request, res: Response) {
-    try {
-      const { id } = req.params;
-      const { key, newUrl, newKey } = req.body;
-
-      // Find the document with the specific ID
-      const user = await User.findById(id);
-
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      // Find the index of the image to be replaced
-      const imageIndex = user.images.findIndex((image) => image.key === key);
-
-      if (imageIndex === -1) {
-        return res
-          .status(404)
-          .json({ message: "Image with the given key not found" });
-      }
-
-      // Replace the image URL and key at the specific index
-      user.images[imageIndex].url = newUrl;
-      user.images[imageIndex].key = newKey;
-
-      // Save the updated document
-      await user.save();
-
-      const userObject = user.toObject();
-      const { _id, password: pw, ...rest } = userObject;
-      const userPayload = { id: _id, ...rest };
-
-      return res.status(200).json({
-        message: "Image updated successfully",
-        user: userPayload,
-      });
-    } catch (error: any) {
-      return res
-        .status(500)
-        .json({ message: error.message || "Error updating image" });
     }
   }
 

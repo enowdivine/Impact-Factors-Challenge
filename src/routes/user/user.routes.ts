@@ -5,6 +5,8 @@ import User from "./user.controller";
 const router = express.Router();
 const user = new User();
 
+router.post("/generate-stream-token", user.generateStreamToken);
+
 router.post("/register", user.register);
 router.post("/verify-email", user.verifyEmail);
 router.post("/email-verification", user.emailVerification);

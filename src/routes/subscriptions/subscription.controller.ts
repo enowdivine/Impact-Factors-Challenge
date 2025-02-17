@@ -10,8 +10,8 @@ class SubscriptionController {
       // Find the active subscription for the given user ID
       const subscription = await Subscription.findOne({
         userId: id,
-        status: { $in: ["active", "trialing"] }, // Only return active or trialing subscriptions
-      });
+        // status: { $in: ["active", "trialing"] }, // Only return active or trialing subscriptions
+      }).sort({ createdAt: -1 });
 
       const isPremium = !!subscription; // True if a valid subscription exists
       await User.findByIdAndUpdate(id, { "premium.isPremium": isPremium });

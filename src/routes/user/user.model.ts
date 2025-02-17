@@ -7,7 +7,12 @@ const userSchema = new Schema(
       type: Object,
       default: {},
     },
-    images: [],
+    images: [
+      {
+        url: { type: String, trim: true },
+        key: { type: String, trim: true },
+      },
+    ],
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     username: { type: String, required: true },

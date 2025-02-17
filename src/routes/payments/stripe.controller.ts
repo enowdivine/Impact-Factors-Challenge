@@ -164,11 +164,26 @@ class StripeController {
         cancel_at_period_end: true, // Cancels at the end of the billing cycle
       });
 
-      // Update the subscription status in the database
-      await Subscription.findOneAndUpdate(
-        { stripeSubscriptionId: subscriptionId },
-        { status: "canceled" }
-      );
+      // Step 1: Find the latest subscription (most recent one)
+      const latestSubscription = await Subscription.findOne(
+        { userId: userId } // Filter by userId
+      ).sort({ createdAt: -1 }); // Get the most recent subscription
+
+      // Step 2: If subscription exists, update it
+      if (latestSubscription) {
+        const updatedSubscription = await Subscription.findOneAndUpdate(
+          { _id: latestSubscription._id }, // Use the latest subscription's ID
+          { $set: { status: "canceled" } }, // Explicitly update the status
+          {
+            new: true, // Return the updated document
+            runValidators: true, // Ensure schema validation
+          }
+        );
+
+        console.log("Updated Subscription:", updatedSubscription);
+      } else {
+        console.log("No subscription found for this user.");
+      }
 
       return res.status(200).json({
         message:
