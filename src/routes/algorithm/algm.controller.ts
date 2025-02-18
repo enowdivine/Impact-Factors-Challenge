@@ -14,9 +14,7 @@ class AlgorithmController {
       const users: any[] = [];
 
       for (const [countryName, count] of Object.entries(countryDistribution)) {
-        const country =
-          countryData[countryName as keyof typeof countryData] ||
-          countryData["Switzerland"]; // Default to Switzerland if missing
+        const country = countryData[countryName as keyof typeof countryData];
 
         for (let i = 0; i < count; i++) {
           const user = await generateRandomUser(country);
@@ -24,15 +22,15 @@ class AlgorithmController {
         }
       }
 
-      // Ensure only 1000 users are generated
-      if (users.length > 200) {
-        users.length = 200; // Trim to exactly 1000
+      // Ensure only 60 users are generated
+      if (users.length > 60) {
+        users.length = 60; // Trim to exactly 60
       }
 
       try {
         await User.insertMany(users); // Bulk insert users into the database
         console.log("1000 users generated and saved to the database.");
-        return res.status(200).json({ message: "1000 users generated" });
+        return res.status(200).json({ message: "60 users generated" });
       } catch (error) {
         console.error("Error saving users to the database:", error);
         return res
@@ -122,33 +120,27 @@ class AlgorithmController {
 
   async users(req: Request, res: Response) {
     try {
-      // Default values for page and limit if not provided in the query
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 10;
+      // Fetch only the emails and country of users
+      const users = await User.find();
 
-      // Calculate the starting index for the query based on page and limit
-      const skip = (page - 1) * limit;
+      console.log(users.length, "users fetched");
 
-      // Fetch the total count of users
-      const totalUsers = await User.countDocuments({
-        role: "USER",
-      });
-
-      // Fetch the paginated users with only email, gender, and interestedGender fields
-      const users = await User.find({
-        role: "USER",
-        coordinates: {
-          $geoWithin: {
-            $centerSphere: [[12.3547, 7.3697], 500 / 6371], // [longitude, latitude], radius in radians
-          },
+      // Group emails by country
+      const groupedUsers = users.reduce(
+        (acc: Record<string, string[]>, user) => {
+          const country = user.currentLocation?.country || "Unknown";
+          if (!acc[country]) {
+            acc[country] = [];
+          }
+          acc[country].push(user.email);
+          return acc;
         },
-      });
+        {}
+      );
 
       return res.status(200).json({
-        users,
-        currentPage: page,
-        totalPages: Math.ceil(totalUsers / limit),
-        totalUsers: totalUsers,
+        groupedUsers,
+        totalUsers: users.length,
       });
     } catch (error: any) {
       return res.status(500).json({

@@ -353,7 +353,7 @@ export const QUESTIONS = {
     "Athletic",
     "No preference",
   ],
-  partnerHeight: { min: 120, max: 240 }, // In cm
+  partnerHeight: { min: 50, max: 250 }, // In cm
   partnerSmoking: ["Yes", "Occasionally", "No"],
   optionQuestions: [
     "The vacation I'll never forget:",
