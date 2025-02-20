@@ -21,6 +21,8 @@ import {
 import { getTwoBestMatches } from "./user.helperFunctions";
 import { haversineDistanceCalculator } from "../../helpers/utils";
 
+import { io, connectedUsers } from "../../app";
+
 const generateAndStoreCode = async (email: string) => {
   const code = generateVerificationCode();
   await VerificationCode.findOneAndUpdate(
@@ -852,6 +854,17 @@ class UserController {
         const likedUserDetails = await User.findById(likedUserId);
         if (!likedUserDetails) {
           return res.status(404).json({ message: "Liked user not found." });
+        }
+
+        // Emit real-time event to both users
+        if (connectedUsers[userId]) {
+          io.to(connectedUsers[userId]).emit("match.new", {
+            match: likedUserDetails,
+          });
+        }
+
+        if (connectedUsers[likedUserId]) {
+          io.to(connectedUsers[likedUserId]).emit("match.new", { match: user });
         }
 
         // Notifications

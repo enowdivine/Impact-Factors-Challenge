@@ -4,6 +4,8 @@ import dbConnect from "./config/db";
 import dotenv from "dotenv";
 import http from "http";
 import cors from "cors";
+import { Server } from "socket.io";
+
 // api imports
 import adminRoutes from "./routes/admin/admin.routes";
 import userRoutes from "./routes/user/user.routes";
@@ -17,7 +19,6 @@ import supportRoutes from "./routes/support/report.routes";
 import sendEmail from "./services/email/email";
 
 import StripeController from "./routes/payments/stripe.controller";
-const stripe = new StripeController();
 
 const path = require("path");
 export const appRoot = path.resolve(__dirname);
@@ -30,10 +31,47 @@ const corsOptions = {
 };
 
 dotenv.config();
+dbConnect();
+
 const app = express();
 const server: any = http.createServer(app);
+const stripe = new StripeController();
 
-dbConnect();
+// Initialize Socket.io with CORS
+const io = new Server(server, {
+  cors: {
+    origin: "*", // Allow frontend access
+    methods: ["GET", "POST"],
+  },
+});
+
+// Store connected users
+const connectedUsers: Record<string, string> = {};
+
+// Handle WebSocket Connections
+io.on("connection", (socket) => {
+  console.log("New client connected:", socket.id);
+
+  // Register user with their socket ID
+  socket.on("register", (userId) => {
+    connectedUsers[userId] = socket.id;
+    console.log(`User ${userId} registered with socket ${socket.id}`);
+  });
+
+  // Handle disconnect
+  socket.on("disconnect", () => {
+    const userId = Object.keys(connectedUsers).find(
+      (key) => connectedUsers[key] === socket.id
+    );
+    if (userId) {
+      delete connectedUsers[userId];
+      console.log(`User ${userId} disconnected`);
+    }
+  });
+});
+
+// Make io accessible in other files
+export { io, connectedUsers };
 
 app.use(cors(corsOptions));
 
