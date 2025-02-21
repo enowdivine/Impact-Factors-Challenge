@@ -493,7 +493,7 @@ export const fetchRandomImage = async (gender: string) => {
 };
 
 // Function to generate a random user
-const generateRandomUser = async (country: Country) => {
+const generateRandomUser = async (country: Country, gender: string) => {
   // Randomly select a country from the West African pool
   const countryOfOrigin = faker.helpers.arrayElement(westAfricanCountries);
 
@@ -503,7 +503,7 @@ const generateRandomUser = async (country: Country) => {
   );
 
   // Randomly select the gender for the user
-  const gender = faker.helpers.arrayElement(QUESTIONS.gender);
+  // const gender = faker.helpers.arrayElement(QUESTIONS.gender);
 
   // Fetch images based on the user's gender
   const profilePicture = await fetchRandomImage(gender);

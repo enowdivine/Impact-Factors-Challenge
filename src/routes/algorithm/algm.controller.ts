@@ -16,8 +16,20 @@ class AlgorithmController {
       for (const [countryName, count] of Object.entries(countryDistribution)) {
         const country = countryData[countryName as keyof typeof countryData];
 
-        for (let i = 0; i < count; i++) {
-          const user = await generateRandomUser(country);
+        // for (let i = 0; i < count; i++) {
+        //   const user = await generateRandomUser(country);
+        //   users.push(user);
+        // }
+
+        // Generate 10 women
+        for (let i = 0; i < 10; i++) {
+          const user = await generateRandomUser(country, "WOMAN");
+          users.push(user);
+        }
+
+        // Generate 10 men
+        for (let i = 0; i < 10; i++) {
+          const user = await generateRandomUser(country, "MAN");
           users.push(user);
         }
       }
@@ -123,16 +135,17 @@ class AlgorithmController {
       // Fetch only the emails and country of users
       const users = await User.find();
 
-      console.log(users.length, "users fetched");
-
       // Group emails by country
       const groupedUsers = users.reduce(
-        (acc: Record<string, string[]>, user) => {
+        (acc: Record<string, { email: string; gender: string }[]>, user) => {
           const country = user.currentLocation?.country || "Unknown";
           if (!acc[country]) {
             acc[country] = [];
           }
-          acc[country].push(user.email);
+          acc[country].push({
+            email: user.email,
+            gender: user.gender || "Unknown",
+          });
           return acc;
         },
         {}
