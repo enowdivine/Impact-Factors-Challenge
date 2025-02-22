@@ -862,13 +862,11 @@ class UserController {
 
         // Emit real-time event to both users
         if (connectedUsers[userId]) {
-          io.to(connectedUsers[userId]).emit("match.new", {
-            match: likedUserDetails,
-          });
+          io.to(connectedUsers[userId]).emit("match.new", likedUserDetails);
         }
 
         if (connectedUsers[likedUserId]) {
-          io.to(connectedUsers[likedUserId]).emit("match.new", { match: user });
+          io.to(connectedUsers[likedUserId]).emit("match.new", user);
         }
 
         // Notifications
