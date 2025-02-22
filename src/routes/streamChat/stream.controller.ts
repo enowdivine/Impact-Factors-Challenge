@@ -11,6 +11,7 @@ export async function generateToken(
   userId: any,
   firstName: string,
   lastName: string,
+  username: string,
   email: string,
   profilePictureUrl: string
 ): Promise<{ success: boolean; token?: string; message?: string }> {
@@ -24,6 +25,7 @@ export async function generateToken(
       id: userId,
       firstName,
       lastName,
+      username,
       email,
       image: profilePictureUrl,
     });

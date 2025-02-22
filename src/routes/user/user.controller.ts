@@ -53,6 +53,7 @@ class UserController {
         user._id.toString(),
         user.firstName,
         user.lastName,
+        user.username,
         user.email,
         user.profilePicture?.url
       );
@@ -107,6 +108,7 @@ class UserController {
             response._id.toString(),
             response.firstName,
             response.lastName,
+            response.username,
             response.email,
             response.profilePicture.url
           );
@@ -262,6 +264,7 @@ class UserController {
   //           response._id.toString(),
   //           response.firstName,
   //           response.lastName,
+  //           response.username,
   //           response.email,
   //           response.profilePicture.url
   //         );
@@ -407,6 +410,7 @@ class UserController {
                 user._id.toString(),
                 user.firstName,
                 user.lastName,
+                user.username,
                 user.email,
                 user.profilePicture.url
               );
