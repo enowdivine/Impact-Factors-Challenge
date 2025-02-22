@@ -546,7 +546,7 @@ const generateRandomUser = async (country: Country, gender: string) => {
       stripeCustomerId: "",
     },
     gender,
-    interestedGender: faker.helpers.arrayElement(QUESTIONS.interestedGender),
+    interestedGender: gender === "MAN" ? "WOMAN" : "MAN",
     age: faker.number.int({ min: 18, max: 70 }),
     countryOfOrigin: countryOfOrigin,
     coordinates: {
