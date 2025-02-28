@@ -4,7 +4,7 @@
         <div class="template-list">
             <div v-for="template in templates" :key="template.id" class="template-card">
                 <h3>{{ template.name }}</h3>
-                <button @click="publishTemplate(template.id)" class="publish-button">Publish</button>
+                <button @click="publishTemplate(template._id)" class="publish-button">Publish</button>
             </div>
         </div>
     </section>
@@ -15,7 +15,9 @@ export default {
     props: ["templates"],
     methods: {
         async publishTemplate(templateId) {
-            await this.$emit("publishTemplate", templateId);
+            if (confirm("Are you sure you want to assign this template?")) {
+                this.$emit("publishTemplate", templateId);
+            }
         },
     },
 };

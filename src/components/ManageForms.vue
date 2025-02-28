@@ -4,7 +4,10 @@
         <ul class="list">
             <li v-for="form in forms" :key="form._id" class="form-item">
                 <strong class="form-name">{{ form.name }}</strong>
-                <button @click="editForm(form)" class="edit-button">Edit</button>
+                <div>
+                    <button @click="editForm(form)" class="edit-button">Edit</button>
+                    <button @click="deleteForm(form._id)" class="delete-button">Delete</button>
+                </div>
             </li>
         </ul>
     </section>
@@ -17,6 +20,11 @@ export default {
         editForm(form) {
             this.$emit("editForm", form); // Emit event to parent to handle editing
         },
+        deleteForm(formId) {
+            if (confirm("Are you sure you want to delete this form?")) {
+                this.$emit("deleteForm", formId);
+            }
+        }
     },
 };
 </script>
@@ -87,5 +95,16 @@ export default {
 
 .edit-button:hover {
     background-color: #0056b3;
+}
+
+.delete-button {
+    background-color: #dc3545;
+    color: white;
+    margin-left: 10px;
+     cursor: pointer;
+}
+
+.delete-button:hover {
+    background-color: #c82333;
 }
 </style>

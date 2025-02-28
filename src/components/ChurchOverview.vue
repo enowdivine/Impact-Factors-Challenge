@@ -3,11 +3,15 @@
         <h2 class="subtitle">Church Overview</h2>
         <div class="overview-content">
             <p><strong>Name:</strong> {{ church.name }}</p>
-            <p><strong>Subdomain:</strong> {{ church.subdomain }}</p>
+            <p><strong>Subdomain:</strong> {{ church.name }}</p>
+            <a :href="'http://localhost:5173/' + church.name" target="_blank">
+                <strong>Visit Website:</strong> {{ 'http://localhost:5173/' + church.name }}
+            </a>
+
             <p>
                 <strong>Website Status:</strong>
-                <span class="status" :class="{ active: church.published, inactive: !church.published }">
-                    {{ church.published ? "Active" : "Inactive" }}
+                <span class="status" :class="{ active: church.isPublished, inactive: !church.isPublished }">
+                    {{ church.isPublished ? "Active" : "Inactive" }}
                 </span>
             </p>
         </div>
@@ -42,6 +46,12 @@ export default {
 /* Content */
 .overview-content {
     font-size: 1.1rem;
+    color: #555;
+    line-height: 1.6;
+}
+
+.overview-content a{
+     font-size: 1.1rem;
     color: #555;
     line-height: 1.6;
 }
