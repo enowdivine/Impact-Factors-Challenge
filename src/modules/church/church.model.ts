@@ -10,6 +10,12 @@ const ChurchSchema = new mongoose.Schema(
       ref: "Template",
       default: null,
     },
+    assignedForms: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Form",
+      },
+    ],
   },
   { timestamps: true }
 );

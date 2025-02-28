@@ -25,6 +25,19 @@ class TemplateController {
     }
   }
 
+  async getTemplate(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const updatedTemplate = await Template.findOne({ _id: id });
+      if (!updatedTemplate)
+        return res.status(404).json({ message: "Template not found" });
+
+      return res.json(updatedTemplate);
+    } catch (error) {
+      return res.status(500).json({ message: "Error updating template" });
+    }
+  }
+
   async updateTemplate(req: Request, res: Response) {
     try {
       const { id } = req.params;

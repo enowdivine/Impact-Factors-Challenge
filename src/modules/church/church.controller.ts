@@ -82,6 +82,23 @@ class ChurchController {
     }
   }
 
+  async getChurchBySubdomain(req: Request, res: Response) {
+    try {
+      const { subdomain } = req.params;
+      const church = await Church.findOne({ subdomain });
+
+      if (!church) {
+        return res.status(404).json({ message: "Church not found" });
+      }
+
+      return res.status(200).json(church);
+    } catch (error: any) {
+      return res
+        .status(500)
+        .json({ message: "Error fetching church", error: error.message });
+    }
+  }
+
   async getAllChurches(req: Request, res: Response) {
     try {
       const churches = await Church.find().populate("templateId", "name"); // Include template name if assigned
@@ -132,6 +149,48 @@ class ChurchController {
     } catch (error: any) {
       return res.status(500).json({
         message: "An error occurred while deleting the church",
+        error: error.message,
+      });
+    }
+  }
+
+  async assignForm(req: Request, res: Response) {
+    try {
+      const { churchId } = req.params;
+      const { formId } = req.body;
+
+      const church = await Church.findById(churchId);
+      if (!church) {
+        return res.status(404).json({ message: "Church not found" });
+      }
+
+      if (!church.assignedForms.includes(formId)) {
+        church.assignedForms.push(formId);
+      }
+
+      await church.save();
+
+      return res.status(200).json({ message: "Form assigned successfully!" });
+    } catch (error: any) {
+      return res
+        .status(500)
+        .json({ message: "Error assigning form", error: error.message });
+    }
+  }
+
+  async getAssignedForms(req: Request, res: Response) {
+    try {
+      const { churchId } = req.params;
+      const church = await Church.findById(churchId).populate("assignedForms");
+
+      if (!church) {
+        return res.status(404).json({ message: "Church not found" });
+      }
+
+      return res.status(200).json({ assignedForms: church.assignedForms });
+    } catch (error: any) {
+      return res.status(500).json({
+        message: "Error fetching assigned forms",
         error: error.message,
       });
     }
